@@ -1,330 +1,419 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>부동산 정보 등록 (관리자)</title>
+    <title>매물관리 - 공실뉴스 Admin</title>
+    <!-- Pretendard 폰트 적용 -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable.css" />
     <style>
-        body {
-            font-family: 'Pretendard', sans-serif;
-            background-color: #f8f9fa;
-            padding: 20px;
-            max-width: 800px;
-            margin: 0 auto;
+        :root {
+            --primary-color: #ff9f1c;
+            --secondary-color: #4285f4;
+            --bg-color: #f8f9fa;
+            --border-color: #e1e4e8;
+            --text-main: #333;
+            --text-sub: #666;
+            --danger: #e74c3c;
+            --success: #2ecc71;
         }
 
-        h1 {
-            color: #333;
-            border-bottom: 2px solid #ff9f1c;
-            padding-bottom: 10px;
+        body { 
+            font-family: 'Pretendard Variable', sans-serif; 
+            background-color: var(--bg-color); 
+            padding: 30px; 
+            margin: 0;
+            color: var(--text-main);
+            line-height: 1.5;
         }
 
-        .form-group {
-            margin-bottom: 15px;
+        .container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            padding: 30px;
+            min-height: 800px;
         }
 
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
-        }
-
-        input,
-        textarea,
-        select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        button {
-            background-color: #ff9f1c;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-        }
-
-        button:hover {
-            background-color: #e88d15;
-        }
-
-        .row {
+        /* 헤더 영역 */
+        .header-area {
             display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 15px;
+        }
+
+        .header-title h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .header-stats {
+            font-size: 14px;
+            color: var(--text-sub);
+        }
+
+        /* 경고 문구 박스 */
+        .notice-box {
+            background-color: #fff5f5;
+            border: 1px solid #ffcfcf;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            color: #d9534f;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
             gap: 10px;
         }
 
-        .col {
-            flex: 1;
+        /* 검색/필터 영역 (시원한 디자인) */
+        .filter-section {
+            background-color: #f0f4fc;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
         }
 
-        #map {
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            font-weight: 700;
+            font-size: 14px;
+            color: #444;
+            white-space: nowrap;
+        }
+
+        input[type="text"], select, input[type="date"] {
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus { border-color: var(--primary-color); }
+
+        .search-btn {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .reset-btn {
+            background-color: #fff;
+            color: var(--text-sub);
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* 액션 버튼 그룹 */
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .btn-group { display: flex; gap: 8px; }
+
+        .btn {
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: white;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary { background: var(--primary-color); color: white; border: none; font-size: 14px; padding: 10px 20px; }
+        .btn-danger { color: var(--danger); border-color: var(--danger); }
+        .btn-excel { background: #27ae60; color: white; border: none; }
+
+        /* 테이블 디자인 (와이드하고 시원하게) */
+        .table-wrapper {
+            overflow-x: auto;
+            border-top: 1px solid #333;
+        }
+
+        table {
             width: 100%;
-            height: 300px;
-            margin-top: 10px;
-            border: 1px solid #ddd;
+            border-collapse: collapse;
+            font-size: 14px;
+            min-width: 1200px;
+        }
+
+        th {
+            background-color: #fcfcfc;
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 10px;
+            font-weight: 700;
+            color: #444;
+            text-align: center;
+        }
+
+        td {
+            padding: 15px 10px;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        tbody tr:hover { background-color: #f9fafb; }
+
+        /* 매물 속성 배지/텍스트 스타일 */
+        .type-badge {
+            padding: 3px 8px;
             border-radius: 4px;
-            display: none;
+            font-size: 12px;
+            font-weight: 700;
+            background: #eee;
+        }
+        .rent { background: #e3f2fd; color: #1976d2; }
+        .sale { background: #fff3e0; color: #e65100; }
+
+        .price-text {
+            font-weight: 800;
+            color: var(--danger);
+            font-size: 15px;
         }
 
-        .msg {
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            display: none;
+        .addr-text {
+            text-align: left;
+            font-weight: 500;
         }
 
-        .success {
-            background-color: #d4edda;
-            color: #155724;
+        .spec-info {
+            font-size: 13px;
+            color: var(--text-sub);
         }
 
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
+        /* 페이지네이션 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+            gap: 5px;
         }
+
+        .page-item {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-sub);
+        }
+
+        .page-item.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* 체크박스 커스텀 */
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary-color);
+        }
+
     </style>
-    <!-- 카카오 지도 SDK (https 명시) -->
-    <script type="text/javascript"
-        src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=963be8495a63901416fb1354f738c826&libraries=services"></script>
-    <!-- 다음 주소 검색 SDK (https 명시) -->
-    <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-    <!-- Supabase SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-
 <body>
 
-    <h1>🏢 부동산 매물/중개사 등록</h1>
-    <div id="message" class="msg"></div>
-
-    <form id="estateForm">
-        <div class="row">
-            <div class="col form-group">
-                <label>회사명 (필수)</label>
-                <input type="text" id="company_name" required placeholder="(주)빌드온 부동산중개법인">
+    <div class="container">
+        <!-- 헤더 영역 -->
+        <div class="header-area">
+            <div class="header-title">
+                <h2>🏬 매물관리</h2>
             </div>
-            <div class="col form-group">
-                <label>대표자명 (필수)</label>
-                <input type="text" id="ceo_name" required placeholder="홍길동">
+            <div class="header-stats">
+                전체 매물수 : <strong>1,248</strong>건 | 오늘 등록 : <span style="color:var(--danger)">12</span>건
             </div>
         </div>
 
-        <div class="row">
-            <div class="col form-group">
-                <label>등록번호</label>
-                <input type="text" id="registration_number" placeholder="11650-2017-00221">
-            </div>
-            <div class="col form-group">
-                <label>사업자번호</label>
-                <input type="text" id="business_number" placeholder="123-45-67890">
-            </div>
+        <!-- 알림 문구 -->
+        <div class="notice-box">
+            <span>📢</span>
+            <strong>중복매물등록을 중지해 주십시오...</strong> 중복매물등록은 타인에게 피해를 줄 수 있으며 신뢰도를 저하시킵니다.
         </div>
 
-        <div class="form-group">
-            <label>주소 검색 (필수)</label>
-            <div style="display:flex; gap:10px;">
-                <input type="text" id="address" required placeholder="주소 검색 버튼을 눌러주세요" readonly>
-                <button type="button" onclick="execDaumPostcode()" style="white-space:nowrap;">🔍 주소 찾기</button>
+        <!-- 검색 필터 -->
+        <section class="filter-section">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>매물번호</label>
+                    <input type="text" placeholder="번호 입력" style="width:120px;">
+                </div>
+                <div class="filter-group">
+                    <label>구분</label>
+                    <div style="display:flex; gap:10px; font-size:14px;">
+                        <label><input type="checkbox"> 급매물</label>
+                        <label><input type="checkbox"> 추천매물</label>
+                        <label><input type="checkbox"> 중개보수지급</label>
+                        <label><input type="checkbox"> 즉시입주</label>
+                    </div>
+                </div>
+                <div class="filter-group" style="margin-left: auto;">
+                    <select>
+                        <option>매물종류 전체</option>
+                        <option>빌라/주택</option>
+                        <option>아파트</option>
+                        <option>상가/사무실</option>
+                    </select>
+                    <input type="text" placeholder="주소, 매물명 검색" style="width:250px;">
+                    <button class="search-btn">🔍 검색하기</button>
+                    <button class="reset-btn">초기화</button>
+                </div>
             </div>
-            <input type="text" id="address_detail" placeholder="상세주소 (예: 101동 101호)" style="margin-top:5px;">
-            <div id="map"></div> <!-- 지도 미리보기 -->
+        </section>
+
+        <!-- 액션 바 -->
+        <div class="action-bar">
+            <div class="btn-group">
+                <button class="btn"><span class="icon">🔄</span> 광고순위갱신</button>
+                <button class="btn"><span class="icon">📅</span> 광고종료연장</button>
+                <button class="btn btn-danger"><span class="icon">🗑</span> 선택삭제</button>
+                <button class="btn"><span class="icon">🖨</span> 인쇄</button>
+                <button class="btn btn-excel"><span class="icon">📊</span> 엑셀다운로드</button>
+            </div>
+            <button class="btn btn-primary" onclick="alert('매물등록 페이지로 이동합니다.')">＋ 신규매물등록</button>
         </div>
 
-        <!-- 숨겨진 좌표 필드 -->
-        <input type="hidden" id="lat">
-        <input type="hidden" id="lng">
-
-        <div class="row">
-            <div class="col form-group">
-                <label>휴대전화</label>
-                <input type="text" id="phone_mobile" placeholder="010-1234-5678">
-            </div>
-            <div class="col form-group">
-                <label>사무실전화</label>
-                <input type="text" id="phone_office" placeholder="02-123-4567">
-            </div>
+        <!-- 매물 리스트 테이블 -->
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="40"><input type="checkbox"></th>
+                        <th width="100">번호/거래</th>
+                        <th width="100">광고구분</th>
+                        <th width="100">매물종류</th>
+                        <th>주소</th>
+                        <th width="180">방수 / 면적 / 층</th>
+                        <th width="180">금액</th>
+                        <th width="100">순위갱신</th>
+                        <th width="100">최초등록</th>
+                        <th width="120">관리</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 샘플 데이터 1 -->
+                    <tr>
+                        <td><input type="checkbox"></td>
+                        <td>
+                            <div style="font-size:12px; color:#888;">72189911</div>
+                            <span class="type-badge rent">월세</span>
+                        </td>
+                        <td>
+                            <div style="color:var(--secondary-color); font-weight:700;">광고</div>
+                            <div style="font-size:11px; color:#999;">23일전</div>
+                        </td>
+                        <td>빌라/주택</td>
+                        <td class="addr-text">
+                            <strong>논현동 177</strong><br>
+                            <span style="font-size:12px; color:#888;">전화: 010-6890-6589</span>
+                        </td>
+                        <td>
+                            <div class="spec-info">
+                                <b>4</b> / <b>215</b>(65) / 1층
+                            </div>
+                        </td>
+                        <td>
+                            <div class="price-text">월 35,000 / 250 / 10</div>
+                            <div style="font-size:11px; color:#999;">(보증금/월세/관리비)</div>
+                        </td>
+                        <td>02.25</td>
+                        <td>02.25</td>
+                        <td>
+                            <div class="btn-group" style="justify-content: center;">
+                                <button class="btn" style="padding:4px 8px; font-size:11px;">수정</button>
+                                <button class="btn" style="padding:4px 8px; font-size:11px;">복사</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- 샘플 데이터 2 -->
+                    <tr>
+                        <td><input type="checkbox"></td>
+                        <td>
+                            <div style="font-size:12px; color:#888;">72189905</div>
+                            <span class="type-badge sale">매매</span>
+                        </td>
+                        <td>
+                            <div style="color:#999;">만료</div>
+                        </td>
+                        <td>아파트</td>
+                        <td class="addr-text">
+                            <strong>역삼동 푸르지오 102동</strong><br>
+                            <span style="font-size:12px; color:#888;">전화: 010-1234-5678</span>
+                        </td>
+                        <td>
+                            <div class="spec-info">
+                                <b>3</b> / <b>84</b>(25) / 15층
+                            </div>
+                        </td>
+                        <td>
+                            <div class="price-text">매매 185,000</div>
+                            <div style="font-size:11px; color:#999;">(단위: 만원)</div>
+                        </td>
+                        <td>03.11</td>
+                        <td>01.10</td>
+                        <td>
+                            <div class="btn-group" style="justify-content: center;">
+                                <button class="btn" style="padding:4px 8px; font-size:11px;">수정</button>
+                                <button class="btn" style="padding:4px 8px; font-size:11px;">복사</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
-        <div class="form-group">
-            <label>업체 상세 소개</label>
-            <textarea id="description" rows="4" placeholder="업체에 대한 상세한 소개를 입력하세요."></textarea>
+        <!-- 페이징 -->
+        <div class="pagination">
+            <div class="page-item">＜</div>
+            <div class="page-item active">1</div>
+            <div class="page-item">2</div>
+            <div class="page-item">3</div>
+            <div class="page-item">4</div>
+            <div class="page-item">5</div>
+            <div class="page-item">＞</div>
         </div>
+    </div>
 
-        <div class="row">
-            <div class="col form-group">
-                <label>게시 시작일</label>
-                <input type="date" id="start_date">
-            </div>
-            <div class="col form-group">
-                <label>게시 종료일</label>
-                <input type="date" id="end_date">
-            </div>
-        </div>
-
-        <h3>🔗 링크 정보 (선택)</h3>
-        <div class="row">
-            <div class="col form-group">
-                <label>문의하기 URL</label>
-                <input type="url" id="inquiry_url" placeholder="https://open.kakao.com/...">
-            </div>
-            <div class="col form-group">
-                <label>홈페이지</label>
-                <input type="url" id="website_url" placeholder="http://example.com">
-            </div>
-        </div>
-        <div class="row">
-            <div class="col form-group">
-                <label>유튜브</label>
-                <input type="url" id="youtube_url">
-            </div>
-            <div class="col form-group">
-                <label>블로그</label>
-                <input type="url" id="blog_url">
-            </div>
-        </div>
-        <div class="row">
-            <div class="col form-group">
-                <label>인스타그램</label>
-                <input type="url" id="instagram_url">
-            </div>
-            <div class="col form-group">
-                <label>페이스북</label>
-                <input type="url" id="facebook_url">
-            </div>
-            <div class="col form-group">
-                <label>쓰레드</label>
-                <input type="url" id="threads_url">
-            </div>
-        </div>
-
-        <button type="submit" style="width:100%; margin-top:20px;">✅ 부동산 등록하기</button>
-    </form>
-
-    <script>
-        // Supabase 설정
-        const SUPABASE_URL = 'https://imtdijfseaninhvjoklp.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_fY0K_-WP3PyG5ihvxgCPSw_bYewHmnR';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        // 오늘 날짜 기본 설정
-        document.getElementById('start_date').valueAsDate = new Date();
-
-        // 다음 주소 검색
-        function execDaumPostcode() {
-            if (typeof daum === 'undefined') {
-                alert("주소 검색 스크립트가 로딩되지 않았습니다. 인터넷 연결을 확인하거나 페이지를 새로고침해주세요.");
-                return;
-            }
-
-            new daum.Postcode({
-                oncomplete: function (data) {
-                    var addr = data.roadAddress || data.jibunAddress;
-                    document.getElementById("address").value = addr;
-
-                    // 카카오 지도 라이브러리 체크
-                    if (typeof kakao === 'undefined' || !kakao.maps || !kakao.maps.services) {
-                        alert("지도 라이브러리가 로딩되지 않아 좌표를 자동생성할 수 없습니다. (API 키/도메인 확인 필요)");
-                        return;
-                    }
-
-                    // 주소로 좌표 검색
-                    var geocoder = new kakao.maps.services.Geocoder();
-                    geocoder.addressSearch(addr, function (result, status) {
-                        if (status === kakao.maps.services.Status.OK) {
-                            var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-                            document.getElementById('lat').value = result[0].y;
-                            document.getElementById('lng').value = result[0].x;
-
-                            // 지도 보여주기
-                            var mapContainer = document.getElementById('map');
-                            mapContainer.style.display = "block";
-                            var mapOption = { center: coords, level: 3 };
-                            var map = new kakao.maps.Map(mapContainer, mapOption);
-                            var marker = new kakao.maps.Marker({ position: coords, map: map });
-                        } else {
-                            alert("좌표를 찾을 수 없는 주소입니다.");
-                        }
-                    });
-                }
-            }).open();
-        }
-
-        // 폼 제출
-        document.getElementById('estateForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const lat = document.getElementById('lat').value;
-            const lng = document.getElementById('lng').value;
-
-            if (!lat || !lng) {
-                alert('주소를 검색해서 좌표를 설정해주세요!');
-                return;
-            }
-
-            const formData = {
-                company_name: document.getElementById('company_name').value,
-                ceo_name: document.getElementById('ceo_name').value,
-                registration_number: document.getElementById('registration_number').value,
-                business_number: document.getElementById('business_number').value,
-                address: document.getElementById('address').value,
-                address_detail: document.getElementById('address_detail').value,
-                lat: parseFloat(lat),
-                lng: parseFloat(lng),
-                phone_mobile: document.getElementById('phone_mobile').value,
-                phone_office: document.getElementById('phone_office').value,
-                description: document.getElementById('description').value,
-                start_date: document.getElementById('start_date').value,
-                end_date: document.getElementById('end_date').value || null,
-                inquiry_url: document.getElementById('inquiry_url').value,
-                website_url: document.getElementById('website_url').value,
-                youtube_url: document.getElementById('youtube_url').value,
-                blog_url: document.getElementById('blog_url').value,
-                instagram_url: document.getElementById('instagram_url').value,
-                facebook_url: document.getElementById('facebook_url').value,
-                threads_url: document.getElementById('threads_url').value,
-            };
-
-            // 빈 문자열은 null로 처리
-            Object.keys(formData).forEach(key => {
-                if (formData[key] === "") formData[key] = null;
-            });
-
-            try {
-                const { data, error } = await supabase
-                    .from('real_estate')
-                    .insert([formData])
-                    .select();
-
-                const msgDiv = document.getElementById('message');
-                msgDiv.style.display = 'block';
-
-                if (error) throw error;
-
-                msgDiv.className = 'msg success';
-                msgDiv.innerText = '✅ 성공적으로 등록되었습니다!';
-                window.scrollTo(0, 0);
-
-                // 폼 초기화
-                e.target.reset();
-                document.getElementById('map').style.display = 'none';
-                document.getElementById('start_date').valueAsDate = new Date(); // 날짜 다시 세팅
-
-            } catch (error) {
-                const msgDiv = document.getElementById('message');
-                msgDiv.className = 'msg error';
-                msgDiv.innerText = '❌ 에러 발생: ' + error.message;
-                window.scrollTo(0, 0);
-            }
-        });
-    </script>
 </body>
-
 </html>
