@@ -262,8 +262,11 @@
                 `);
                 doc.close();
             } else {
-                frame.src = url;
+                // 캐시 방지를 위해 시간값을 붙여서 로드합니다.
+                const finalUrl = (url.startsWith('..') ? url : window.BASE_PATH + '/' + url) + '?v=' + new Date().getTime();
+                frame.src = finalUrl;
             }
+
         }
     </script>
 </body>
