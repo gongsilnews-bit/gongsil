@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원목록 레이아웃</title>
+    <style>
+        body { 
+            font-family: 'Pretendard', sans-serif; 
+            background-color: #f8f9fa; 
+            padding: 20px; 
+            margin: 0;
+            color: #333;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 30px;
+            min-height: 800px;
+            position: relative;
+        }
+
+        .header-title-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .total-count {
+            font-size: 13px;
+            color: #888;
+        }
+
+        /* 검색/필터 영역 */
+        .filter-section {
+            background-color: #f0f4fc; /* 연한 블루 그레이 */
+            padding: 15px 20px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .filter-section select,
+        .filter-section input {
+            padding: 8px 12px;
+            border: 1px solid #dcdcdc;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #555;
+            background-color: #fff;
+        }
+
+        .filter-section input {
+            width: 200px;
+        }
+
+        .btn-search {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-search:hover { background-color: #5a6268; }
+
+        /* 테이블 영역 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        th {
+            border-top: 2px solid #555;
+            border-bottom: 1px solid #ddd;
+            padding: 15px 10px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        td {
+            padding: 15px 10px;
+            border-bottom: 1px solid #eee;
+            color: #555;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #fcfcfc;
+        }
+
+        tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* 버튼 스타일 지정 */
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 3px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            background-color: white;
+            color: #555;
+        }
+
+        .btn-sm.edit {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+        }
+
+        .btn-sm.edit:hover { background-color: #5a6268; }
+        .btn-sm:hover:not(.edit) { background-color: #f8f9fa; }
+
+        /* 하단 영역 (페이징, 액션 버튼) */
+        .footer-action-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        .pagination {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            gap: 5px;
+        }
+
+        .pagination li {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            color: #555;
+            background-color: white;
+        }
+
+        .pagination li.active {
+            background-color: #6c757d;
+            color: white;
+            border-color: #6c757d;
+        }
+
+        .pagination li:hover:not(.active) {
+            background-color: #f1f1f1;
+        }
+
+        .bottom-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-bottom {
+            padding: 8px 16px;
+            font-size: 13px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: white;
+            color: #555;
+        }
+
+        .btn-bottom.primary {
+            background-color: #4285f4;
+            color: white;
+            border-color: #4285f4;
+        }
+
+        .btn-bottom.primary:hover { background-color: #357ae8; }
+        .btn-bottom:hover:not(.primary) { background-color: #f1f1f1; }
+
+        /* 모달(팝업) 스타일 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); display: none;
+            justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content {
+            background: white; padding: 25px; border-radius: 8px; width: 400px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .modal-header { font-size: 18px; font-weight: bold; margin-bottom: 20px; border-bottom: 2px solid #ff9f1c; padding-bottom: 10px; }
+        .modal-group { margin-bottom: 15px; }
+        .modal-group label { display: block; margin-bottom: 5px; font-size: 14px; font-weight: bold; color: #555; }
+        .modal-group input, .modal-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .modal-btns { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
+        .modal-btn { padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; color: white; }
+        .modal-btn.cancel { background: #6c757d; }
+        .modal-btn.save { background: #ff9f1c; }
+        #modalMsg { margin-top: 10px; font-size: 13px; color: #d9534f; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 타이틀 -->
+        <div class="header-title-area">
+            <h2>회원목록</h2>
+            <div class="total-count" id="totalCount">회원수 : 로딩중...</div>
+        </div>
+
+        <!-- 필터 영역 -->
+        <div class="filter-section">
+            <select><option>전체</option></select>
+            <select><option>가입일순</option></select>
+            <select><option>회원종류</option></select>
+            <select><option>기자등급</option></select>
+            <select><option>기타등급</option></select>
+            <select><option>회원상태 전체</option></select>
+            <input type="text" placeholder="검색어를 입력하세요.">
+            <button class="btn-search">🔍</button>
+        </div>
+
+        <!-- 테이블 영역 -->
+        <table>
+            <thead>
+                <tr>
+                    <th>아이디</th>
+                    <th>이름</th>
+                    <th>연락처(휴대폰)</th>
+                    <th>회원가입일</th>
+                    <th>회원종류</th>
+                    <th>기자등급</th>
+                    <th>기사갯수</th>
+                    <th>부동산회원 만료일</th>
+                    <th>상태</th>
+                    <th>관리</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody">
+                <tr><td colspan="10" style="padding:40px;">데이터를 불러오는 중입니다...</td></tr>
+            </tbody>
+        </table>
+
+        <!-- 하단 영역 -->
+        <div class="footer-action-area">
+            <ul class="pagination">
+                <li>«</li>
+                <li class="active">1</li>
+                <li>2</li>
+                <li>3</li>
+                <li>4</li>
+                <li>5</li>
+                <li>»</li>
+            </ul>
+
+            <div class="bottom-btns">
+                <button class="btn-bottom" onclick="alert('준비중인 기능입니다.')">✖ 탈퇴아이디보기</button>
+                <button class="btn-bottom primary" id="btnOpenRegModal">✔️ 등록 (사전등록)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 수정 모달 -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">회원 권한 수정</div>
+            <input type="hidden" id="editUid">
+            <div class="modal-group">
+                <label>회원 이메일 (아이디)</label>
+                <input type="text" id="editEmail" disabled>
+            </div>
+            <div class="modal-group">
+                <label>회원 등급</label>
+                <select id="editRole">
+                    <option value="admin">최고관리자</option>
+                    <option value="realtor">부동산회원</option>
+                    <option value="general">일반회원</option>
+                </select>
+            </div>
+            <div class="modal-group">
+                <label>부동산회원 만료일</label>
+                <input type="date" id="editExpiredAt">
+            </div>
+            <div id="modalMsg"></div>
+            <div class="modal-btns">
+                <button class="modal-btn cancel" onclick="closeModal('editModal')">취소</button>
+                <button class="modal-btn save" id="btnSaveEdit">저장하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 사전등록 모달 -->
+    <div class="modal-overlay" id="regModal">
+        <div class="modal-content">
+            <div class="modal-header">회원 사전 등록</div>
+            <div style="font-size:13px; color:#666; margin-bottom:15px; line-height:1.4;">
+                가입 전인 이메일을 등록해두면, 첫 로그인 시 선택한 등급으로 자동 설정됩니다.
+            </div>
+            <div class="modal-group">
+                <label>구글 이메일 주소</label>
+                <input type="email" id="regEmail" placeholder="example@gmail.com">
+            </div>
+            <div class="modal-group">
+                <label>회원 등급</label>
+                <select id="regRole">
+                    <option value="general">일반회원</option>
+                    <option value="realtor" selected>부동산회원</option>
+                    <option value="admin">관리자</option>
+                </select>
+            </div>
+            <div class="modal-group" id="regDateGroup">
+                <label>만료일</label>
+                <input type="date" id="regExpiredAt">
+            </div>
+            <div id="regModalMsg" style="margin-top: 10px; font-size: 13px; color: #004085; display: none;"></div>
+            <div class="modal-btns">
+                <button class="modal-btn cancel" onclick="closeModal('regModal')">취소</button>
+                <button class="modal-btn save" id="btnSaveReg">등록하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase SDK 및 설정 로드 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase_gongsi_config.js"></script>
+
+    <script type="module">
+        const supabase = window.gongsiClient;
+
+        // UI 요소
+        const tableBody = document.getElementById('userTableBody');
+        const countDiv = document.getElementById('totalCount');
+
+        // 모달 제어 전역 함수
+        window.closeModal = function(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        // --- 1. 유저 목록 불러오기 ---
+        async function loadUsers() {
+            tableBody.innerHTML = '<tr><td colspan="10">데이터를 불러오는 중입니다...</td></tr>';
+            try {
+                const { data: users, error, count } = await supabase
+                    .from('members')
+                    .select('*', { count: 'exact' })
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                
+                countDiv.textContent = `회원수 : ${count}명`;
+                tableBody.innerHTML = '';
+
+                if (!users || users.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="10">등록된 회원이 없습니다.</td></tr>';
+                    return;
+                }
+
+                users.forEach((data) => {
+                    let roleText = '일반회원';
+                    let roleColor = '#555';
+                    
+                    if (data.role === 'admin') {
+                        roleText = '최고관리자';
+                        roleColor = '#e74c3c';
+                    } else if (data.role === 'realtor') {
+                        roleText = '부동산회원';
+                        roleColor = '#ff9f1c';
+                    }
+                    
+                    let roleHtml = `<b style="color:${roleColor}">${roleText}</b>`;
+                    
+                    let expiredStr = data.expired_at ? data.expired_at.split('T')[0] : "-";
+                    let createdStr = data.created_at ? data.created_at.split('T')[0] : "-";
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${data.email}</td>
+                        <td>${data.name || '-'}</td>
+                        <td>-</td>
+                        <td>${createdStr}</td>
+                        <td>${roleHtml}</td>
+                        <td>${data.role === 'admin' ? '최고관리자' : '일반회원'}</td>
+                        <td>0</td>
+                        <td>${data.role === 'realtor' ? expiredStr : '-'}</td>
+                        <td>정상</td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn-sm edit" onclick="openEditModal('${data.id}', '${data.email}', '${data.role}', '${expiredStr}')">🔧 수정</button>
+                                <button class="btn-sm" onclick="deleteUser('${data.id}', '${data.email}')">🗑 삭제</button>
+                            </div>
+                        </td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+
+            } catch(e) {
+                console.error(e);
+                tableBody.innerHTML = '<tr><td colspan="10" style="color:red;">데이터 로드 오류!</td></tr>';
+            }
+        }
+
+        // --- 2. 수정 모달 열기 및 저장 ---
+        window.openEditModal = function(id, email, role, expStr) {
+            document.getElementById('editUid').value = id;
+            document.getElementById('editEmail').value = email;
+            document.getElementById('editRole').value = role;
+            
+            if(expStr !== '-' && expStr.length === 10) {
+                document.getElementById('editExpiredAt').value = expStr;
+            } else {
+                document.getElementById('editExpiredAt').value = '';
+            }
+            
+            document.getElementById('modalMsg').style.display = 'none';
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        document.getElementById('btnSaveEdit').addEventListener('click', async () => {
+            const id = document.getElementById('editUid').value;
+            const role = document.getElementById('editRole').value;
+            const dateStr = document.getElementById('editExpiredAt').value;
+            const msgObj = document.getElementById('modalMsg');
+            
+            msgObj.style.display = 'block';
+            msgObj.style.color = 'blue';
+            msgObj.textContent = '저장 중...';
+
+            try {
+                let updateData = { role: role };
+                if (role === 'realtor' && dateStr) {
+                    updateData.expired_at = dateStr;
+                } else if (role !== 'realtor') {
+                    updateData.expired_at = null;
+                }
+
+                const { error } = await supabase
+                    .from('members')
+                    .update(updateData)
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                closeModal('editModal');
+                loadUsers();
+            } catch(e) {
+                console.error(e);
+                msgObj.style.color = 'red';
+                msgObj.textContent = '저장 오류: ' + e.message;
+            }
+        });
+
+        // --- 3. 회원 삭제 ---
+        window.deleteUser = async function(id, email) {
+            if(confirm(`경고: '${email}' 회원의 데이터베이스 기록을 삭제하시겠습니까?`)) {
+                try {
+                    const { error } = await supabase
+                        .from('members')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) throw error;
+                    alert("삭제되었습니다.");
+                    loadUsers();
+                } catch(e) {
+                    alert("삭제 오류: " + e.message);
+                }
+            }
+        }
+
+        // --- 4. 사전 등록 기능 ---
+        const regRoleSelect = document.getElementById('regRole');
+        const regDateGroup = document.getElementById('regDateGroup');
+
+        regRoleSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'general') {
+                regDateGroup.style.display = 'none';
+            } else {
+                regDateGroup.style.display = 'block';
+            }
+        });
+
+        document.getElementById('btnOpenRegModal').addEventListener('click', () => {
+            document.getElementById('regEmail').value = '';
+            regRoleSelect.value = 'realtor';
+            regDateGroup.style.display = 'block';
+            const t = new Date(); t.setDate(t.getDate()+30);
+            document.getElementById('regExpiredAt').valueAsDate = t;
+            document.getElementById('regModalMsg').style.display = 'none';
+            document.getElementById('regModal').style.display = 'flex';
+        });
+
+        document.getElementById('btnSaveReg').addEventListener('click', async () => {
+             const email = document.getElementById('regEmail').value.trim().toLowerCase();
+             const role = document.getElementById('regRole').value;
+             const dateStr = document.getElementById('regExpiredAt').value;
+             const msgDiv = document.getElementById('regModalMsg');
+             
+             if(!email) { alert('이메일을 입력하세요'); return; }
+             if(role !== 'general' && !dateStr) { alert('만료일을 선택하세요'); return; }
+
+             msgDiv.style.display = 'block';
+             msgDiv.textContent = '처리 중...';
+
+             try {
+                // 이미 가입된 유저인지 확인
+                const { data: existingUser } = await supabase
+                    .from('members')
+                    .select('*')
+                    .eq('email', email)
+                    .maybeSingle();
+
+                if (existingUser) {
+                    await supabase
+                        .from('members')
+                        .update({ 
+                            role: role, 
+                            expired_at: (role === 'general') ? null : dateStr 
+                        })
+                        .eq('id', existingUser.id);
+                    alert(`이미 가입된 회원이므로 '${role}' 권한으로 즉시 변경되었습니다.`);
+                } else {
+                    // 사전 등록 테이블에 저장 (등급 정보 포함을 위해 note 필드 활용)
+                    await supabase
+                        .from('pre_registered_realtors')
+                        .upsert({ 
+                            email: email, 
+                            expired_date: (role === 'general') ? '9999-12-31' : dateStr, // 일반회원은 임의의 미래 날짜
+                            note: `role:${role}` 
+                        });
+                    alert(`'${email}' 님을 사전 가입(${role}) 상태로 등록했습니다. 첫 로그인 시 적용됩니다.`);
+                }
+                closeModal('regModal');
+                loadUsers();
+             } catch(e) {
+                 msgDiv.textContent = '에러: ' + e.message;
+                 msgDiv.style.color = 'red';
+             }
+        });
+
+        // 초기 실행
+        loadUsers();
+    </script>
+</body>
+</html>

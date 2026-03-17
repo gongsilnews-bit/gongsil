@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="style.css">
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase_gongsi_config.js"></script>
     <style>
         /* 초기 로딩 스타일 */
         html,
@@ -35,16 +36,23 @@
                 </a>
             </div>
             <nav class="nav">
-                <!-- 탭 버튼 (상단 메뉴 단순화) -->
-                <a href="#" class="nav-tab active">뉴스기사</a>
+                <!-- 탭 버튼 -->
+                <a href="index.html" class="nav-tab active">뉴스기사</a>
+                <a href="gongsil.html" class="nav-tab">공실열람</a>
             </nav>
         </div>
-        <div class="header-right">
-            <!-- Login Link Updated -->
-            <a href="https://www.gongsilnews.com/member/login.html" target="_blank" class="btn-login">로그인 및 회원가입</a>
-            <a href="https://smartstore.naver.com/mygongsil/products/10361563253" target="_blank" class="btn-biz">중개사무소
-                가입 및 상품문의
-                &gt;</a>
+        <div class="header-right" style="display: flex; align-items: center;">
+            <!-- 로그인된 유저 프로필 영역 (기본 숨김) -->
+            <div id="userProfile" style="display: none; align-items: center; gap: 10px; margin-right: 15px;">
+                <span id="userNameDisplay" style="font-size: 14px; font-weight: bold; color: #333;">이름</span>
+                <span id="userRoleBadge" style="font-size: 11px; padding: 3px 6px; border-radius: 4px; background: #f0f0f0; color: #555;">로딩중</span>
+                <a href="#" id="headerLogoutBtn" class="btn-login" style="background:#666; color:white; border:none;">로그아웃</a>
+            </div>
+            
+            <!-- 기존 로그인 버튼 (구글 로그인으로 변경) -->
+            <a href="#" id="headerLoginBtn" class="btn-login">구글 로그인</a>
+            
+            <a href="https://smartstore.naver.com/mygongsil/products/10361563253" target="_blank" class="btn-biz">중개사무소 가입 및 상품문의 &gt;</a>
         </div>
     </header>
 
@@ -87,6 +95,9 @@
     <script type="text/javascript"
         src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=435d3602201a49ea712e5f5a36fe6efc&libraries=clusterer"></script>
     <script src="script.js?v=1.3"></script>
+
+    <!-- Supabase 인증 모듈 추가 -->
+    <script type="module" src="supabase_auth.js"></script>
 </body>
 
 </html>

@@ -1,9 +1,9 @@
 
-// .env 값 로드 (주의: 배포 시 환경변수 처리 필요)
-const SUPABASE_URL = 'https://imtdijfseaninhvjoklp.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_fY0K_-WP3PyG5ihvxgCPSw_bYewHmnR';
+// [뉴스 프로젝트] RSS 뉴스 및 지도 전용 Supabase 설정 (기존 프로젝트 유지)
+const NEWS_SUPABASE_URL = 'https://imtdijfseaninhvjoklp.supabase.co';
+const NEWS_SUPABASE_KEY = 'sb_publishable_fY0K_-WP3PyG5ihvxgCPSw_bYewHmnR';
 
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = window.supabase.createClient(NEWS_SUPABASE_URL, NEWS_SUPABASE_KEY);
 
 let map, clusterer;
 let allNewsData = []; // 로드된 뉴스 데이터를 저장
