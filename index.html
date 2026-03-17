@@ -9,7 +9,9 @@
     <link rel="stylesheet" href="style.css">
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="base_path.js"></script>
     <script src="supabase_gongsi_config.js"></script>
+
     <style>
         /* 초기 로딩 스타일 */
         html,
@@ -31,14 +33,16 @@
                 <a href="https://www.gongsilnews.com/" target="_blank" class="logo-img-link">
                     <img src="logo.png" alt="공실뉴스" style="height: 40px;">
                 </a>
-                <a href="/" class="logo-text-link">
+                <a href="javascript:location.href=window.BASE_PATH + '/'" class="logo-text-link">
                     <span class="beta-badge">map 베타서비스</span>
                 </a>
+
             </div>
             <nav class="nav">
                 <!-- 탭 버튼 -->
                 <a href="index.html" class="nav-tab active">뉴스기사</a>
                 <a href="gongsil.html" class="nav-tab">공실열람</a>
+
             </nav>
         </div>
         <div class="header-right" style="display: flex; align-items: center;">

@@ -111,7 +111,8 @@ if(loginBtn) {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: window.location.origin
+                redirectTo: window.location.origin + (window.BASE_PATH || '')
+
             }
         });
         if (error) {
@@ -233,19 +234,22 @@ function updateRoleUI(userData) {
         userRoleBadge.style.background = "#e74c3c";
         userRoleBadge.style.color = "white";
         userRoleBadge.title = "클릭하여 관리자 페이지로 이동";
-        userRoleBadge.onclick = () => { window.location.href = '/admin/'; };
+        userRoleBadge.onclick = () => { window.location.href = window.BASE_PATH + '/admin/'; };
+
     } else if(userData.role === 'realtor') {
         userRoleBadge.textContent = "부동산회원";
         userRoleBadge.style.background = "#ff9f1c"; 
         userRoleBadge.style.color = "white";
         userRoleBadge.title = "클릭하여 마이페이지로 이동";
-        userRoleBadge.onclick = () => { window.location.href = '/user_admin.html'; };
+        userRoleBadge.onclick = () => { window.location.href = window.BASE_PATH + '/user_admin.html'; };
+
     } else {
         userRoleBadge.textContent = "일반회원 ⚙️";
         userRoleBadge.style.background = "#f0f0f0";
         userRoleBadge.style.color = "#555";
         userRoleBadge.title = "클릭하여 마이페이지로 이동";
-        userRoleBadge.onclick = () => { window.location.href = '/user_admin.html'; };
+        userRoleBadge.onclick = () => { window.location.href = window.BASE_PATH + '/user_admin.html'; };
+
     }
     userRoleBadge.style.cursor = "pointer";
 }

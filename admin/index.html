@@ -6,6 +6,8 @@
     <title>공실뉴스 관리자 백오피스</title>
     <!-- 구글 폰트 적용 (Pretendard 또는 Noto Sans) -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable.css" />
+    <script src="../base_path.js"></script>
+
     <style>
         /* 기본 리셋 및 폰트 설정 */
         body, html {
@@ -172,7 +174,8 @@
     <div class="admin-layout">
         <!-- 좌측 사이드바 -->
         <aside class="sidebar">
-            <div class="sidebar-header" onclick="window.location.href='/'">
+            <div class="sidebar-header" onclick="window.location.href=window.BASE_PATH + '/'">
+
                 <span>🏙</span> 공실뉴스 Admin
             </div>
             

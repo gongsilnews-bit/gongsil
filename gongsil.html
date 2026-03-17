@@ -7,8 +7,9 @@
     <title>공실뉴스 지도 - 공실열람</title>
     <link rel="stylesheet" href="style.css">
     <!-- Supabase JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="base_path.js"></script>
     <script src="supabase_gongsi_config.js"></script>
+
     <style>
         html, body {
             margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
@@ -202,9 +203,10 @@
                 <a href="https://www.gongsilnews.com/" target="_blank" class="logo-img-link">
                     <img src="logo.png" alt="공실뉴스" style="height: 40px;">
                 </a>
-                <a href="/" class="logo-text-link">
+                <a href="javascript:location.href=window.BASE_PATH + '/'" class="logo-text-link">
                     <span class="beta-badge">map 베타서비스</span>
                 </a>
+
             </div>
             <nav class="nav">
                 <!-- 탭 버튼 -->
