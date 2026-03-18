@@ -445,10 +445,9 @@
             return;
         }
 
-        // member_no: 전체 목록 기준 순번 (created_at 오름차순 인덱스)
+        // member_no: DB의 실제 번호 사용
         users.forEach((data, idx) => {
-            // 전체 allUsers에서의 순번을 회원번호로 사용
-            const memberNo = allUsers.findIndex(u => u.id === data.id) + 1;
+            const memberNo = data.member_no || (idx + 1); 
             const memberNoStr = String(memberNo).padStart(6, '0'); // e.g. 000001
 
             // 역할 배지
@@ -509,8 +508,9 @@
         const no      = document.getElementById('filterNo').value.trim();
 
         let filtered = allUsers.filter((u, idx) => {
-            const memberNo = String(idx + 1).padStart(6, '0');
-            const matchNo      = no      ? memberNo.includes(no) : true;
+            const memberNoVal = u.member_no || (idx + 1);
+            const memberNoStr = String(memberNoVal).padStart(6, '0');
+            const matchNo      = no      ? memberNoStr.includes(no) : true;
             const matchRole    = role    ? u.role === role : true;
             const matchKeyword = keyword ? (u.email || '').toLowerCase().includes(keyword) || (u.name || '').toLowerCase().includes(keyword) : true;
             return matchNo && matchRole && matchKeyword;
