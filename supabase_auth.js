@@ -229,29 +229,109 @@ async function handleUserDocument(user) {
 function updateRoleUI(userData) {
     if(!userRoleBadge) return;
 
-    if(userData.role === 'admin') {
-        userRoleBadge.textContent = "최고관리자 ⚙️";
+    // 기존 톱니바퀴 버튼이 있으면 제거 (중복 방지)
+    const existingGear = document.getElementById('adminGearBtn');
+    if (existingGear) existingGear.remove();
+
+    // 역할별 배지 스타일
+    if (userData.role === 'admin') {
+        userRoleBadge.textContent = "최고관리자";
         userRoleBadge.style.background = "#e74c3c";
         userRoleBadge.style.color = "white";
-        userRoleBadge.title = "클릭하여 관리자 페이지로 이동";
-        userRoleBadge.onclick = () => { window.location.href = window.BASE_PATH + '/admin/'; };
-
-    } else if(userData.role === 'realtor') {
+    } else if (userData.role === 'realtor') {
         userRoleBadge.textContent = "부동산회원";
-        userRoleBadge.style.background = "#ff9f1c"; 
+        userRoleBadge.style.background = "#ff9f1c";
         userRoleBadge.style.color = "white";
-        userRoleBadge.title = "클릭하여 마이페이지로 이동";
-        userRoleBadge.onclick = () => { window.location.href = window.BASE_PATH + '/user_admin.html'; };
-
     } else {
-        userRoleBadge.textContent = "일반회원 ⚙️";
+        userRoleBadge.textContent = "일반회원";
         userRoleBadge.style.background = "#f0f0f0";
         userRoleBadge.style.color = "#555";
-        userRoleBadge.title = "클릭하여 마이페이지로 이동";
-        userRoleBadge.onclick = () => { window.location.href = window.BASE_PATH + '/user_admin.html'; };
-
     }
-    userRoleBadge.style.cursor = "pointer";
+    userRoleBadge.style.cursor = "default";
+    userRoleBadge.onclick = null;
+
+    // 이동할 페이지 결정
+    const targetPage = userData.role === 'admin'
+        ? window.BASE_PATH + '/admin/'
+        : window.BASE_PATH + '/user_admin.html';
+    const tooltipLabel = userData.role === 'admin' ? '관리자페이지로 이동' : '마이페이지로 이동';
+
+    // ── 톱니바퀴 버튼 + 호버 툴팁 ──
+    const gearWrap = document.createElement('div');
+    gearWrap.id = 'adminGearBtn';
+    gearWrap.style.cssText = `
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+    `;
+
+    const gearBtn = document.createElement('button');
+    gearBtn.textContent = '⚙️';
+    gearBtn.title = tooltipLabel;
+    gearBtn.style.cssText = `
+        background: none;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 2px 4px;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        transition: transform 0.3s;
+    `;
+
+    const tooltip = document.createElement('div');
+    tooltip.textContent = tooltipLabel;
+    tooltip.style.cssText = `
+        position: absolute;
+        top: 110%;
+        right: 0;
+        background: #222;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+        padding: 5px 10px;
+        border-radius: 5px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s;
+        z-index: 999;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    `;
+    // 툴팁 화살표
+    tooltip.style.setProperty('--arrow', 'none');
+
+    gearWrap.appendChild(gearBtn);
+    gearWrap.appendChild(tooltip);
+
+    // hover 시 툴팁 표시 + 톱니 회전
+    gearWrap.addEventListener('mouseenter', () => {
+        tooltip.style.opacity = '1';
+        gearBtn.style.transform = 'rotate(60deg)';
+    });
+    gearWrap.addEventListener('mouseleave', () => {
+        tooltip.style.opacity = '0';
+        gearBtn.style.transform = 'rotate(0deg)';
+    });
+
+    // 클릭 시 이동
+    gearBtn.addEventListener('click', () => {
+        window.location.href = targetPage;
+    });
+    tooltip.style.pointerEvents = 'auto';
+    tooltip.addEventListener('click', () => {
+        window.location.href = targetPage;
+    });
+    tooltip.style.cursor = 'pointer';
+
+    // userProfile 안 로그아웃 버튼 바로 앞에 삽입
+    const logoutEl = document.getElementById('headerLogoutBtn');
+    if (logoutEl) {
+        userProfile.insertBefore(gearWrap, logoutEl);
+    } else {
+        userProfile.appendChild(gearWrap);
+    }
 }
 
 // 실행
