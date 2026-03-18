@@ -559,7 +559,32 @@
         }
 
         // 페이지 로드 시 상태 초기화
-        window.addEventListener('DOMContentLoaded', window.updatePriceFields);
+        window.addEventListener('DOMContentLoaded', () => {
+            window.updatePriceFields();
+            loadUserProfile();
+        });
+
+        // 사용자 프로필 정보 자동 로드
+        async function loadUserProfile() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const { data: profile, error } = await supabase
+                .from('members')
+                .select('name, phone')
+                .eq('id', session.user.id)
+                .maybeSingle();
+
+            if (error) {
+                console.error("프로필 로드 에러:", error);
+                return;
+            }
+
+            if (profile) {
+                if (profile.name) document.getElementById('authorName').value = profile.name;
+                if (profile.phone) document.getElementById('authorPhone').value = profile.phone;
+            }
+        }
     </script>
 </body>
 </html>
