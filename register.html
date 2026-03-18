@@ -95,6 +95,8 @@
         }
 
     </style>
+    <!-- 카카오 우편번호 서비스 SDK -->
+    <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 
 <body>
@@ -214,7 +216,12 @@
             <hr style="border:0; border-top:1px dashed #ddd; margin: 30px 0;">
 
             <!-- 섹션 2: 위치/주소 -->
-            <h2 class="section-title">위치/주소</h2>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                <h2 class="section-title" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">위치/주소</h2>
+                <button type="button" onclick="searchAddress()" style="background: #333d4b; color: white; border: none; padding: 6px 14px; border-radius: 4px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                    🔍 찾기
+                </button>
+            </div>
             
             <div class="row">
                 <div class="col form-group">
@@ -470,6 +477,57 @@
                     pyeongInput.value = "";
                 }
             }
+        }
+
+        // 카카오 주소 검색 함수
+        window.searchAddress = function() {
+            new daum.Postcode({
+                oncomplete: function(data) {
+                    // 시/도
+                    const sido = data.sido;
+                    const sigungu = data.sigungu;
+                    const bname = data.bname;
+                    const buildingName = data.buildingName;
+
+                    // 시/도 선택 및 동적 추가
+                    setSelectValue('sido', sido);
+                    // 시/군/구 선택 및 동적 추가
+                    setSelectValue('sigungu', sigungu);
+                    
+                    document.getElementById('dong').value = bname;
+                    document.getElementById('buildingName').value = buildingName;
+                    
+                    // 도로명 주소 또는 지번 주소 중 선택된 것 입력
+                    let fullAddr = data.address;
+                    let extraAddr = '';
+                    if(data.addressType === 'R'){
+                        if(data.bname !== ''){ extraAddr += data.bname; }
+                        if(data.buildingName !== ''){ extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName); }
+                        fullAddr += (extraAddr !== '' ? ' ('+ extraAddr +')' : '');
+                    }
+                    
+                    document.getElementById('detailAddress').value = fullAddr;
+                    document.getElementById('detailAddress').focus();
+                }
+            }).open();
+        }
+
+        function setSelectValue(id, value) {
+            const select = document.getElementById(id);
+            let exists = false;
+            for(let i=0; i<select.options.length; i++) {
+                if(select.options[i].value === value) {
+                    exists = true;
+                    break;
+                }
+            }
+            if(!exists) {
+                const opt = document.createElement('option');
+                opt.value = value;
+                opt.text = value;
+                select.add(opt);
+            }
+            select.value = value;
         }
 
         // 페이지 로드 시 상태 초기화
