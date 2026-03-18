@@ -122,6 +122,33 @@
             color: #fff;
         }
 
+        /* 금액 간편 입력 버튼 스타일 */
+        .price-quick-btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 8px;
+        }
+        .price-qbtn {
+            padding: 5px 10px;
+            background: #f1f3f5;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .price-qbtn:hover {
+            background: #e9ecef;
+            border-color: #ced4da;
+        }
+        .price-qbtn.clear {
+            background: #343a40;
+            color: #fff;
+            border-color: #343a40;
+        }
+
     </style>
     <!-- 카카오 우편번호 서비스 SDK -->
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
@@ -178,6 +205,17 @@
                     <div class="input-group">
                         <input type="number" class="form-control" id="deposit" placeholder="숫자만 입력" required oninput="updateKoreanAmount('deposit', 'depositKorean')">
                         <span class="input-unit">만원</span>
+                    </div>
+                    <!-- 금액 간편 입력 버튼 -->
+                    <div class="price-quick-btns">
+                        <button type="button" class="price-qbtn" onclick="addDeposit(500000)">+50억</button>
+                        <button type="button" class="price-qbtn" onclick="addDeposit(50000)">+5억</button>
+                        <button type="button" class="price-qbtn" onclick="addDeposit(10000)">+1억</button>
+                        <button type="button" class="price-qbtn" onclick="addDeposit(5000)">+5000만</button>
+                        <button type="button" class="price-qbtn" onclick="addDeposit(1000)">+1000만</button>
+                        <button type="button" class="price-qbtn" onclick="addDeposit(500)">+500만</button>
+                        <button type="button" class="price-qbtn" onclick="addDeposit(100)">+100만</button>
+                        <button type="button" class="price-qbtn clear" onclick="addDeposit(0)">지움</button>
                     </div>
                 </div>
                 <div class="col form-group" id="rentGroup">
@@ -484,6 +522,22 @@
             
             // 가격 필드 업데이트 호출
             updatePriceFields();
+        }
+
+        // 금액 간편 합산 함수 (만원 단위 기준)
+        window.addDeposit = function(amount) {
+            const input = document.getElementById('deposit');
+            if (!input) return;
+
+            let current = parseInt(input.value) || 0;
+            if (amount === 0) {
+                input.value = ""; // 지움
+            } else {
+                input.value = current + amount;
+            }
+            
+            // 한글 금액 표시 갱신
+            updateKoreanAmount('deposit', 'depositKorean');
         }
 
         // 매물 종류 버튼 선택 처리
