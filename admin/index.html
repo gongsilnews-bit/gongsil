@@ -38,20 +38,13 @@
 
         /* 사이드바 헤더 (로고 영역) */
         .sidebar-header {
-            height: 64px;
+            height: 72px;
             display: flex;
             align-items: center;
-            padding: 0 24px;
-            font-size: 18px;
-            font-weight: 800;
-            color: #111;
+            padding: 0 20px;
+            color: #000;
             border-bottom: 1px solid #f0f0f0;
             cursor: pointer;
-        }
-        
-        .sidebar-header span {
-            color: #ff9f1c; /* 메인 테마 색상 */
-            margin-right: 6px;
         }
 
         /* 메뉴 리스트 */
@@ -201,8 +194,8 @@
         <!-- 좌측 사이드바 -->
         <aside class="sidebar">
             <div class="sidebar-header" onclick="window.location.href=window.BASE_PATH + '/'">
-
-                <span>🏙</span> 공실뉴스 Admin
+                <img src="../admin_logo.png" alt="logo" style="height: 32px; margin-right: 12px; object-fit: contain; flex-shrink: 0;"> 
+                <span style="color: #000; font-weight: 800; font-size: 20px;">공실뉴스 Admin</span>
             </div>
             
             <ul class="menu-list">
@@ -222,7 +215,7 @@
                     </a>
                 </li>
                 
-                <div class="menu-divider"></div>
+                <li class="menu-divider"></li>
                 
                 <li class="menu-item">
                     <a href="#" class="menu-link" onclick="loadPage(event, '관리자설정', 'settings')">
