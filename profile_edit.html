@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>정보수정 - 공실뉴스 Admin</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable.css" />
+    <style>
+        :root {
+            --primary-color: #4285f4;
+            --bg-body: #f4f5f7;
+            --bg-card: #ffffff;
+            --border-color: #e1e4e8;
+            --text-main: #333333;
+            --text-sub: #666666;
+            --input-bg: #fff;
+            --danger-color: #dc2626;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: var(--bg-body);
+            padding: 24px;
+            margin: 0;
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        .admin-card {
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            min-height: 600px;
+        }
+
+        /* ── 헤더 ── */
+        .card-header {
+            margin-bottom: 32px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 16px;
+        }
+        .card-header h2 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 700;
+            color: #111;
+        }
+
+        /* ── 공통 알림 영역 ── */
+        .banner {
+            background-color: #f0f4fc;
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 32px;
+            border-left: 4px solid #4285f4;
+            font-size: 14px;
+            color: #1e40af;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ── 섹션 제목 ── */
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #111827;
+            margin: 10px 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ── 입력 폼 레이아웃 ── */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group.full {
+            grid-column: span 2;
+        }
+
+        .label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 8px;
+        }
+        .label .required { color: var(--danger-color); margin-left: 2px; }
+
+        .input-text {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            background-color: var(--input-bg);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .input-text:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+        }
+        .input-text:disabled {
+            background-color: #f9fafb;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        /* ── 저장 버튼 구역 ── */
+        .form-footer {
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .btn-action {
+            padding: 12px 32px;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-cancel {
+            background-color: #fff;
+            color: #4b5563;
+        }
+        .btn-cancel:hover { background-color: #f9fafb; }
+
+        .btn-save {
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+        }
+        .btn-save:hover { background-color: #3367d6; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+
+        /* ── 부동산 정보 섹션 (조건부 표시) ── */
+        #realtorSection { display: none; }
+
+    </style>
+</head>
+<body>
+
+<div class="admin-card">
+    <div class="card-header">
+        <h2 id="pageTitle">회원 정보 수정</h2>
+    </div>
+
+    <!-- 안내 문구 -->
+    <div class="banner">
+        <span>⚙️</span>
+        <span>최신 정보를 입력해 주세요. 등록하신 정보는 서비스 이용 시 중요하게 사용됩니다.</span>
+    </div>
+
+    <form id="profileForm">
+        <!-- 기본 정보 섹션 -->
+        <div class="section-title">👤 기본 정보</div>
+        <div class="form-grid">
+            <div class="form-group full">
+                <label class="label">이메일(아이디)</label>
+                <input type="email" id="userEmail" class="input-text" disabled>
+            </div>
+            <div class="form-group">
+                <label class="label">이름 <span class="required">*</span></label>
+                <input type="text" id="userName" class="input-text" placeholder="본명 또는 닉네임을 입력하세요." required>
+            </div>
+            <div class="form-group">
+                <label class="label">휴대폰 번호 <span class="required">*</span></label>
+                <input type="tel" id="userPhone" class="input-text" placeholder="010-0000-0000" required>
+            </div>
+        </div>
+
+        <!-- 부동산 회원 전용 섹션 -->
+        <div id="realtorSection">
+            <div class="section-title">🏘️ 부동산 / 기업 정보</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="label">상호명 <span class="required">*</span></label>
+                    <input type="text" id="companyName" class="input-text" placeholder="부동산 상호명">
+                </div>
+                <div class="form-group">
+                    <label class="label">중개등록번호</label>
+                    <input type="text" id="companyRegNo" class="input-text" placeholder="예: 11680-202X-XXXXX">
+                </div>
+                <div class="form-group">
+                    <label class="label">대표자명</label>
+                    <input type="text" id="ceoName" class="input-text" placeholder="대표이사 성함">
+                </div>
+                <div class="form-group">
+                    <label class="label">사업장 소재지</label>
+                    <input type="text" id="address" class="input-text" placeholder="상세 주소를 입력하세요.">
+                </div>
+            </div>
+        </div>
+
+        <!-- 하단 버튼 -->
+        <div class="form-footer">
+            <button type="button" class="btn-action btn-cancel" onclick="history.back()">취소</button>
+            <button type="submit" class="btn-action btn-save">수정완료</button>
+        </div>
+    </form>
+</div>
+
+<!-- API SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase_gongsi_config.js"></script>
+
+<script type="module">
+    const supabase = window.gongsiClient;
+
+    async function loadProfile() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            alert("로그인이 필요합니다.");
+            window.location.href = './index.html';
+            return;
+        }
+
+        const user = session.user;
+        document.getElementById('userEmail').value = user.email;
+
+        // DB에서 추가 정보 가져오기
+        const { data: profile, error } = await supabase
+            .from('members')
+            .select('*')
+            .eq('id', user.id)
+            .maybeSingle();
+
+        if (error) console.error("프로필 로드 에러:", error);
+
+        if (profile) {
+            document.getElementById('userName').value = profile.name || user.user_metadata.full_name || '';
+            document.getElementById('userPhone').value = profile.phone || '';
+
+            // 회원 구분에 따른 UI 변경
+            if (profile.role === 'realtor') {
+                document.getElementById('pageTitle').textContent = '부동산 회원 정보 수정';
+                document.getElementById('realtorSection').style.display = 'block';
+                
+                document.getElementById('companyName').value = profile.company_name || '';
+                document.getElementById('companyRegNo').value = profile.company_reg_no || '';
+                document.getElementById('ceoName').value = profile.ceo_name || '';
+                document.getElementById('address').value = profile.address || '';
+                
+                // 필수 체크
+                document.getElementById('companyName').required = true;
+            } else if (profile.role === 'admin') {
+                document.getElementById('pageTitle').textContent = '관리자 정보 수정';
+            } else {
+                document.getElementById('pageTitle').textContent = '일반 회원 정보 수정';
+            }
+        }
+    }
+
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        const updateData = {
+            name: document.getElementById('userName').value,
+            phone: document.getElementById('userPhone').value,
+        };
+
+        const realtorSection = document.getElementById('realtorSection');
+        if (realtorSection.style.display === 'block') {
+            updateData.company_name = document.getElementById('companyName').value;
+            updateData.company_reg_no = document.getElementById('companyRegNo').value;
+            updateData.ceo_name = document.getElementById('ceoName').value;
+            updateData.address = document.getElementById('address').value;
+        }
+
+        try {
+            const { error } = await supabase
+                .from('members')
+                .update(updateData)
+                .eq('id', session.user.id);
+
+            if (error) throw error;
+
+            alert("정보가 성공적으로 수정되었습니다.");
+            window.location.href = 'user_admin.html';
+        } catch (err) {
+            console.error(err);
+            alert("저장 중 오류가 발생했습니다: " + err.message);
+        }
+    });
+
+    loadProfile();
+</script>
+
+</body>
+</html>
