@@ -223,15 +223,17 @@
         /* ── 관리 버튼 ── */
         .cell-actions { display: flex; gap: 4px; justify-content: center; }
         .btn-edit {
-            padding: 4px 9px; font-size: 11px; border-radius: 3px;
+            padding: 3px 6px; font-size: 11px; border-radius: 3px;
             border: 1px solid #d1d5db; background: #fff; cursor: pointer;
             color: #333; font-family: inherit; font-weight: 500; transition: background 0.1s;
+            white-space: nowrap;
         }
         .btn-edit:hover { background: #f3f4f6; }
         .btn-delete {
-            padding: 4px 9px; font-size: 11px; border-radius: 3px;
+            padding: 3px 6px; font-size: 11px; border-radius: 3px;
             border: 1px solid #fecaca; background: #fff; cursor: pointer;
             color: #dc2626; font-family: inherit; font-weight: 500; transition: background 0.1s;
+            white-space: nowrap;
         }
         .btn-delete:hover { background: #fef2f2; }
 
@@ -333,8 +335,8 @@
                     <th>번호</th>
                     <th>광고설정<br><span style="font-weight:400;font-size:11px;color:#888;">순위갱신일</span></th>
                     <th>매물종류</th>
-                    <th>주소 / 임대인연락처</th>
-                    <th>금액</th>
+                    <th style="text-align:left; padding-left:4px;">주소 / 임대인연락처</th>
+                    <th style="text-align:left; padding-left:4px;">금액</th>
                     <th>방수/면적(㎡)/층</th>
                     <th>최초등록</th>
                     <th>등록자 / 연락처</th>
