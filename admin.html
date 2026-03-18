@@ -567,6 +567,10 @@
     document.getElementById('chk-all').addEventListener('change', function () {
         document.querySelectorAll('tbody input[type="checkbox"]').forEach(cb => cb.checked = this.checked);
     });
+
+    document.getElementById('btn-add-property').addEventListener('click', () => {
+        window.location.href = 'register.html';
+    });
 </script>
 </body>
 </html>

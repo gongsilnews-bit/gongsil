@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>회원 관리자 백오피스</title>
+    <title>회원 관리자 백오피스 - 공실뉴스</title>
     <!-- 구글 폰트 적용 (Pretendard) -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable.css" />
     <script src="base_path.js"></script>
@@ -12,7 +12,7 @@
         /* 기본 리셋 및 폰트 설정 */
         body, html {
             margin: 0; padding: 0; height: 100%;
-            font-family: 'Pretendard Variable', sans-serif;
+            font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
             background-color: #f4f5f7;
             overflow: hidden;
             color: #333;
@@ -50,7 +50,7 @@
         }
         
         .sidebar-header span {
-            color: #3b82f6; /* 회원은 파란색 계열 포인트 */
+            color: #3b82f6;
             margin-right: 6px;
         }
 
@@ -89,28 +89,55 @@
 
         /* 활성화된 메뉴 */
         .menu-link.active {
-            background-color: #ebf5ff; /* 연한 파란색 배경 */
-            color: #3b82f6; /* 파란색 텍스트 */
+            background-color: #ebf5ff;
+            color: #3b82f6;
             font-weight: 700;
         }
 
-        /* 사이드바 상단(또는 하단) 프로필 */
-        .sidebar-profile {
-            padding: 20px;
-            border-bottom: 1px solid #f0f0f0;
+        /* 사이드바 하단 프로필 */
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #f0f0f0;
+            background-color: #fff;
+        }
+
+        .profile-container {
             display: flex;
             align-items: center;
             gap: 12px;
+            margin-bottom: 12px;
         }
 
-        .profile-img { width: 40px; height: 40px; border-radius: 50%; background: #ddd; flex-shrink: 0; display:flex; align-items:center; justify-content:center; font-size: 20px;}
-        .profile-info { display: flex; flex-direction: column; overflow: hidden; }
+        .profile-img { 
+            width: 36px; height: 36px; border-radius: 50%; 
+            background: #e5e7eb; flex-shrink: 0; 
+            display:flex; align-items:center; justify-content:center; font-size: 18px;
+        }
+        .profile-info { display: flex; flex-direction: column; overflow: hidden; flex: 1; }
         
-        .profile-name-row { display: flex; align-items: center; gap: 6px; }
-        .profile-name { font-size: 15px; font-weight: 700; color: #111; white-space: nowrap; text-overflow: ellipsis; }
-        .profile-role-badge { font-size: 10px; padding: 2px 5px; border-radius: 3px; background:#f0f0f0; color:#555; }
+        .profile-name-row { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+        .profile-name { font-size: 14px; font-weight: 700; color: #111; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; max-width: 80px; }
+        .profile-role-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; background:#f3f4f6; color:#666; font-weight: 600; }
         
-        .profile-email { font-size: 12px; color: #6b7280; margin-top: 3px; }
+        .profile-email { font-size: 12px; color: #6b7280; margin-top: 2px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+
+        .btn-edit-profile {
+            width: 100%;
+            padding: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        .btn-edit-profile:hover { background: #f9fafb; border-color: #9ca3af; }
 
         /* ------------------ 우측 메인 콘텐츠 ------------------ */
         .main-content {
@@ -129,6 +156,7 @@
             border-bottom: 1px solid #e1e4e8;
             display: flex;
             align-items: center;
+            justify-content: space-between;
             padding: 0 32px;
             box-sizing: border-box;
             box-shadow: 0 1px 3px rgba(0,0,0,0.02);
@@ -141,6 +169,32 @@
             color: #111827;
         }
 
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .btn-go-gongsil {
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4b5563;
+            text-decoration: none;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            background: #fff;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-go-gongsil:hover {
+            background: #f9fafb;
+            color: #111827;
+            border-color: #d1d5db;
+        }
+
         /* iframe 영역 */
         .content-frame-wrapper {
             flex: 1;
@@ -151,7 +205,7 @@
             border-top-left-radius: 12px;
             margin: 16px;
             margin-bottom: 0;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05); /* 입체감 부여 */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             overflow: hidden;
         }
 
@@ -167,39 +221,42 @@
     <div class="admin-layout">
         <!-- 좌측 사이드바 -->
         <aside class="sidebar">
-            <!-- 프로필을 상단에 배치 -->
-            <div class="sidebar-profile">
-                <div class="profile-img">👤</div>
-                <div class="profile-info">
-                    <div class="profile-name-row">
-                        <span class="profile-name" id="sidebarName">회원명</span>
-                        <span class="profile-role-badge" id="sidebarRole">로딩중</span>
-                    </div>
-                    <span class="profile-email" id="sidebarEmail">email@example.com</span>
-                </div>
+            <div class="sidebar-header" onclick="window.location.href=window.BASE_PATH + '/'">
+                <span>🏙️</span> 공실뉴스 Admin
             </div>
             
             <ul class="menu-list">
                 <li class="menu-item">
-                    <!-- register.html 이 켜지도록 연결 -->
-                    <a href="#" class="menu-link active" onclick="loadPage(event, '공실등록', 'register.html?v=2')">
-                        <span class="icon">📝</span>
-                        공실등록
+                    <!-- admin.html 이 매물관리 메인 -->
+                    <a href="#" class="menu-link active" onclick="loadPage(event, '매물관리', 'admin.html')">
+                        <span class="icon">🏘️</span>
+                        매물관리
                     </a>
                 </li>
-                
                 <li class="menu-item">
-                    <!-- 공실관리 등 빈 페이지 연결 -->
-                    <a href="#" class="menu-link" onclick="loadPage(event, '공실관리', 'manage')">
-                        <span class="icon">🏘️</span>
-                        공실관리
+                    <!-- register.html 이 매물등록 -->
+                    <a href="#" class="menu-link" onclick="loadPage(event, '매물등록', 'register.html?v=3')">
+                        <span class="icon">📝</span>
+                        매물등록
                     </a>
                 </li>
             </ul>
 
-            <div style="padding: 20px; text-align: center; border-top: 1px solid #f0f0f0;">
-                <button onclick="window.location.href=window.BASE_PATH + '/'" style="padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor:pointer;">🏠 메인으로 가기</button>
-
+            <!-- 하단 프로필 섹션 -->
+            <div class="sidebar-footer">
+                <div class="profile-container">
+                    <div class="profile-img">👤</div>
+                    <div class="profile-info">
+                        <div class="profile-name-row">
+                            <span class="profile-name" id="sidebarName">회원명</span>
+                            <span class="profile-role-badge" id="sidebarRole">일반회원</span>
+                        </div>
+                        <span class="profile-email" id="sidebarEmail">email@example.com</span>
+                    </div>
+                </div>
+                <button class="btn-edit-profile" onclick="alert('회원 정보 수정 페이지로 이동합니다.')">
+                    ⚙️ 정보수정
+                </button>
             </div>
         </aside>
 
@@ -207,22 +264,26 @@
         <main class="main-content">
             <!-- 화면 위쪽 제목바 -->
             <header class="main-header">
-                <div class="main-title" id="contentTitle">공실등록</div>
+                <div class="main-title" id="contentTitle">매물관리</div>
+                <div class="header-right">
+                    <a href="/" class="btn-go-gongsil" target="_blank">
+                        🏠 공실페이지 가기
+                    </a>
+                </div>
             </header>
             
-            <!-- 실제 내용이 불러와지는 캔버스 (기본값을 방금 만든 register.html로 지정) -->
+            <!-- 실제 내용이 불러와지는 캔버스 (기본값을 admin.html로 지정) -->
             <div class="content-frame-wrapper">
-                <iframe id="mainFrame" src="register.html?v=2" title="컨텐츠 영역"></iframe>
+                <iframe id="mainFrame" src="admin.html" title="컨텐츠 영역"></iframe>
             </div>
         </main>
     </div>
 
     <script>
         window.addEventListener('DOMContentLoaded', () => {
-            // supabase_auth.js에 의해 저장된 유저 정보를 가져와서 UI 업데이트
+            // 유저 정보 로드 및 UI 업데이트
             setTimeout(() => {
                 const ud = JSON.parse(localStorage.getItem('gongsil_user') || '{}');
-                // Supabase 유저 객체는 user_metadata 또는 profile에 정보를 담고 있음
                 const profile = ud.profile || {};
                 
                 if(ud.email) {
@@ -232,17 +293,15 @@
                     const roleBadge = document.getElementById('sidebarRole');
                     if(profile.role === 'realtor') {
                         roleBadge.textContent = '부동산회원';
-                        roleBadge.style.background = '#ff9f1c';
-                        roleBadge.style.color = '#fff';
+                        roleBadge.style.background = '#ebf5ff';
+                        roleBadge.style.color = '#3b82f6';
                     } else {
                         roleBadge.textContent = '일반회원';
                     }
                 }
             }, 500);
         });
-    </script>
 
-    <script>
         // 메뉴 클릭 시 iframe 소스와 타이틀 변경하는 함수
         function loadPage(event, title, url) {
             event.preventDefault();
@@ -254,24 +313,9 @@
             document.getElementById('contentTitle').textContent = title;
 
             const frame = document.getElementById('mainFrame');
-            if (url === 'manage') {
-                const doc = frame.contentWindow.document;
-                doc.open();
-                doc.write(`
-                    <html>
-                    <head>
-                        <link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable.css" />
-                    </head>
-                    <body style="font-family: 'Pretendard Variable', sans-serif; padding: 50px; text-align: center; color: #555;">
-                        <h1 style="color:#111; margin-bottom:10px;">🏘️ 공실 관리</h1>
-                        <p style="font-size:16px;">내가 등록한 공실 리스트와 노출 상태, 편집 기능이 들어갈 자리입니다.</p>
-                    </body>
-                    </html>
-                `);
-                doc.close();
-            } else {
-                frame.src = url;
-            }
+            // 캐시 방지를 위해 랜덤 쿼리 추가
+            const finalUrl = url.includes('?') ? (url + '&v=' + Date.now()) : (url + '?v=' + Date.now());
+            frame.src = finalUrl;
         }
     </script>
 </body>
