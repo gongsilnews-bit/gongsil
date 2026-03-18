@@ -16,13 +16,11 @@
             --blue-filter-bg: #f0f4fc;
             --dark-btn-bg: #4b5563;
 
-            /* 거래 구분 컬러 */
-            --color-sale:    #e53e3e;   /* 매매 - 빨강 */
-            --color-jeonse:  #2b6cb0;   /* 전세 - 파랑 */
-            --color-monthly: #6b46c1;   /* 월세 - 보라 */
-            --color-short:   #b7791f;   /* 단기 - 황금 */
+            --color-sale:    #e53e3e;
+            --color-jeonse:  #2b6cb0;
+            --color-monthly: #6b46c1;
+            --color-short:   #b7791f;
 
-            /* 회원 유형 컬러 */
             --color-realtor: #2b6cb0;
             --color-general: #276749;
             --color-admin:   #c05621;
@@ -39,7 +37,6 @@
             line-height: 1.5;
         }
 
-        /* ── 전체 카드 ── */
         .admin-card {
             background-color: var(--bg-card);
             border-radius: 10px;
@@ -49,18 +46,13 @@
         }
 
         /* ── 헤더 ── */
-        .card-header {
-            display: flex;
-            align-items: baseline;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
+        .card-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 24px; }
         .card-header h2 { margin: 0; font-size: 1.25rem; font-weight: 700; color: #111; }
         .card-header .count-info { font-size: 13px; color: #666; }
         .card-header .count-info .ad-count   { color: var(--primary-color); font-weight: 700; }
         .card-header .count-info .total-count { color: #333; font-weight: 700; }
 
-        /* ── 검색 필터 ── */
+        /* ── 필터 ── */
         .filter-container {
             background-color: var(--blue-filter-bg);
             border-radius: 6px;
@@ -86,216 +78,140 @@
         }
         .filter-input:focus { border-color: #4285f4; }
         select.filter-input { cursor: pointer; }
-
         .filter-divider { width: 1px; height: 24px; background-color: #d1d5db; margin: 0 4px; }
 
         .btn-search {
             background-color: var(--dark-btn-bg);
-            color: white;
-            border: none;
-            padding: 7px 14px;
-            border-radius: 4px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-family: inherit;
-            transition: background 0.15s;
+            color: white; border: none;
+            padding: 7px 14px; border-radius: 4px;
+            font-size: 13px; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; gap: 4px;
+            font-family: inherit; transition: background 0.15s;
         }
         .btn-search:hover { background-color: #374151; }
 
         .btn-reset {
-            background-color: #fff;
-            color: #666;
+            background-color: #fff; color: #666;
             border: 1px solid #d1d5db;
-            padding: 7px 14px;
-            border-radius: 4px;
-            font-size: 13px;
-            cursor: pointer;
-            font-family: inherit;
-            transition: background 0.15s;
+            padding: 7px 14px; border-radius: 4px;
+            font-size: 13px; cursor: pointer;
+            font-family: inherit; transition: background 0.15s;
         }
         .btn-reset:hover { background-color: #f9fafb; }
 
         /* ── 액션 바 ── */
-        .action-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
+        .action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .left-actions { display: flex; gap: 6px; }
 
         .btn {
-            padding: 6px 12px;
-            font-size: 13px;
-            font-weight: 500;
-            border-radius: 4px;
-            border: 1px solid #d1d5db;
-            background: #fff;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            color: #333;
-            font-family: inherit;
-            transition: background 0.15s;
+            padding: 6px 12px; font-size: 13px; font-weight: 500;
+            border-radius: 4px; border: 1px solid #d1d5db;
+            background: #fff; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 4px;
+            color: #333; font-family: inherit; transition: background 0.15s;
         }
         .btn:hover { background-color: #f3f4f6; }
 
         .btn-register {
-            background-color: #4285f4;
-            color: white;
-            border: none;
-            padding: 8px 18px;
-            font-weight: 700;
-            font-size: 13px;
+            background-color: #4285f4; color: white;
+            border: none; padding: 8px 18px;
+            font-weight: 700; font-size: 13px;
         }
         .btn-register:hover { background-color: #3367d6; }
 
         /* ── 테이블 ── */
-        .table-container {
-            width: 100%;
-            overflow-x: auto;
-            border-top: 2px solid #333;
-        }
+        .table-container { width: 100%; overflow-x: auto; border-top: 2px solid #333; }
 
         table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-            min-width: 1050px;
+            width: 100%; border-collapse: collapse;
+            font-size: 13px; min-width: 1050px;
         }
 
         th {
             background-color: #fafafa;
             border-bottom: 1px solid #e5e7eb;
             padding: 12px 8px;
-            font-weight: 700;
-            color: #333;
-            text-align: center;
-            white-space: nowrap;
+            font-weight: 700; color: #333;
+            text-align: center; white-space: nowrap;
         }
 
         td {
             padding: 14px 8px;
             border-bottom: 1px solid #f1f3f5;
-            text-align: center;
-            vertical-align: middle;
-            color: #444;
+            text-align: center; vertical-align: middle; color: #444;
         }
 
         tr:hover td { background-color: #fafcff; }
 
-        /* ── 번호·거래구분 셀 ── */
-        .cell-num { font-size: 11px; color: #aaa; margin-bottom: 3px; }
+        /* ── 번호 셀 (배지 제거, 번호만) ── */
+        .cell-num { font-size: 11px; color: #aaa; }
 
-        /* ── 거래 구분 배지 ── */
+        /* ── 광고 토글 버튼 ── */
+        .btn-ad-toggle {
+            display: inline-block;
+            padding: 3px 10px; border-radius: 4px;
+            font-size: 11px; font-weight: 700;
+            cursor: pointer; border: none;
+            transition: background 0.15s, transform 0.1s;
+            font-family: inherit; white-space: nowrap; user-select: none;
+        }
+        .btn-ad-toggle:active { transform: scale(0.96); }
+        .btn-ad-toggle.state-on  { background-color: #4285f4; color: #fff; }
+        .btn-ad-toggle.state-on:hover  { background-color: #3367d6; }
+        .btn-ad-toggle.state-off { background-color: #9ca3af; color: #fff; }
+        .btn-ad-toggle.state-off:hover { background-color: #6b7280; }
+
+        .ad-date { font-size: 10px; color: #aaa; margin-top: 3px; }
+
+        /* ── 주소/연락처 셀 ── */
+        .cell-addr { text-align: left; min-width: 160px; }
+        .addr-main { font-weight: 700; font-size: 13px; color: #111; margin-bottom: 3px; }
+        .contact-row { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+        .contact-badge {
+            font-size: 9px; font-weight: 700;
+            padding: 1px 4px; border-radius: 2px; white-space: nowrap;
+        }
+        .contact-landlord { background-color: #fef3c7; color: #92400e; }
+        .contact-num { font-size: 11px; color: #666; letter-spacing: 0.02em; }
+
+        /* ── 금액 셀: 배지 + 금액 나란히 ── */
+        .cell-price { text-align: left; min-width: 150px; }
+
+        .price-line {
+            display: flex; align-items: center;
+            gap: 6px; margin-bottom: 4px;
+        }
+
+        /* 거래구분 배지 (금액 앞에 위치) */
         .badge-deal {
             display: inline-block;
-            padding: 2px 8px;
-            border-radius: 3px;
-            font-size: 11px;
-            font-weight: 700;
-            color: #fff;
-            white-space: nowrap;
+            padding: 2px 7px; border-radius: 3px;
+            font-size: 11px; font-weight: 700;
+            color: #fff; white-space: nowrap;
+            flex-shrink: 0;
         }
         .badge-sale    { background-color: var(--color-sale); }
         .badge-jeonse  { background-color: var(--color-jeonse); }
         .badge-monthly { background-color: var(--color-monthly); }
         .badge-short   { background-color: var(--color-short); }
 
-        /* ── 광고 토글 버튼 ── */
-        .btn-ad-toggle {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-            border: none;
-            transition: background 0.15s, transform 0.1s;
-            font-family: inherit;
-            white-space: nowrap;
-            user-select: none;
-        }
-        .btn-ad-toggle:active { transform: scale(0.96); }
-
-        /* 광고중 상태 = 파란 배경 */
-        .btn-ad-toggle.state-on {
-            background-color: #4285f4;
-            color: #fff;
-        }
-        .btn-ad-toggle.state-on:hover { background-color: #3367d6; }
-
-        /* 광고종료 상태 = 회색 배경 */
-        .btn-ad-toggle.state-off {
-            background-color: #9ca3af;
-            color: #fff;
-        }
-        .btn-ad-toggle.state-off:hover { background-color: #6b7280; }
-
-        /* 순위갱신일 날짜 */
-        .ad-date { font-size: 10px; color: #aaa; margin-top: 3px; }
-
-        /* ── 주소/연락처 셀 ── */
-        .cell-addr { text-align: left; min-width: 160px; }
-        .addr-main { font-weight: 700; font-size: 13px; color: #111; margin-bottom: 3px; }
-
-        .contact-row { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
-        .contact-badge {
-            font-size: 9px;
-            font-weight: 700;
-            padding: 1px 4px;
-            border-radius: 2px;
-            white-space: nowrap;
-        }
-        .contact-landlord { background-color: #fef3c7; color: #92400e; }
-        .contact-num { font-size: 11px; color: #666; letter-spacing: 0.02em; }
-
-        /* ── 방수/면적 ── */
-        .cell-spec { font-size: 12px; color: #555; white-space: nowrap; }
-
-        /* ── 금액 셀 (배지 없이 금액+색상만) ── */
-        .cell-price { text-align: left; min-width: 130px; }
-
-        .price-line {
-            display: flex;
-            align-items: center;
-            gap: 0;
-            margin-bottom: 3px;
-        }
-        .price-label {
-            font-size: 11px;
-            font-weight: 700;
-            min-width: 30px;
-            color: #999;
-        }
-        .price-amount {
-            font-size: 13px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
+        .price-amount { font-size: 13px; font-weight: 700; white-space: nowrap; }
         .price-amount-sale    { color: var(--color-sale); }
         .price-amount-jeonse  { color: var(--color-jeonse); }
         .price-amount-monthly { color: var(--color-monthly); }
         .price-amount-short   { color: var(--color-short); }
+
+        /* ── 방수/면적 ── */
+        .cell-spec { font-size: 12px; color: #555; white-space: nowrap; }
 
         /* ── 날짜 ── */
         .date-text { font-size: 12px; color: #888; }
 
         /* ── 등록자 셀 ── */
         .cell-registrar { text-align: left; min-width: 130px; }
-
         .member-badge {
-            display: inline-block;
-            padding: 1px 6px;
-            border-radius: 3px;
-            font-size: 10px;
-            font-weight: 700;
-            margin-bottom: 3px;
+            display: inline-block; padding: 1px 6px; border-radius: 3px;
+            font-size: 10px; font-weight: 700; margin-bottom: 3px;
         }
         .mbadge-realtor { background-color: #dbeafe; color: var(--color-realtor); }
         .mbadge-general { background-color: #dcfce7; color: #166534; }
@@ -393,19 +309,23 @@
     </div>
 
     <!-- ④ 매물 테이블 -->
+    <!--
+        컬럼 순서:
+        체크 | 번호 | 광고설정/순위갱신일 | 매물종류 | 주소/임대인연락처 | 금액(배지+금액) | 방수/면적/층 | 최초등록 | 등록자/연락처 | 관리
+    -->
     <div class="table-container">
         <table>
             <colgroup>
                 <col style="width:44px;">
-                <col style="width:100px;">
-                <col style="width:110px;"><!-- 광고설정/순위갱신 -->
-                <col style="width:90px;">
-                <col><!-- 주소 -->
-                <col style="width:120px;">
-                <col style="width:150px;"><!-- 금액 -->
-                <col style="width:72px;"><!-- 최초등록 -->
-                <col style="width:150px;"><!-- 등록자 -->
-                <col style="width:90px;"><!-- 관리 -->
+                <col style="width:80px;">   <!-- 번호 -->
+                <col style="width:110px;">  <!-- 광고설정 -->
+                <col style="width:90px;">   <!-- 매물종류 -->
+                <col style="min-width:160px;"> <!-- 주소 -->
+                <col style="width:170px;">  <!-- 금액 -->
+                <col style="width:130px;">  <!-- 방수/면적/층 -->
+                <col style="width:72px;">   <!-- 최초등록 -->
+                <col style="width:150px;">  <!-- 등록자 -->
+                <col style="width:90px;">   <!-- 관리 -->
             </colgroup>
             <thead>
                 <tr>
@@ -414,8 +334,8 @@
                     <th>광고설정<br><span style="font-weight:400;font-size:11px;color:#888;">순위갱신일</span></th>
                     <th>매물종류</th>
                     <th>주소 / 임대인연락처</th>
-                    <th>방수/면적(㎡)/층</th>
                     <th>금액</th>
+                    <th>방수/면적(㎡)/층</th>
                     <th>최초등록</th>
                     <th>등록자 / 연락처</th>
                     <th>관리</th>
@@ -423,18 +343,18 @@
             </thead>
             <tbody>
 
-                <!-- ═══ 행 1 : 매매 / 부동산회원 / 광고중 ═══ -->
+                <!-- ═══ 행 1 : 매매 / 부동산 / 광고중 ═══ -->
                 <tr>
                     <td><input type="checkbox"></td>
-                    <td>
-                        <div class="cell-num">72189911</div>
-                        <span class="badge-deal badge-sale">매매</span>
-                    </td>
+                    <!-- 번호 (배지 제거) -->
+                    <td><div class="cell-num">72189911</div></td>
+                    <!-- 광고 토글 -->
                     <td>
                         <button class="btn-ad-toggle state-on" onclick="toggleAd(this)">광고중</button>
                         <div class="ad-date">03.02</div>
                     </td>
                     <td>아파트</td>
+                    <!-- 주소 / 임대인 -->
                     <td class="cell-addr">
                         <div class="addr-main">논현동 177</div>
                         <div class="contact-row">
@@ -442,12 +362,15 @@
                             <span class="contact-num">010-1234-5678</span>
                         </div>
                     </td>
-                    <td class="cell-spec">3 / 84.97(25) / 12층</td>
+                    <!-- 금액: 배지 + 금액 -->
                     <td class="cell-price">
                         <div class="price-line">
+                            <span class="badge-deal badge-sale">매매</span>
                             <span class="price-amount price-amount-sale">32억</span>
                         </div>
                     </td>
+                    <!-- 방수/면적/층 -->
+                    <td class="cell-spec">3 / 84.97(25) / 12층</td>
                     <td class="date-text">02.23</td>
                     <td class="cell-registrar">
                         <div><span class="member-badge mbadge-realtor">부동산</span></div>
@@ -465,10 +388,7 @@
                 <!-- ═══ 행 2 : 전세 / 일반인 / 광고종료 ═══ -->
                 <tr>
                     <td><input type="checkbox"></td>
-                    <td>
-                        <div class="cell-num">72189045</div>
-                        <span class="badge-deal badge-jeonse">전세</span>
-                    </td>
+                    <td><div class="cell-num">72189045</div></td>
                     <td>
                         <button class="btn-ad-toggle state-off" onclick="toggleAd(this)">광고종료</button>
                         <div class="ad-date">03.05</div>
@@ -481,12 +401,13 @@
                             <span class="contact-num">010-9876-5432</span>
                         </div>
                     </td>
-                    <td class="cell-spec">2 / 49.5(15) / 2층</td>
                     <td class="cell-price">
                         <div class="price-line">
+                            <span class="badge-deal badge-jeonse">전세</span>
                             <span class="price-amount price-amount-jeonse">6억 100/10</span>
                         </div>
                     </td>
+                    <td class="cell-spec">2 / 49.5(15) / 2층</td>
                     <td class="date-text">03.05</td>
                     <td class="cell-registrar">
                         <div><span class="member-badge mbadge-general">일반인</span></div>
@@ -504,10 +425,7 @@
                 <!-- ═══ 행 3 : 월세 / 부동산 / 광고중 ═══ -->
                 <tr>
                     <td><input type="checkbox"></td>
-                    <td>
-                        <div class="cell-num">72188712</div>
-                        <span class="badge-deal badge-monthly">월세</span>
-                    </td>
+                    <td><div class="cell-num">72188712</div></td>
                     <td>
                         <button class="btn-ad-toggle state-on" onclick="toggleAd(this)">광고중</button>
                         <div class="ad-date">03.07</div>
@@ -520,12 +438,13 @@
                             <span class="contact-num">010-5555-3344</span>
                         </div>
                     </td>
-                    <td class="cell-spec">1 / 33.0(10) / 7층</td>
                     <td class="cell-price">
                         <div class="price-line">
+                            <span class="badge-deal badge-monthly">월세</span>
                             <span class="price-amount price-amount-monthly">7천/10</span>
                         </div>
                     </td>
+                    <td class="cell-spec">1 / 33.0(10) / 7층</td>
                     <td class="date-text">03.07</td>
                     <td class="cell-registrar">
                         <div><span class="member-badge mbadge-realtor">부동산</span></div>
@@ -543,10 +462,7 @@
                 <!-- ═══ 행 4 : 단기 / 관리자 / 광고중 ═══ -->
                 <tr>
                     <td><input type="checkbox"></td>
-                    <td>
-                        <div class="cell-num">72187003</div>
-                        <span class="badge-deal badge-short">단기</span>
-                    </td>
+                    <td><div class="cell-num">72187003</div></td>
                     <td>
                         <button class="btn-ad-toggle state-on" onclick="toggleAd(this)">광고중</button>
                         <div class="ad-date">03.09</div>
@@ -559,12 +475,13 @@
                             <span class="contact-num">010-7700-2211</span>
                         </div>
                     </td>
-                    <td class="cell-spec">- / 66.1(20) / 1층</td>
                     <td class="cell-price">
                         <div class="price-line">
+                            <span class="badge-deal badge-short">단기</span>
                             <span class="price-amount price-amount-short">300/100/10</span>
                         </div>
                     </td>
+                    <td class="cell-spec">- / 66.1(20) / 1층</td>
                     <td class="date-text">03.09</td>
                     <td class="cell-registrar">
                         <div><span class="member-badge mbadge-admin">관리자</span></div>
@@ -579,13 +496,10 @@
                     </td>
                 </tr>
 
-                <!-- ═══ 행 5 : 복합(매매+전세+월세+단기) / 부동산 / 광고종료 ═══ -->
+                <!-- ═══ 행 5 : 매매만 / 부동산 / 광고종료 ═══ -->
                 <tr>
                     <td><input type="checkbox"></td>
-                    <td>
-                        <div class="cell-num">72186500</div>
-                        <span class="badge-deal badge-sale">매매</span>
-                    </td>
+                    <td><div class="cell-num">72186500</div></td>
                     <td>
                         <button class="btn-ad-toggle state-off" onclick="toggleAd(this)">광고종료</button>
                         <div class="ad-date">02.22</div>
@@ -598,22 +512,14 @@
                             <span class="contact-num">010-6890-6589</span>
                         </div>
                     </td>
-                    <td class="cell-spec">4 / 215(65) / 1층</td>
-                    <!-- 복합 금액 -->
+                    <!-- 매매 금액만 -->
                     <td class="cell-price">
                         <div class="price-line">
+                            <span class="badge-deal badge-sale">매매</span>
                             <span class="price-amount price-amount-sale">32억</span>
                         </div>
-                        <div class="price-line">
-                            <span class="price-amount price-amount-jeonse">6억 100/10</span>
-                        </div>
-                        <div class="price-line">
-                            <span class="price-amount price-amount-monthly">7천/10</span>
-                        </div>
-                        <div class="price-line">
-                            <span class="price-amount price-amount-short">300/100/10</span>
-                        </div>
                     </td>
+                    <td class="cell-spec">4 / 215(65) / 1층</td>
                     <td class="date-text">02.23</td>
                     <td class="cell-registrar">
                         <div><span class="member-badge mbadge-realtor">부동산</span></div>
@@ -644,11 +550,6 @@
 </div>
 
 <script>
-    /**
-     * 광고중 ↔ 광고종료 토글
-     * state-on  = 광고중  (파란 버튼)
-     * state-off = 광고종료 (회색 버튼)
-     */
     function toggleAd(btn) {
         if (btn.classList.contains('state-on')) {
             btn.classList.remove('state-on');
@@ -661,7 +562,6 @@
         }
     }
 
-    /* 전체선택 체크박스 */
     document.getElementById('chk-all').addEventListener('change', function () {
         document.querySelectorAll('tbody input[type="checkbox"]').forEach(cb => cb.checked = this.checked);
     });
