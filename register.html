@@ -75,6 +75,25 @@
         .checkbox-group label { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
         .checkbox-group input[type="checkbox"] { margin-top: 2px; }
 
+        /* 숫자 입력 필드 스핀 버튼 제거 */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        /* 실시간 금액 표시 스타일 */
+        .korean-amount {
+            font-size: 12px;
+            color: #3b82f6;
+            font-weight: normal;
+            margin-left: 8px;
+        }
+
     </style>
 </head>
 
@@ -125,16 +144,16 @@
             <!-- 가격 정보 (거래 유형에 따라 레이블 동적 변경) -->
             <div class="row" id="priceRow" style="display: none;">
                 <div class="col form-group" id="depositGroup">
-                    <label class="form-label" id="depositLabel">보증금 / 매매가 <span>*</span></label>
+                    <label class="form-label" id="depositLabel">보증금 / 매매가 <span>*</span> <span id="depositKorean" class="korean-amount"></span></label>
                     <div class="input-group">
-                        <input type="number" class="form-control" id="deposit" placeholder="숫자만 입력" required>
+                        <input type="number" class="form-control" id="deposit" placeholder="숫자만 입력" required oninput="updateKoreanAmount('deposit', 'depositKorean')">
                         <span class="input-unit">만원</span>
                     </div>
                 </div>
                 <div class="col form-group" id="rentGroup">
-                    <label class="form-label" id="rentLabel">차임(월세) <span>*</span></label>
+                    <label class="form-label" id="rentLabel">차임(월세) <span>*</span> <span id="rentKorean" class="korean-amount"></span></label>
                     <div class="input-group">
-                        <input type="number" class="form-control" id="monthlyRent" placeholder="숫자만 입력">
+                        <input type="number" class="form-control" id="monthlyRent" placeholder="숫자만 입력" oninput="updateKoreanAmount('monthlyRent', 'rentKorean')">
                         <span class="input-unit">만원</span>
                     </div>
                 </div>
@@ -157,9 +176,9 @@
 
             <div class="row">
                 <div class="col form-group">
-                    <label class="form-label">관리비</label>
+                    <label class="form-label">관리비 <span id="mFeeKorean" class="korean-amount"></span></label>
                     <div class="input-group">
-                        <input type="number" class="form-control" id="maintenanceFee" placeholder="예: 10">
+                        <input type="number" class="form-control" id="maintenanceFee" placeholder="예: 10" oninput="updateKoreanAmount('maintenanceFee', 'mFeeKorean')">
                         <span class="input-unit">만원</span>
                     </div>
                 </div>
@@ -368,24 +387,50 @@
             priceRow.style.display = 'flex';
             
             if (tradeType === '매매') {
-                depositLabel.innerHTML = '매매가 <span>*</span>';
+                depositLabel.innerHTML = '매매가 <span>*</span> <span id="depositKorean" class="korean-amount"></span>';
                 rentGroup.style.display = 'none';
                 rentInput.removeAttribute('required');
             } else if (tradeType === '전세') {
-                depositLabel.innerHTML = '보증금 <span>*</span>';
+                depositLabel.innerHTML = '보증금 <span>*</span> <span id="depositKorean" class="korean-amount"></span>';
                 rentGroup.style.display = 'none';
                 rentInput.removeAttribute('required');
             } else if (tradeType === '월세') {
-                depositLabel.innerHTML = '보증금 <span>*</span>';
-                rentLabel.innerHTML = '차임(월세) <span>*</span>';
+                depositLabel.innerHTML = '보증금 <span>*</span> <span id="depositKorean" class="korean-amount"></span>';
+                rentLabel.innerHTML = '차임(월세) <span>*</span> <span id="rentKorean" class="korean-amount"></span>';
                 rentGroup.style.display = 'block';
                 rentInput.setAttribute('required', 'required');
             } else if (tradeType === '단기') {
-                depositLabel.innerHTML = '예치금 <span>*</span>';
-                rentLabel.innerHTML = '차임(월세) <span>*</span>';
+                depositLabel.innerHTML = '예치금 <span>*</span> <span id="depositKorean" class="korean-amount"></span>';
+                rentLabel.innerHTML = '차임(월세) <span>*</span> <span id="rentKorean" class="korean-amount"></span>';
                 rentGroup.style.display = 'block';
                 rentInput.setAttribute('required', 'required');
             }
+            // 레이블 변경 후 금액 초기화 표시
+            updateKoreanAmount('deposit', 'depositKorean');
+            updateKoreanAmount('monthlyRent', 'rentKorean');
+        }
+
+        // 금액 한글 변환 함수
+        window.updateKoreanAmount = function(inputId, displayId) {
+            const input = document.getElementById(inputId);
+            const display = document.getElementById(displayId);
+            if (!input || !display) return;
+
+            const val = parseInt(input.value);
+            if (isNaN(val) || val <= 0) {
+                display.innerText = "";
+                return;
+            }
+
+            const eok = Math.floor(val / 10000);
+            const man = val % 10000;
+            
+            let result = "";
+            if (eok > 0) result += eok + "억 ";
+            if (man > 0) result += man.toLocaleString() + "만";
+            if (result) result += "원";
+            
+            display.innerText = result;
         }
 
         // 페이지 로드 시 상태 초기화
