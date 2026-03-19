@@ -446,7 +446,7 @@
             <hr style="border:0; border-top:1px dashed #ddd; margin: 30px 0;">
 
             <!-- 섹션 3: 의뢰인 정보 -->
-            <h2 class="section-title">의뢰인 정보</h2>
+            <h2 class="section-title" id="clientSectionTitle">의뢰인 정보</h2>
 
             <!-- 부동산 회원 전용 섹션 -->
             <div id="realtorSection" style="display: none; background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef; margin-bottom: 20px;">
@@ -483,24 +483,29 @@
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">의뢰인명 <span>*</span></label>
-                <input type="text" class="form-control" id="authorName" required>
-            </div>
+            <!-- 중개사 전용 임대인 관리 영역 (동적 래퍼) -->
+            <div id="realtorPrivateArea" style="border-radius: 12px; transition: all 0.3s;">
+                <div class="form-group">
+                    <label id="authorNameLabel" class="form-label">의뢰인명 <span>*</span></label>
+                    <input type="text" class="form-control" id="authorName" required>
+                </div>
 
-            <div class="form-group">
-                <label class="form-label">의뢰인 연락처 <span>*</span></label>
-                <input type="text" class="form-control" id="authorPhone" placeholder="010-0000-0000" required>
-            </div>
+                <div class="form-group">
+                    <label id="authorPhoneLabel" class="form-label">의뢰인 연락처 <span>*</span></label>
+                    <input type="text" class="form-control" id="authorPhone" placeholder="010-0000-0000" required>
+                </div>
 
-            <div class="form-group">
-                <label class="form-label">소유주와의 관계</label>
-                <select class="form-control" id="ownerRelation">
-                    <option value="본인">본인</option>
-                    <option value="가족">가족</option>
-                    <option value="대리인">대리인 (기존 세입자 등)</option>
-                    <option value="공인중개사">공인중개사</option>
-                </select>
+                <div class="form-group" id="relationGroup">
+                    <label id="relationLabel" class="form-label">소유주와의 관계</label>
+                    <div id="relationContainer">
+                        <select class="form-control" id="ownerRelation">
+                            <option value="본인">본인</option>
+                            <option value="가족">가족</option>
+                            <option value="대리인">대리인 (기존 세입자 등)</option>
+                            <option value="공인중개사">공인중개사</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
             <div class="checkbox-group">
@@ -991,8 +996,23 @@
                     const fullAddr = `${profile.address || ''} ${profile.address_detail || ''}`.trim();
                     document.getElementById('companyAddress').value = fullAddr;
 
-                    // 관계를 '공인중개사'로 자동 설정
-                    document.getElementById('ownerRelation').value = '공인중개사';
+                    // --- 중개사 맞춤 UI 변경 ---
+                    document.getElementById('clientSectionTitle').style.display = 'none';
+                    document.getElementById('authorNameLabel').innerHTML = '임대인명 <span style="font-size:11px; color:#f06b13; font-weight:normal;">(중개사님만 확인 가능한 비공개 메모 정보입니다)</span> <span>*</span>';
+                    document.getElementById('authorPhoneLabel').innerHTML = '임대인 연락처 <span>*</span>';
+                    document.getElementById('relationLabel').innerText = '메모';
+
+                    // select를 자유로운 메모를 위한 textarea로 교체
+                    const relationContainer = document.getElementById('relationContainer');
+                    relationContainer.innerHTML = '<textarea class="form-control" id="ownerRelation" rows="2" placeholder="임대인 특이사항 등 중개사님만 보는 메모를 입력하세요."></textarea>';
+
+                    // 중개사 전용 영역 디자인 적용 (연한 주황색 계열 박스)
+                    const privateArea = document.getElementById('realtorPrivateArea');
+                    privateArea.style.background = '#fff8f2';
+                    privateArea.style.padding = '20px';
+                    privateArea.style.border = '1px solid #ffe8d6';
+                    privateArea.style.borderLeft = '4px solid #f06b13';
+                    privateArea.style.marginTop = '10px';
                 }
             }
         }
