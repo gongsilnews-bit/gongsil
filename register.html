@@ -508,14 +508,14 @@
                 dong: document.getElementById('dong').value,
                 detail_address: document.getElementById('detailAddress').value,
                 building_name: document.getElementById('buildingName').value,
-                dong: document.getElementById('dongNumber').value, // 동 정보 추가
+                dong_number: document.getElementById('dongNumber').value, // 컬럼명 fix: dong -> dong_number
                 room_number: document.getElementById('roomNumber').value,
-                is_room_private: document.getElementById('isRoomPrivate').checked, // 호수 비공개 여부
+                is_room_private: document.getElementById('isRoomPrivate').checked, 
                 description: document.getElementById('description').value,
                 author_name: document.getElementById('authorName').value,
                 author_phone: document.getElementById('authorPhone').value,
                 owner_relation: document.getElementById('ownerRelation').value,
-                brokerage_fee: document.getElementById('brokerageFee').value, // 중개보수 정보 추가
+                brokerage_fee: document.getElementById('brokerageFee').value,
                 agree_promo: document.getElementById('agreePromo').checked,
                 status: 'pending', 
                 created_at: new Date()
