@@ -361,36 +361,57 @@
 <script src="supabase_gongsi_config.js"></script>
 
 <script>
-    const supabase = window.gongsiClient;
     let allProperties = [];
 
-    // 즉시 실행 (iframe 환경 대응)
-    (async () => {
-        console.log("admin.html initialization started");
-        await loadProperties();
+    // 실행 (iframe 환경 대응)
+    (async function init() {
+        console.log("admin.html [init] started");
+        const tbody = document.getElementById('prop-list-body');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="10" style="padding: 100px; color: #4285f4; font-weight: bold;">데이터를 불러오는 중입니다... 🔄</td></tr>';
+        
+        try {
+            await loadProperties();
+        } catch (e) {
+            console.error("admin.html [init] critical error:", e);
+            if (tbody) tbody.innerHTML = `<tr><td colspan="10" style="padding: 100px; color: #e53e3e; font-weight: bold;">초기화 중 오류가 발생했습니다: ${e.message}</td></tr>`;
+        }
     })();
 
     // 매물 데이터 로드 및 렌더링
     async function loadProperties() {
-        const { data: { session } } = await supabase.auth.getSession();
+        const supabase = window.gongsiClient;
+        const tbody = document.getElementById('prop-list-body');
+        
+        if (!supabase) {
+            console.error("Supabase client is not initialized.");
+            if (tbody) tbody.innerHTML = '<tr><td colspan="10" style="padding: 100px; color: red;">Supabase 설정 오류! (config 확인 필요)</td></tr>';
+            return;
+        }
+
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) throw sessionError;
+        
         if (!session) {
-            alert("로그인이 필요합니다.");
-            parent.window.location.href = 'index.html';
+            console.warn("No active session found.");
+            if (tbody) tbody.innerHTML = '<tr><td colspan="10" style="padding: 100px; color: #999;">로그인이 필요합니다.</td></tr>';
+            setTimeout(() => {
+                if (parent.window.location.href.indexOf('index.html') === -1) {
+                    parent.window.location.href = 'index.html';
+                }
+            }, 2000);
             return;
         }
 
         const user = session.user;
         let query = supabase.from('properties').select('*');
 
-        // 현재 페이지가 회원용 관리자인지 전체 관리자인지 구분 (간단히 처리)
-        // 만약 부모 페이지가 user_admin.html 이라면 본인 매물만 보여주는 것이 자연스러움
-        const isUserAdmin = window.parent.location.pathname.includes('user_admin.html');
-        
-        // 유저 프로필 로드 (권한 확인용)
+        // 사용자 역할 확인 (본인 매물만 보여줄지 여부)
+        const isUserAdminPath = window.parent.location.pathname.includes('user_admin.html');
         const ud = JSON.parse(localStorage.getItem('gongsil_user') || '{}');
-        const userRole = ud.profile?.role || 'general';
+        const userRole = ud.profile?.role || 'realtor'; 
 
-        if (isUserAdmin || (userRole !== 'admin' && userRole !== 'superadmin')) {
+        if (isUserAdminPath || (userRole !== 'admin' && userRole !== 'superadmin')) {
             query = query.eq('user_id', user.id);
         }
 
@@ -398,10 +419,11 @@
 
         if (error) {
             console.error('Error fetching properties:', error);
+            if (tbody) tbody.innerHTML = `<tr><td colspan="10" style="padding: 100px; color: red;">데이터 조회 중 오류: ${error.message}</td></tr>`;
             return;
         }
 
-        allProperties = data;
+        allProperties = data || [];
         renderProperties(allProperties);
         updateCounts(allProperties);
     }
@@ -409,8 +431,12 @@
     function updateCounts(props) {
         const total = props.length;
         const activeCount = props.filter(p => p.status === 'active' || p.status === 'pending').length;
-        document.querySelector('.ad-count').textContent = `광고 ${activeCount}건`;
-        document.querySelector('.total-count').textContent = `전체 ${total}건`;
+        
+        const adCountEl = document.querySelector('.ad-count');
+        const totalCountEl = document.querySelector('.total-count');
+        
+        if (adCountEl) adCountEl.textContent = `광고 ${activeCount}건`;
+        if (totalCountEl) totalCountEl.textContent = `전체 ${total}건`;
     }
 
     function renderProperties(props) {
@@ -435,26 +461,29 @@
                 let priceText = '';
                 let priceCls = '';
                 
+                const depositNum = Number(p.deposit || 0);
+                const rentNum = Number(p.monthly_rent || 0);
+
                 if (p.trade_type === '매매') {
                     dealBadge = '<span class="badge-deal badge-sale">매매</span>';
-                    priceText = formatPrice(p.deposit);
+                    priceText = formatPrice(depositNum);
                     priceCls = 'price-amount-sale';
                 } else if (p.trade_type === '전세') {
                     dealBadge = '<span class="badge-deal badge-jeonse">전세</span>';
-                    priceText = formatPrice(p.deposit);
+                    priceText = formatPrice(depositNum);
                     priceCls = 'price-amount-jeonse';
                 } else if (p.trade_type === '월세') {
                     dealBadge = '<span class="badge-deal badge-monthly">월세</span>';
-                    priceText = `${formatPrice(p.deposit)} / ${p.monthly_rent || 0}`;
+                    priceText = `${formatPrice(depositNum)} / ${rentNum}`;
                     priceCls = 'price-amount-monthly';
                 } else if (p.trade_type === '단기') {
                     dealBadge = '<span class="badge-deal badge-short">단기</span>';
-                    priceText = `${formatPrice(p.deposit)} / ${p.monthly_rent || 0}`;
+                    priceText = `${formatPrice(depositNum)} / ${rentNum}`;
                     priceCls = 'price-amount-short';
                 }
 
                 const dateObj = new Date(p.created_at);
-                const dateStr = `${(dateObj.getMonth()+1).toString().padStart(2,'0')}.${dateObj.getDate().toString().padStart(2,'0')}`;
+                const dateStr = (dateObj.getTime()) ? `${(dateObj.getMonth()+1).toString().padStart(2,'0')}.${dateObj.getDate().toString().padStart(2,'0')}` : '-';
 
                 const roleBadgeCls = p.user_role === 'realtor' ? 'mbadge-realtor' : 'mbadge-general';
                 const roleText = p.user_role === 'realtor' ? '부동산' : '일반인';
@@ -466,7 +495,7 @@
                         <button class="btn-ad-toggle ${stateCls}" onclick="toggleAdStatus(${p.id}, '${p.status}')">${stateText}</button>
                         <div class="ad-date">${dateStr}</div>
                     </td>
-                    <td>${p.property_type}</td>
+                    <td>${p.property_type || '-'}</td>
                     <td class="cell-addr">
                         <div class="addr-main">${p.dong || ''} ${p.building_name || ''}</div>
                         <div class="contact-row">
@@ -502,13 +531,14 @@
     }
 
     function formatPrice(val) {
+        val = Number(val);
         if (!val || val === 0) return '0';
         if (val >= 10000) {
             const uk = Math.floor(val / 10000);
             const man = val % 10000;
             return man > 0 ? `${uk}억 ${man}` : `${uk}억`;
         }
-        return val.toString();
+        return val.toLocaleString();
     }
 
     window.toggleAdStatus = async function(id, currentStatus) {
