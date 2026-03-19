@@ -229,7 +229,7 @@ async function handleUserDocument(user) {
 function updateRoleUI(userData) {
     if(!userRoleBadge) return;
 
-    // 기존 톱니바퀴 버튼이 있으면 제거 (관리자 설정 버튼이 배지에 통합되므로)
+    // 기존 톱니바퀴 버튼이 있으면 제거
     const existingGear = document.getElementById('adminGearBtn');
     if (existingGear) existingGear.remove();
 
@@ -239,22 +239,34 @@ function updateRoleUI(userData) {
         : window.BASE_PATH + '/user_admin.html';
     const tooltipLabel = userData.role === 'admin' ? '관리자페이지로 이동' : '마이페이지로 이동';
 
-    // 역할별 배지 스타일 및 텍스트 설정
+    // 역할 텍스트 결정
+    let roleName = "일반회원";
+    if (userData.role === 'admin') roleName = "최고관리자";
+    else if (userData.role === 'realtor') roleName = "부동산회원";
+
+    // 등급 텍스트 결정
+    const membershipName = userData.membership === 'paid' ? " (유료)" : " (무료)";
+    
+    // 최종 표시 텍스트 (관리자는 등급 표시 생략)
+    const displayText = userData.role === 'admin' ? roleName + " >>" : roleName + membershipName + " >>";
+
+    userRoleBadge.textContent = displayText;
+
+    // 역할 및 등급별 배지 스타일 설정
     if (userData.role === 'admin') {
-        userRoleBadge.textContent = "최고관리자 >>";
         userRoleBadge.style.background = "#e74c3c";
         userRoleBadge.style.color = "white";
-    } else if (userData.role === 'realtor') {
-        userRoleBadge.textContent = "부동산회원 >>";
+    } else if (userData.membership === 'paid') {
+        // 유료 회원 스타일 (부동산/일반 공통)
         userRoleBadge.style.background = "#ff9f1c";
         userRoleBadge.style.color = "white";
     } else {
-        userRoleBadge.textContent = "일반회원 >>";
+        // 무료 회원 스타일
         userRoleBadge.style.background = "#f0f0f0";
         userRoleBadge.style.color = "#555";
     }
 
-    // 배지를 클릭 가능한 버튼 형태로 변경
+    // 기본 공통 스타일
     userRoleBadge.style.cursor = "pointer";
     userRoleBadge.style.display = "inline-flex";
     userRoleBadge.style.alignItems = "center";
@@ -270,19 +282,19 @@ function updateRoleUI(userData) {
         window.location.href = targetPage;
     };
 
-    // 호버 효과 추가
+    // 호버 효과
     userRoleBadge.onmouseenter = () => {
         userRoleBadge.style.transform = "translateY(-1px)";
         userRoleBadge.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
         if(userData.role === 'admin') userRoleBadge.style.background = "#c0392b";
-        else if(userData.role === 'realtor') userRoleBadge.style.background = "#e67e22";
+        else if(userData.membership === 'paid') userRoleBadge.style.background = "#e67e22";
         else userRoleBadge.style.background = "#e5e5e5";
     };
     userRoleBadge.onmouseleave = () => {
         userRoleBadge.style.transform = "translateY(0)";
         userRoleBadge.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
         if(userData.role === 'admin') userRoleBadge.style.background = "#e74c3c";
-        else if(userData.role === 'realtor') userRoleBadge.style.background = "#ff9f1c";
+        else if(userData.membership === 'paid') userRoleBadge.style.background = "#ff9f1c";
         else userRoleBadge.style.background = "#f0f0f0";
     };
 }

@@ -33,3 +33,25 @@ on public.news
 for all
 using (true)
 with check (true);
+
+-- 4. members 테이블 생성 및 관리 (회원 구분 및 등급 관리)
+create table if not exists public.members (
+    id uuid primary key,
+    email text not null unique,
+    role text default 'general',
+    membership text default 'free',
+    member_num bigint generated always as identity,
+    expired_at timestamptz,
+    created_at timestamptz default now()
+);
+
+-- 인덱스 및 RLS 설정
+create index if not exists members_email_idx on public.members (email);
+alter table public.members enable row level security;
+
+drop policy if exists "Allow all access" on public.members;
+create policy "Allow all access"
+on public.members
+for all
+using (true)
+with check (true);
