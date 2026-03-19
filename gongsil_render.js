@@ -3,25 +3,48 @@ const supabase = window.gongsiClient;
 let mapInstance = null; 
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. 지도 초기화 대기 (kakao.maps.load는 이미 html에서 처리 중일 수 있으나 명시적으로 한 번 더 관리)
-    if (typeof kakao !== 'undefined') {
-        kakao.maps.load(() => {
-            initMap();
-            loadActiveProperties(); 
-        });
+    console.log("gongsil_render: DOMContentLoaded");
+    const listArea = document.getElementById('propertyListArea');
+    if (listArea) listArea.innerHTML = '<div style="padding:20px; text-align:center; color:#4285f4; font-weight:bold;">데이터를 불러오는 중입니다... 🔄</div>';
+
+    // 지도 초기화 및 데이터 로드 시작
+    try {
+        if (typeof kakao !== 'undefined' && kakao.maps) {
+            kakao.maps.load(() => {
+                initMap();
+                loadActiveProperties(); 
+            });
+        } else {
+            console.warn("Kakao maps SDK not found immediately. Retrying in 1s...");
+            setTimeout(() => {
+                if (typeof kakao !== 'undefined') {
+                    kakao.maps.load(() => {
+                        initMap();
+                        loadActiveProperties();
+                    });
+                }
+            }, 1000);
+        }
+    } catch (e) {
+        console.error("Initialization error:", e);
+        if (listArea) listArea.innerHTML = `<div style="padding:20px; text-align:center; color:red;">초기화 오류: ${e.message}</div>`;
     }
 });
 
 function initMap() {
     const container = document.getElementById('map');
     if (!container) return;
-    const options = {
-        center: new kakao.maps.LatLng(37.5665, 126.9780), 
-        level: 8
-    };
-    mapInstance = new kakao.maps.Map(container, options);
-    window.mapInstance = mapInstance; 
-    console.log('gongsil_render: 지도 초기화 완료');
+    try {
+        const options = {
+            center: new kakao.maps.LatLng(37.5665, 126.9780), 
+            level: 8
+        };
+        mapInstance = new kakao.maps.Map(container, options);
+        window.mapInstance = mapInstance; 
+        console.log('gongsil_render: 지도 초기화 완료');
+    } catch (e) {
+        console.error("Map init error:", e);
+    }
 }
 
 let allActiveProperties = [];
@@ -30,26 +53,32 @@ async function loadActiveProperties() {
     const listArea = document.getElementById('propertyListArea');
     const countHeader = document.querySelector('#listCountHeader span');
     
-    if (listArea) listArea.innerHTML = '<div style="padding:20px; text-align:center; color:#999;">매물을 불러오는 중... 🔄</div>';
-
-    const { data, error } = await supabase
-        .from('properties')
-        .select('*')
-        .eq('status', 'active')
-        .order('created_at', { ascending: false });
-
-    if (error) {
-        console.error("매물 로드 에러:", error);
-        if (listArea) listArea.innerHTML = '<div style="padding:20px; text-align:center; color:red;">데이터를 불러오지 못했습니다.</div>';
+    if (!supabase) {
+        console.error("Supabase client not found.");
+        if (listArea) listArea.innerHTML = '<div style="padding:20px; text-align:center; color:red;">Supabase 설정 오류</div>';
         return;
     }
 
-    allActiveProperties = data || [];
-    
-    if (countHeader) countHeader.textContent = `지역 목록 ${allActiveProperties.length}개`;
+    try {
+        const { data, error } = await supabase
+            .from('properties')
+            .select('*')
+            .eq('status', 'active')
+            .order('created_at', { ascending: false });
 
-    renderPropertyCards(allActiveProperties);
-    addMarkersToMap(allActiveProperties);
+        if (error) throw error;
+
+        allActiveProperties = data || [];
+        console.log("Loaded properties:", allActiveProperties.length);
+        
+        if (countHeader) countHeader.textContent = `지역 목록 ${allActiveProperties.length}개`;
+
+        renderPropertyCards(allActiveProperties);
+        addMarkersToMap(allActiveProperties);
+    } catch (e) {
+        console.error("Data load error:", e);
+        if (listArea) listArea.innerHTML = `<div style="padding:20px; text-align:center; color:red;">데이터 로드 오류: ${e.message}</div>`;
+    }
 }
 
 function renderPropertyCards(props) {
@@ -63,27 +92,31 @@ function renderPropertyCards(props) {
     }
 
     props.forEach(p => {
-        const card = document.createElement('div');
-        card.className = 'property-card';
-        card.onclick = () => showPropertyDetail(p);
-        
-        const priceStr = formatPriceDisplay(p);
-        const imgUrl = (p.images && p.images.length > 0) ? p.images[0] : 'https://via.placeholder.com/150/EEEEEE/999999?text=No+Image';
+        try {
+            const card = document.createElement('div');
+            card.className = 'property-card';
+            card.onclick = () => showPropertyDetail(p);
+            
+            const priceStr = formatPriceDisplay(p);
+            const imgUrl = (p.images && p.images.length > 0) ? p.images[0] : 'https://via.placeholder.com/150/EEEEEE/999999?text=No+Image';
 
-        card.innerHTML = `
-            <div class="property-info">
-                <span class="recommend-tag">추천</span>
-                <h3 class="price-title">${priceStr}</h3>
-                <div class="maintenance-fee">관리비 ${p.maintenance_fee || 0}만원</div>
-                <div class="property-desc">${p.property_type} · ${p.area || '-'}㎡ · 층 정보없음</div>
-                <div class="property-loc">${p.sido || ''} ${p.sigungu || ''} ${p.dong || ''}</div>
-                <div class="property-detail">${p.description || p.building_name || ''}</div>
-            </div>
-            <div class="property-image">
-                <img src="${imgUrl}" alt="매물사진">
-            </div>
-        `;
-        listArea.appendChild(card);
+            card.innerHTML = `
+                <div class="property-info">
+                    <span class="recommend-tag">추천</span>
+                    <h3 class="price-title">${priceStr}</h3>
+                    <div class="maintenance-fee">관리비 ${p.maintenance_fee || 0}만원</div>
+                    <div class="property-desc">${p.property_type || '매물'} · ${p.area || '-'}㎡ · 층 정보없음</div>
+                    <div class="property-loc">${p.sido || ''} ${p.sigungu || ''} ${p.dong || ''}</div>
+                    <div class="property-detail">${p.description || p.building_name || ''}</div>
+                </div>
+                <div class="property-image">
+                    <img src="${imgUrl}" alt="매물사진">
+                </div>
+            `;
+            listArea.appendChild(card);
+        } catch (e) {
+            console.error("Card render error:", e, p);
+        }
     });
 }
 
@@ -108,29 +141,33 @@ window.showPropertyDetail = function(p) {
     const detailView = document.getElementById('propertyDetailView');
     if (!detailView) return;
 
-    const priceStr = formatPriceDisplay(p);
-    
-    detailView.querySelector('.detail-price-title').textContent = priceStr;
-    const metaTop = detailView.querySelector('.detail-meta-top');
-    if (metaTop) {
-        const regDate = new Date(p.created_at);
-        metaTop.innerHTML = `<span>등록번호 ${p.id}</span><span>${regDate.toLocaleDateString()}</span>`;
-    }
+    try {
+        const priceStr = formatPriceDisplay(p);
+        
+        detailView.querySelector('.detail-price-title').textContent = priceStr;
+        const metaTop = detailView.querySelector('.detail-meta-top');
+        if (metaTop) {
+            const regDate = new Date(p.created_at);
+            metaTop.innerHTML = `<span>등록번호 ${p.id}</span><span>${regDate.toLocaleDateString()}</span>`;
+        }
 
-    detailView.querySelector('.detail-loc-text').textContent = `${p.sido || ''} ${p.sigungu || ''} ${p.dong || ''} · 관리비 ${p.maintenance_fee || 0}만원`;
-    detailView.querySelector('.detail-desc-box').textContent = p.description || '상세 설명이 없습니다.';
-    detailView.querySelector('.bottom-price').textContent = priceStr;
-    
-    const features = detailView.querySelectorAll('.feature-item');
-    if (features[0]) features[0].innerHTML = `<div class="feature-icon">📐</div>전용 ${p.area || '-'}㎡`;
-    if (features[1]) features[1].innerHTML = `<div class="feature-icon">🚪</div>${p.room_count || '-'} (욕실 ${p.bathroom_count || '-'}개)`;
-    
-    const galleryImg = detailView.querySelector('.detail-gallery img');
-    if (galleryImg) {
-        galleryImg.src = (p.images && p.images.length > 0) ? p.images[0] : 'https://via.placeholder.com/600x400/DDDDDD/666666?text=No+Image';
-    }
+        detailView.querySelector('.detail-loc-text').textContent = `${p.sido || ''} ${p.sigungu || ''} ${p.dong || ''} · 관리비 ${p.maintenance_fee || 0}만원`;
+        detailView.querySelector('.detail-desc-box').textContent = p.description || '상세 설명이 없습니다.';
+        detailView.querySelector('.bottom-price').textContent = priceStr;
+        
+        const features = detailView.querySelectorAll('.feature-item');
+        if (features[0]) features[0].innerHTML = `<div class="feature-icon">📐</div>전용 ${p.area || '-'}㎡`;
+        if (features[1]) features[1].innerHTML = `<div class="feature-icon">🚪</div>${p.room_count || '-'} (욕실 ${p.bathroom_count || '-'}개)`;
+        
+        const galleryImg = detailView.querySelector('.detail-gallery img');
+        if (galleryImg) {
+            galleryImg.src = (p.images && p.images.length > 0) ? p.images[0] : 'https://via.placeholder.com/600x400/DDDDDD/666666?text=No+Image';
+        }
 
-    detailView.style.display = 'flex';
+        detailView.style.display = 'flex';
+    } catch (e) {
+        console.error("Detail show error:", e);
+    }
 };
 
 window.hidePropertyDetail = function() {
@@ -138,9 +175,11 @@ window.hidePropertyDetail = function() {
     if (detailView) detailView.style.display = 'none';
 };
 
-// 주소 기반 마커 표시 로직 (Kakao Geocoder 사용)
 function addMarkersToMap(props) {
-    if (!window.mapInstance) return;
+    if (!window.mapInstance) {
+        console.warn("Map instance not ready for markers.");
+        return;
+    }
     
     const geocoder = new kakao.maps.services.Geocoder();
 
@@ -164,6 +203,9 @@ function addMarkersToMap(props) {
                     infowindow.open(window.mapInstance, marker);
                     setTimeout(() => infowindow.close(), 3000);
                 });
+                
+                // 마커를 지도 중심 근처로 이동 (하나만 있다면)
+                // if (props.length === 1) window.mapInstance.setCenter(coords);
             }
         });
     });
