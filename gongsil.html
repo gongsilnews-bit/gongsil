@@ -227,6 +227,7 @@
             border: 2px solid rgba(66, 133, 244, 0.85);
         }
         .cluster-medium { font-size: 16px; }   /* 5~19개 (50x50) */
+        .cluster-medium { font-size: 16px; }   /* 5~19개 (50x50) */
         .cluster-large { font-size: 18px; }    /* 20개~ (60x60) */
 
         /* 추가 정보 섹션 스타일 */
@@ -236,6 +237,38 @@
         .options-container { display: flex; flex-wrap: wrap; gap: 10px; }
         .option-item { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 68px; height: 68px; background: #fafafa; border-radius: 8px; border: 1px solid #eee; color: #444; font-size: 11px; }
         .option-icon { font-size: 24px; margin-bottom: 4px; color: #666; }
+
+        /* ---------------- 상단 전면 필터 및 사이드바 정렬 바 스타일 ---------------- */
+        .top-filter-bar { background: #fff; width: 100%; z-index: 20; position: relative; border-bottom: 1px solid #ccc; flex-shrink: 0; }
+        .top-row { display: flex; gap: 24px; padding: 0 20px; border-bottom: 1px solid #ddd; overflow-x: auto; }
+        .top-tab { background: none; border: none; font-size: 16px; font-weight: bold; color: #555; cursor: pointer; padding: 16px 4px; position: relative; white-space: nowrap; }
+        .top-tab:hover { color: #111; }
+        .top-tab.active { color: #111; border-bottom: 3px solid #111; }
+        
+        .mid-row { display: flex; gap: 8px; padding: 12px 20px; border-bottom: 1px solid #e0e0e0; overflow-x: auto; }
+        .mid-tab { background: #fff; border: 1px solid #ccc; font-size: 14px; color: #333; cursor: pointer; padding: 6px 14px; border-radius: 20px; white-space: nowrap; transition: all 0.2s; position: relative; }
+        .mid-tab:hover { background: #f9fafb; }
+        .mid-tab.active {
+            background: #e8f0fe; /* 옅은 하늘색 배경 */
+            color: #1a73e8; /* 진한 파란색 글씨 */
+            border-color: #1a73e8;
+            font-weight: bold;
+        }
+        .mid-tab.active::before { content: '✓ '; font-weight: bold; }
+
+        .bot-row { display: flex; align-items: center; padding: 0 20px; border-bottom: 1px solid #eee; overflow-x: auto; background: #fff; }
+        .filter-dropdown { background: none; border: none; border-right: 1px solid #eee; font-size: 13px; color: #555; cursor: pointer; padding: 12px 16px; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+        .filter-dropdown:hover { background: #f9f9f9; color: #111; }
+        .arrow { font-size: 10px; color: #999; }
+        
+        .btn-refresh { background: none; border: none; font-size: 13px; color: #666; cursor: pointer; padding: 12px 16px; white-space: nowrap; display: flex; align-items: center; gap: 4px; }
+        .btn-refresh:hover { background: #f0f0f0; color: #333; }
+
+        .sort-tabs { display: flex; width: 100%; border-bottom: 1px solid #eee; }
+        .sort-tab { flex: 1; background: #fff; border: none; border-right: 1px solid #f0f0f0; font-size: 13px; color: #888; cursor: pointer; padding: 12px 0; text-align: center; }
+        .sort-tab:last-child { border-right: none; }
+        .sort-tab.active { font-weight: bold; color: #00ca62; /* 랭킹순 초록색 */ }
+        .sort-tab:hover { background: #f9f9f9; color: #111; }
     </style>
 </head>
 
@@ -269,30 +302,59 @@
         </div>
     </header>
 
+    <!-- 상단 전체 화면 필터 영역 (네이버 부동산 스타일) -->
+    <div class="top-filter-bar">
+        <!-- 1. 메인 물건 정보 탭 -->
+        <div class="top-row">
+            <button class="top-tab active" onclick="this.classList.toggle('active')">아파트</button>
+            <button class="top-tab" onclick="this.classList.toggle('active')">오피스텔</button>
+            <button class="top-tab" onclick="this.classList.toggle('active')">원룸</button>
+            <button class="top-tab" onclick="this.classList.toggle('active')">빌라/주택</button>
+            <button class="top-tab" onclick="this.classList.toggle('active')">상가/사무실</button>
+            <button class="top-tab" onclick="this.classList.toggle('active')">빌딩/건물</button>
+            <button class="top-tab" onclick="this.classList.toggle('active')">토지/공장/기타</button>
+        </div>
+        
+        <!-- 2. 세부 물건 정보 탭 (선택 시 옅은 하늘색 배경 & 파란 체크) -->
+        <div class="mid-row">
+            <button class="mid-tab active" onclick="this.classList.toggle('active')">빌라/연립</button>
+            <button class="mid-tab" onclick="this.classList.toggle('active')">단독/다가구</button>
+            <button class="mid-tab active" onclick="this.classList.toggle('active')">전원주택</button>
+            <button class="mid-tab" onclick="this.classList.toggle('active')">상가주택</button>
+        </div>
+        
+        <!-- 3. 상세 검색 조건 필터 -->
+        <div class="bot-row">
+            <button class="filter-dropdown">거래방식 <span class="arrow">▼</span></button>
+            <button class="filter-dropdown">가격대 <span class="arrow">▼</span></button>
+            <button class="filter-dropdown">면적 <span class="arrow">▼</span></button>
+            <button class="filter-dropdown">방/욕실수 <span class="arrow">▼</span></button>
+            <button class="filter-dropdown">사용승인일 <span class="arrow">▼</span></button>
+            <button class="filter-dropdown">방향 <span class="arrow">▼</span></button>
+            <button class="filter-dropdown">융자금 <span class="arrow">▼</span></button>
+            <button class="filter-dropdown" style="border-right: none;">기타옵션 <span class="arrow">▼</span></button>
+            <button class="btn-refresh" style="margin-left: auto;">↻ 초기화</button>
+        </div>
+    </div>
+
     <!-- 메인 컨텐츠 -->
     <main class="main-container">
         <!-- 좌측 사이드바 (공실 리스트) -->
         <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="search-box">
-                    <input type="text" placeholder="지역, 지하철역, 학교 검색" class="search-input">
-                    <button class="btn-search-orange">🔍</button>
+            <div class="sidebar-header" style="padding: 0; border-bottom: none;">
+                <!-- 4. 정렬 탭 -->
+                <div class="sort-tabs">
+                    <button class="sort-tab active">랭킹순</button>
+                    <button class="sort-tab">최신순</button>
+                    <button class="sort-tab">가격순</button>
+                    <button class="sort-tab">면적순</button>
                 </div>
-
-                <!-- 카테고리 필터 -->
-                <div class="category-filters">
-                    <button class="category-btn active">전체공실</button>
-                    <button class="category-btn">분양</button>
-                    <button class="category-btn">매매</button>
-                    <button class="category-btn">임대</button>
-                </div>
-
-                <div class="list-count-header" id="listCountHeader">
-                    <span>지역 목록 -개</span>
-                    <button class="filter-icon-btn">⚙️</button>
+                
+                <div id="listCountHeader" style="padding: 15px 20px; font-weight: bold; font-size: 13px; color: #111; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee;">
+                    <span>선택된 클러스터 0개</span>
+                    <button style="border:none;background:none;color:#999;cursor:pointer;">⚙️</button>
                 </div>
             </div>
-            
             <div class="property-list" id="propertyListArea">
                 <!-- gongsil_render.js에서 동적으로 생성됩니다. -->
             </div>
