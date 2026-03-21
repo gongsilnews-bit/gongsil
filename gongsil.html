@@ -387,6 +387,8 @@
             const supabase = window.gongsiClient;
             let mapInstance = null;
             let allActiveProperties = [];
+            let clusterer = null;
+            let propertyMarkers = [];
 
             console.log("gongsil.html [init] script started");
 
@@ -421,6 +423,28 @@
                     };
                     mapInstance = new kakao.maps.Map(container, options);
                     window.mapInstance = mapInstance; 
+
+                    clusterer = new kakao.maps.MarkerClusterer({
+                        map: mapInstance,
+                        averageCenter: true,
+                        minLevel: 4,
+                        disableClickZoom: true // 클릭 시 자동 확대 방지
+                    });
+
+                    // 클러스터 클릭 시 리스트 업데이트
+                    kakao.maps.event.addListener(clusterer, 'clusterclick', function(cluster) {
+                        const markers = cluster.getMarkers();
+                        const props = markers.map(m => m.propertyData);
+                        renderPropertyCards(props);
+                        const countHeader = document.querySelector('#listCountHeader span');
+                        if (countHeader) countHeader.textContent = `선택된 클러스터 ${props.length}개`;
+                    });
+
+                    // 지도가 이동, 확대, 축소될 때 화면에 보이는 마커만 리스트 업데이트
+                    kakao.maps.event.addListener(mapInstance, 'idle', function() {
+                        window.updateListByMapBounds();
+                    });
+
                     console.log('gongsil: 지도 초기화 성공');
                 } catch (e) {
                     console.error("Map init error:", e);
@@ -450,9 +474,9 @@
                     allActiveProperties = data || [];
                     console.log("Active properties loaded:", allActiveProperties.length);
                     
-                    if (countHeader) countHeader.textContent = `지역 목록 ${allActiveProperties.length}개`;
+                    if (countHeader) countHeader.textContent = `설정 중... (총 ${allActiveProperties.length}개)`;
 
-                    renderPropertyCards(allActiveProperties);
+                    // 리스트 렌더링은 지오코딩 및 클러스터링 로드 후에 updateListByMapBounds 로 처리됨
                     addMarkersToMap(allActiveProperties);
                 } catch (e) {
                     console.error("Data load error:", e);
@@ -627,18 +651,48 @@
                 }
             };
 
+            window.updateListByMapBounds = function() {
+                if (!window.mapInstance) return;
+                const bounds = window.mapInstance.getBounds();
+                const visibleProps = [];
+                propertyMarkers.forEach(m => {
+                    if (bounds.contain(m.getPosition())) {
+                        visibleProps.push(m.propertyData);
+                    }
+                });
+                renderPropertyCards(visibleProps);
+                const countHeader = document.querySelector('#listCountHeader span');
+                if (countHeader) countHeader.textContent = `현재 지도 화면 ${visibleProps.length}개`;
+            };
+
             function addMarkersToMap(props) {
                 if (!window.mapInstance) return;
                 const geocoder = new kakao.maps.services.Geocoder();
+                propertyMarkers = [];
+                if (clusterer) clusterer.clear();
+
+                let completedCount = 0;
+
+                // 데이터가 없을 경우 처리
+                if (props.length === 0) {
+                    window.updateListByMapBounds();
+                    return;
+                }
+
                 props.forEach(p => {
                     const fullAddr = `${p.sido || ''} ${p.sigungu || ''} ${p.dong || ''} ${p.detail_address || ''}`;
                     geocoder.addressSearch(fullAddr, (result, status) => {
+                        completedCount++;
                         if (status === kakao.maps.services.Status.OK) {
-                            const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                            p.lat = parseFloat(result[0].y);
+                            p.lng = parseFloat(result[0].x);
+                            const coords = new kakao.maps.LatLng(p.lat, p.lng);
                             const marker = new kakao.maps.Marker({
-                                map: window.mapInstance,
                                 position: coords
                             });
+                            marker.propertyData = p; // 속성 데이터를 마커에 저장
+                            propertyMarkers.push(marker);
+
                             const infowindow = new kakao.maps.InfoWindow({
                                 content: `<div style="padding:5px;font-size:12px;">${formatPriceDisplay(p)}</div>`
                             });
@@ -647,6 +701,12 @@
                                 infowindow.open(window.mapInstance, marker);
                                 setTimeout(() => infowindow.close(), 3000);
                             });
+                        }
+
+                        // 모든 지오코딩 작업이 완료되었을 때 클러스터 설정
+                        if (completedCount === props.length) {
+                            if (clusterer) clusterer.addMarkers(propertyMarkers);
+                            window.updateListByMapBounds();
                         }
                     });
                 });
