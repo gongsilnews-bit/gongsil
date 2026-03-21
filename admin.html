@@ -559,7 +559,7 @@
     }
 
     window.editProperty = function(id) {
-        alert("수정 기능 준비중 (ID: " + id + ")");
+        window.location.href = `register.html?id=${id}`;
     }
 
     document.getElementById('btn-do-search').addEventListener('click', () => {

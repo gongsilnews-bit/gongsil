@@ -606,6 +606,8 @@
         const supabase = window.gongsiClient;
         let currentUserProfile = null; // 로그인된 사용자 프로필 정보 전역 저장
         let selectedFiles = []; // 업로드할 파일 리스트
+        let editPropertyId = null; // 수정모드 판단용 ID
+        let existingImages = []; // 수정모드 기존 이미지 보관
 
         // --- 이미지 선택 및 압축 처리 로직 ---
         window.addEventListener('load', () => {
@@ -666,24 +668,23 @@
                 return;
             }
 
-            if (selectedFiles.length === 0) {
+            if (selectedFiles.length === 0 && existingImages.length === 0) {
                 alert("최소 1장 이상의 사진을 등록해 주세요.");
                 return;
             }
 
             // 로딩 시작
-            showLoading("이미지 압축 및 서버 전송 중...");
+            showLoading(editPropertyId ? "데이터 수정 및 저장 중..." : "이미지 압축 및 서버 전송 중...");
 
             try {
-                // 1. 이미지 압축 및 업로드 (Supabase Storage)
-                const imageUrls = [];
+                // 1. 이미지 압축 및 업로드 (새로 추가된 사진만)
+                const imageUrls = [...existingImages];
                 for (let i = 0; i < selectedFiles.length; i++) {
                     const file = selectedFiles[i];
                     
-                    // 이미지 압축 옵션 설정
                     const options = {
-                        maxSizeMB: 0.8, // 최대 0.8MB로 압축
-                        maxWidthOrHeight: 1280, // 최대 가로세로 1280px
+                        maxSizeMB: 0.8,
+                        maxWidthOrHeight: 1280,
                         useWebWorker: true
                     };
 
@@ -704,7 +705,7 @@
                     imageUrls.push(publicUrl);
                 }
 
-                // 2. 최종 데이터 객체 생성 (배포된 DB 스키마 및 관리자 페이지 호환 기준)
+                // 2. 최종 데이터 객체 생성
                 const propertyData = {
                     user_id: user.id,
                     user_role: currentUserProfile?.role || 'general',
@@ -715,6 +716,8 @@
                     maintenance_fee: parseInt(document.getElementById('maintenanceFee').value) || 0,
                     room_count: document.getElementById('roomCount').value,
                     bathroom_count: document.getElementById('bathroomCount').value,
+                    current_floor: parseInt(document.getElementById('currentFloor').value) || null,
+                    total_floor: parseInt(document.getElementById('totalFloor').value) || null,
                     supply_area: parseFloat(document.getElementById('supplyArea').value) || 0,
                     area: parseFloat(document.getElementById('dedicatedArea').value) || 0,
                     options: document.getElementById('selectedOptions').value,
@@ -731,21 +734,37 @@
                     author_phone: authorPhone,
                     owner_relation: document.getElementById('ownerRelation').value,
                     brokerage_fee: brokerageFee,
-                    images: imageUrls, // 문자열 배열형태로 저장 (text[])
-                    status: 'active', // 바로 활성화 (관리자 승인 불필요)
+                    images: imageUrls,
+                    status: 'active',
                     agree_promo: document.getElementById('agreePromo').checked,
                     created_at: new Date()
                 };
 
-                // 3. DB Insert
-                const { error: dbError } = await supabase
-                    .from('properties')
-                    .insert([propertyData]);
+                // 3. DB Insert 또는 Update
+                if (editPropertyId) {
+                    delete propertyData.created_at; // 기존 날짜 유지
+                    propertyData.updated_at = new Date();
+                    const { error: dbError } = await supabase
+                        .from('properties')
+                        .update(propertyData)
+                        .eq('id', editPropertyId);
+                        
+                    if (dbError) throw dbError;
+                    
+                    hideLoading();
+                    alert("성공적으로 매물이 수정되었습니다!");
+                } else {
+                    const { error: dbError } = await supabase
+                        .from('properties')
+                        .insert([propertyData]);
 
-                if (dbError) throw dbError;
+                    if (dbError) throw dbError;
 
-                hideLoading();
-                alert("성공적으로 매물이 등록되었습니다!");
+                    hideLoading();
+                    alert("성공적으로 매물이 등록되었습니다!");
+                }
+                
+                // 완료 후 목록으로 이동
                 // iframe 내부에서 호출되므로, 부모 페이지(user_admin.html)를 유지하면서 
                 // iframe의 소스만 매물관리 목록(admin.html)으로 변경합니다.
                 window.location.href = './admin.html';
@@ -1134,11 +1153,117 @@
         }
 
         // 페이지 로드 시 상태 초기화
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
             window.updatePriceFields();
-            window.updatePropertyFields(); // 추가
-            loadUserProfile();
+            window.updatePropertyFields();
+            await loadUserProfile();
+            checkEditMode(); // 수정 모드 판별 및 데이터 로드
         });
+
+        async function checkEditMode() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            if (id) {
+                editPropertyId = id;
+                const headerTitle = document.querySelector('.register-header h1');
+                if(headerTitle) headerTitle.innerText = "매물 수정 G2.0";
+                const btnSubmit = document.querySelector('.btn-submit');
+                if(btnSubmit) btnSubmit.innerText = "매물 수정 완료";
+                await loadPropertyData(id);
+            }
+        }
+
+        async function loadPropertyData(id) {
+            showLoading("매물 정보를 불러오는 중입니다...");
+            const { data, error } = await supabase.from('properties').select('*').eq('id', id).single();
+            hideLoading();
+            if (error) {
+                alert("매물 데이터를 불러오는데 실패했습니다: " + error.message);
+                return;
+            }
+            if (data) {
+                // Property Type
+                const pTypeBtn = Array.from(document.querySelectorAll('.trade-btn-group button')).find(b => b.innerText === data.property_type && b.onclick && b.onclick.toString().includes('selectPropertyType'));
+                if (pTypeBtn) pTypeBtn.click();
+                
+                // Trade Type
+                const tTypeBtn = Array.from(document.querySelectorAll('.trade-btn-group button')).find(b => b.innerText === data.trade_type && b.onclick && b.onclick.toString().includes('selectTradeType'));
+                if (tTypeBtn) tTypeBtn.click();
+                
+                // Prices
+                if(data.deposit) document.getElementById('deposit').value = data.deposit;
+                if(data.monthly_rent) document.getElementById('monthlyRent').value = data.monthly_rent;
+                if(data.maintenance_fee) document.getElementById('maintenanceFee').value = data.maintenance_fee;
+                updateKoreanAmount('deposit', 'depositKorean');
+                updateKoreanAmount('monthlyRent', 'rentKorean');
+                updateKoreanAmount('maintenanceFee', 'mFeeKorean');
+                
+                // Rooms / Floors
+                if(data.room_count) document.getElementById('roomCount').value = data.room_count;
+                if(data.bathroom_count) document.getElementById('bathroomCount').value = data.bathroom_count;
+                if(data.current_floor) document.getElementById('currentFloor').value = data.current_floor;
+                if(data.total_floor) document.getElementById('totalFloor').value = data.total_floor;
+                
+                // Areas
+                if(data.supply_area) document.getElementById('supplyArea').value = data.supply_area;
+                if(data.area) document.getElementById('dedicatedArea').value = data.area;
+                convertArea('m2', 'supply');
+                convertArea('m2', 'dedicated');
+                
+                // Address
+                if(data.sido) document.getElementById('sido').value = data.sido;
+                if(data.sigungu) document.getElementById('sigungu').value = data.sigungu;
+                if(data.dong) document.getElementById('dong').value = data.dong;
+                if(data.detail_address) document.getElementById('detailAddress').value = data.detail_address;
+                if(data.building_name) document.getElementById('buildingName').value = data.building_name;
+                if(data.dong_number) document.getElementById('dongNumber').value = data.dong_number;
+                if(data.room_number) document.getElementById('roomNumber').value = data.room_number;
+                if(data.is_room_private) document.getElementById('isRoomPrivate').checked = data.is_room_private;
+                if(data.description) document.getElementById('description').value = data.description;
+                
+                // Options
+                if (data.options) {
+                    const savedOptions = data.options.split(',');
+                    savedOptions.forEach(optName => {
+                        const optBtn = Array.from(document.querySelectorAll('.option-btn')).find(b => b.innerText.includes(optName));
+                        if(optBtn && !optBtn.classList.contains('active')) optBtn.click();
+                    });
+                }
+                
+                // Auth Info
+                if(data.author_name) document.getElementById('authorName').value = data.author_name;
+                if(data.author_phone) document.getElementById('authorPhone').value = data.author_phone;
+                if(data.owner_relation) document.getElementById('ownerRelation').value = data.owner_relation;
+                
+                if(data.agree_promo) document.getElementById('agreePromo').checked = data.agree_promo;
+                
+                // Brokerage fee
+                setTimeout(() => {
+                    const feeBtns = Array.from(document.querySelectorAll('#brokerageBtns button'));
+                    const targetFeeBtn = feeBtns.find(b => b.innerText === data.brokerage_fee);
+                    if(targetFeeBtn) targetFeeBtn.click();
+                }, 500);
+                
+                // Images
+                existingImages = data.images || [];
+                const previewContainer = document.getElementById('previewContainer');
+                existingImages.forEach(imgUrl => {
+                    const item = document.createElement('div');
+                    item.className = 'preview-item';
+                    item.innerHTML = `
+                        <img src="${imgUrl}">
+                        <button type="button" class="preview-remove">×</button>
+                    `;
+                    item.querySelector('.preview-remove').onclick = () => {
+                        existingImages = existingImages.filter(url => url !== imgUrl);
+                        item.remove();
+                    };
+                    previewContainer.appendChild(item);
+                });
+                
+                updateFullAddress();
+            }
+        }
 
         // 사용자 프로필 정보 자동 로드
         async function loadUserProfile() {
