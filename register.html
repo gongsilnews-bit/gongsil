@@ -1181,12 +1181,27 @@
                 return;
             }
             if (data) {
-                // Property Type
-                const pTypeBtn = Array.from(document.querySelectorAll('.trade-btn-group button')).find(b => b.innerText === data.property_type && b.onclick && b.onclick.toString().includes('selectPropertyType'));
+                // Property Type (매물종류)
+                const allTradeBtns = Array.from(document.querySelectorAll('.trade-btn'));
+                const pTypeBtn = allTradeBtns.find(b => {
+                    const btnText = b.textContent.trim();
+                    const dataText = (data.property_type || '').trim();
+                    if (btnText === dataText) return true;
+                    // 상가/사무실 <-> 사무실/상가 명칭 호환성 처리
+                    if ((btnText === '사무실/상가' && dataText === '상가/사무실') || 
+                        (btnText === '상가/사무실' && dataText === '사무실/상가')) return true;
+                    // 빌라/주택 <-> 빌라,주택 등 호환성
+                    if (btnText.replace(/[^가-힣a-zA-Z]/g, '') === dataText.replace(/[^가-힣a-zA-Z]/g, '')) return true;
+                    return false;
+                });
                 if (pTypeBtn) pTypeBtn.click();
                 
-                // Trade Type
-                const tTypeBtn = Array.from(document.querySelectorAll('.trade-btn-group button')).find(b => b.innerText === data.trade_type && b.onclick && b.onclick.toString().includes('selectTradeType'));
+                // Trade Type (거래유형)
+                const tTypeBtn = allTradeBtns.find(b => {
+                    const btnText = b.textContent.trim();
+                    const dataText = (data.trade_type || '').trim();
+                    return btnText === dataText;
+                });
                 if (tTypeBtn) tTypeBtn.click();
                 
                 // Prices
