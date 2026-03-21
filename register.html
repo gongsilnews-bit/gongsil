@@ -832,8 +832,9 @@
             // hidden input 값 업데이트
             document.getElementById('tradeType').value = type;
             
-            // 버튼들 스타일 초기화
-            const btns = document.querySelectorAll('.trade-btn');
+            // 버튼들 스타일 초기화 (해당 그룹 내 버튼만)
+            const parent = btn.parentElement;
+            const btns = parent.querySelectorAll('.trade-btn');
             btns.forEach(b => b.classList.remove('active'));
             
             // 현재 클릭된 버튼 활성화
