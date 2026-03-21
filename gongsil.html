@@ -118,7 +118,7 @@
 
         /* ---------------- 공실 상세 뷰 스타일 (네이버 부동산 스타일) ---------------- */
         .property-detail-view {
-            width: 400px;
+            width: 500px;
             background: #fff;
             display: none; /* 기본 숨김 */
             flex-direction: column;
@@ -133,42 +133,18 @@
         }
         /* 우측 상단 닫기 버튼 */
         .detail-close-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 30px;
-            height: 30px;
-            background: rgba(255,255,255,0.8);
-            border: 1px solid #ddd;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-            z-index: 100;
-            transition: all 0.2s;
+            position: absolute; top: 15px; right: 15px; width: 30px; height: 30px;
+            background: rgba(255,255,255,0.8); border: 1px solid #ddd; border-radius: 50%;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 20px; font-weight: bold; color: #333; z-index: 100; transition: all 0.2s;
         }
-        .detail-close-btn:hover {
-            background: #fff;
-            border-color: #999;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+        .detail-close-btn:hover { background: #fff; border-color: #999; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
         /* 상단 사진 갤러리 */
         .detail-gallery {
-            position: relative;
-            width: 100%;
-            height: 250px;
-            background: #f0f0f0;
+            position: relative; width: 100%; height: 300px; background: #f0f0f0;
         }
-        .detail-gallery img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .detail-gallery img { width: 100%; height: 100%; object-fit: cover; }
         .gallery-nav {
             position: absolute; top: 50%; transform: translateY(-50%);
             background: rgba(0,0,0,0.2); color: white; border: none; font-size: 18px;
@@ -177,41 +153,56 @@
         .gallery-nav.next { right: 0; border-radius: 4px 0 0 4px; }
         .gallery-page {
             position: absolute; bottom: 15px; right: 15px;
-            background: rgba(0,0,0,0.5); color: white; font-size: 11px;
-            padding: 3px 12px; border-radius: 20px;
+            background: rgba(0,0,0,0.6); color: white; font-size: 11px;
+            padding: 4px 12px; border-radius: 20px;
         }
 
-        /* 매물 텍스트 정보 */
-        .detail-info { padding: 20px; }
-        .detail-meta-top {
-            display: flex; justify-content: space-between; font-size: 12px; color: #666; margin-bottom: 12px;
-        }
-        .detail-price-title { font-size: 22px; font-weight: bold; color: #111; margin: 0 0 5px 0; }
-        .detail-loc-text { font-size: 13px; color: #555; margin-bottom: 10px; }
-        .detail-error-report { font-size: 12px; color: #888; cursor: pointer; }
-        .detail-desc-box {
-            margin-top: 20px; padding-top: 20px; border-top: 1px solid #f0f0f0;
-            font-size: 15px; color: #222; font-weight: bold; line-height: 1.5;
-        }
-        .feature-item {
-            display: flex; align-items: center; gap: 10px; padding: 12px 0;
-            border-bottom: 1px solid #f9f9f9; font-size: 14px; color: #333;
-        }
-        .feature-icon { width: 24px; text-align: center; }
+        /* 매물 헤더 & 텍스트 정보 */
+        .detail-header-info { padding: 20px; border-bottom: 1px solid #f0f0f0; }
+        .status-tags { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .tag-confirm { font-size: 11px; font-weight: bold; color: #ff5a5f; border: 1px solid #ff5a5f; padding: 2px 4px; border-radius: 2px; }
+        .reg-date { font-size: 12px; color: #888; }
+        .detail-property-type { font-size: 15px; font-weight: bold; color: #333; margin: 0 0 6px 0; }
+        .detail-price-main { font-size: 26px; font-weight: 800; color: #1f5edb; margin: 0 0 16px 0; }
+        
+        .detail-summary-list { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 12px; }
+        .detail-summary-list li { font-size: 13px; color: #555; position: relative; }
+        .detail-summary-list li::after { content: ''; position: absolute; right: -7px; top: 4px; width: 1px; height: 10px; background: #ddd; }
+        .detail-summary-list li:last-child::after { display: none; }
+
+        /* 탭스타일 */
+        .detail-tabs { display: flex; border-bottom: 1px solid #ddd; margin: 0; }
+        .detail-tabs .tab-item { flex: 1; text-align: center; padding: 14px 0; font-size: 15px; font-weight: bold; cursor: pointer; color: #888; }
+        .detail-tabs .tab-item.active { color: #111; border-bottom: 2px solid #111; }
+
+        /* 정보 표 스타일 */
+        .detail-info-table { display: grid; grid-template-columns: 100px 1fr; padding: 24px 20px; row-gap: 16px; border-bottom: 10px solid #f5f5f5; }
+        .info-row { display: contents; }
+        .info-label { font-size: 13px; color: #888; }
+        .info-value { font-size: 13px; color: #222; font-weight: 500; }
+        .full-desc { grid-column: 1 / -1; margin-top: 10px; color: #444; line-height: 1.6; white-space: pre-wrap; font-size: 14px; }
+
+        /* 중개사 정보 */
+        .realtor-info-box { padding: 24px 20px; background: #fff; margin: 0; }
+        .realtor-title { font-size: 16px; font-weight: bold; color: #111; margin-bottom: 12px; }
+        .realtor-details { display: flex; flex-direction: column; gap: 6px; background: #fafafa; padding: 16px; border-radius: 8px; border: 1px solid #eee; }
+        .realtor-name { font-weight: bold; font-size: 15px; color: #222; }
+        .realtor-address { font-size: 13px; color: #666; }
+        .realtor-phone { font-size: 14px; font-weight: bold; color: #1f5edb; margin-top: 4px; }
 
         /* 하단 고정 바 */
         .detail-bottom-bar {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 60px;
             background: white; border-top: 1px solid #ddd;
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 20px; box-sizing: border-box; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            padding: 0 20px; box-sizing: border-box; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 10;
         }
-        .bottom-price { font-size: 16px; font-weight: bold; color: #111; }
+        .bottom-price { font-size: 18px; font-weight: bold; color: #111; }
         .btn-inquiry {
-            background: var(--primary-color); color: white; border: none;
-            padding: 10px 24px; border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer;
+            background: var(--primary-color, #ff5a5f); color: white; border: none;
+            padding: 10px 28px; border-radius: 4px; font-size: 15px; font-weight: bold; cursor: pointer;
         }
-        .btn-inquiry:hover { background: var(--hover-color); }
+        .btn-inquiry:hover { background: var(--hover-color, #e0484d); }
     </style>
 </head>
 
@@ -281,52 +272,83 @@
             <div class="detail-scroll-area">
                 <!-- 상단 사진 -->
                 <div class="detail-gallery">
-                    <img src="https://via.placeholder.com/600x400/DDDDDD/666666?text=Building+Indoor" alt="상세사진">
+                    <img id="detailMainImage" src="https://via.placeholder.com/600x400/DDDDDD/666666?text=Building+Indoor" alt="상세사진">
                     <button class="gallery-nav prev">〈</button>
                     <button class="gallery-nav next">〉</button>
-                    <div class="gallery-page">1/10</div>
+                    <div class="gallery-page">1/1</div>
                 </div>
 
-                <!-- 텍스트 정보 -->
-                <div class="detail-info">
-                    <div class="detail-meta-top">
-                        <span>등록번호 -</span>
-                        <span>-</span>
+                <!-- 타이틀 헤더 구역 -->
+                <div class="detail-header-info">
+                    <div class="status-tags">
+                        <span class="tag-confirm">확인매물</span>
+                        <span class="reg-date" id="docRegDate">-</span>
                     </div>
-                    <h2 class="detail-price-title">로딩중...</h2>
-                    <div class="detail-loc-text">매물 정보를 불러오고 있습니다.</div>
-                    <div class="detail-error-report">⚠️ 오류 제보하기</div>
-
-                    <div class="detail-desc-box">
-                        -
-                    </div>
-
-                    <!-- 매물 스펙(아이콘 목록) -->
-                    <div class="feature-item" style="margin-top:10px;">
-                        <div class="feature-icon">📐</div>
-                        전용 -m²
-                    </div>
-                    <div class="feature-item">
-                        <div class="feature-icon">🚪</div>
-                        - 룸
-                    </div>
-                    <div class="feature-item">
-                        <div class="feature-icon">🅿️</div>
-                        주차 여부 로딩중
-                    </div>
-                    <div class="feature-item">
-                        <div class="feature-icon">🏢</div>
-                        층 정보 로딩중
-                    </div>
+                    <h2 class="detail-property-type" id="docPropType">-</h2>
+                    <h1 class="detail-price-main" id="docPriceMain">-</h1>
                     
-                    <div style="height: 100px;"></div> <!-- 스크롤 여백 -->
+                    <ul class="detail-summary-list">
+                        <li id="docSummaryRooms">방 -개</li>
+                        <li id="docSummaryParking">주차가능</li>
+                        <li id="docSummaryArea">면적 -/-</li>
+                    </ul>
                 </div>
+                
+                <!-- 탭 -->
+                <div class="detail-tabs">
+                    <div class="tab-item active">매물정보</div>
+                    <div class="tab-item">사진</div>
+                </div>
+
+                <!-- 매물 텍스트 정보 표 -->
+                <div class="detail-info-table">
+                    <div class="info-row">
+                        <div class="info-label">소재지</div>
+                        <div class="info-value" id="docLocation">-</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">매물특징</div>
+                        <div class="info-value" id="docFeatures">-</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">공급/전용면적</div>
+                        <div class="info-value" id="docAreaValue">-</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">해당층/총층</div>
+                        <div class="info-value" id="docFloor">- / -</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">방/욕실수</div>
+                        <div class="info-value" id="docRoomsDetail">-/-개</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">관리비</div>
+                        <div class="info-value" id="docMaintenance">0만원</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">상세설명</div>
+                        <div class="info-value full-desc" id="docDescription">-</div>
+                    </div>
+                </div>
+                
+                <!-- 중개사 정보 영역 -->
+                <div class="realtor-info-box">
+                    <div class="realtor-title">중개사 정보</div>
+                    <div class="realtor-details">
+                        <div class="realtor-name" id="docRealtorName">공실뉴스 파트너 중개사</div>
+                        <div class="realtor-address" id="docRealtorAddr">위치 정보 준비중</div>
+                        <div class="realtor-phone" id="docRealtorPhone">010-0000-0000</div>
+                    </div>
+                </div>
+
+                <div style="height: 100px;"></div>
             </div>
 
             <!-- 고정 하단바 -->
             <div class="detail-bottom-bar">
-                <div class="bottom-price">-</div>
-                <button class="btn-inquiry">문의하기</button>
+                <div class="bottom-price" id="docBottomPrice">-</div>
+                <button class="btn-inquiry">연락처 보기</button>
             </div>
         </div>
         <!-- 우측 지도 영역 -->
@@ -486,20 +508,46 @@
                 if (!detailView) return;
 
                 const priceStr = formatPriceDisplay(p);
-                detailView.querySelector('.detail-price-title').textContent = priceStr;
-                const metaTop = detailView.querySelector('.detail-meta-top');
-                if (metaTop) {
-                    const regDate = new Date(p.created_at);
-                    metaTop.innerHTML = `<span>등록번호 ${p.id}</span><span>${regDate.toLocaleDateString()}</span>`;
+                
+                // Header Info
+                const regDate = new Date(p.created_at);
+                document.getElementById('docRegDate').textContent = `${regDate.getFullYear()}.${String(regDate.getMonth()+1).padStart(2,'0')}.${String(regDate.getDate()).padStart(2,'0')}.`;
+                document.getElementById('docPropType').textContent = p.property_type || '정보없음';
+                document.getElementById('docPriceMain').textContent = priceStr;
+                
+                document.getElementById('docSummaryRooms').textContent = `룸 ${p.room_count || '0'}개`;
+                document.getElementById('docSummaryParking').textContent = '주차정보 로딩중';
+                
+                const supArea = p.supply_area ? `${p.supply_area}㎡` : '';
+                const excArea = p.area ? `${p.area}㎡` : '';
+                const areaDisplay = (supArea && excArea) ? `${supArea} / ${excArea}` : (excArea || supArea || '정보없음');
+                document.getElementById('docSummaryArea').textContent = areaDisplay ? `면적 ${areaDisplay}` : '-';
+
+                // Table Info
+                const addr = `${p.sido || ''} ${p.sigungu || ''} ${p.dong || ''} ${p.detail_address || ''}`.trim();
+                document.getElementById('docLocation').textContent = addr || '주소 정보 없음';
+                document.getElementById('docFeatures').textContent = p.building_name || p.property_type || '-';
+                document.getElementById('docAreaValue').textContent = areaDisplay || '-';
+                document.getElementById('docFloor').textContent = '정보없음';
+                document.getElementById('docRoomsDetail').textContent = `${p.room_count || '0'} / ${p.bathroom_count || '0'}개`;
+                document.getElementById('docMaintenance').textContent = `${p.maintenance_fee || 0}만원`;
+                
+                document.getElementById('docDescription').textContent = p.description || '상세 설명이 등록되지 않았습니다.';
+                
+                // Realtor Info
+                document.getElementById('docRealtorName').textContent = p.author_name || '등록자 정보 없음';
+                document.getElementById('docRealtorPhone').textContent = p.author_phone || '연락처 비공개';
+                document.getElementById('docRealtorAddr').textContent = '-';
+
+                // Bottom bar
+                document.getElementById('docBottomPrice').textContent = priceStr;
+
+                // Photo
+                const galleryImg = document.getElementById('detailMainImage');
+                if (galleryImg) {
+                    galleryImg.src = (p.images && p.images.length > 0) ? p.images[0] : 'https://via.placeholder.com/600x400/DDDDDD/666666?text=No+Image';
                 }
-                detailView.querySelector('.detail-loc-text').textContent = `${p.sido || ''} ${p.sigungu || ''} ${p.dong || ''} · 관리비 ${p.maintenance_fee || 0}만원`;
-                detailView.querySelector('.detail-desc-box').textContent = p.description || '상세 설명이 없습니다.';
-                detailView.querySelector('.bottom-price').textContent = priceStr;
-                const features = detailView.querySelectorAll('.feature-item');
-                if (features[0]) features[0].innerHTML = `<div class="feature-icon">📐</div>전용 ${p.area || '-'}㎡`;
-                if (features[1]) features[1].innerHTML = `<div class="feature-icon">🚪</div>${p.room_count || '-'} (욕실 ${p.bathroom_count || '-'}개)`;
-                const galleryImg = detailView.querySelector('.detail-gallery img');
-                if (galleryImg) galleryImg.src = (p.images && p.images.length > 0) ? p.images[0] : 'https://via.placeholder.com/600x400/DDDDDD/666666?text=No+Image';
+
                 detailView.style.display = 'flex';
             };
 
