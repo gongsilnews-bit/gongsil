@@ -272,10 +272,10 @@
             <div class="detail-scroll-area">
                 <!-- 상단 사진 -->
                 <div class="detail-gallery">
-                    <img id="detailMainImage" src="https://via.placeholder.com/600x400/DDDDDD/666666?text=Building+Indoor" alt="상세사진">
-                    <button class="gallery-nav prev">〈</button>
-                    <button class="gallery-nav next">〉</button>
-                    <div class="gallery-page">1/1</div>
+                    <img id="detailMainImage" src="https://via.placeholder.com/600x400/DDDDDD/666666?text=Building+Indoor" alt="상세사진" style="cursor: pointer;" onclick="window.switchDetailTab('photos')">
+                    <button class="gallery-nav prev" onclick="window.prevGalleryImage()">〈</button>
+                    <button class="gallery-nav next" onclick="window.nextGalleryImage()">〉</button>
+                    <div class="gallery-page" id="galleryPageIndicator">1/1</div>
                 </div>
 
                 <!-- 타이틀 헤더 구역 -->
@@ -296,9 +296,12 @@
                 
                 <!-- 탭 -->
                 <div class="detail-tabs">
-                    <div class="tab-item active">매물정보</div>
-                    <div class="tab-item">사진</div>
+                    <div class="tab-item active" id="tabBtnInfo" onclick="window.switchDetailTab('info')">매물정보</div>
+                    <div class="tab-item" id="tabBtnPhotos" onclick="window.switchDetailTab('photos')">사진</div>
                 </div>
+
+                <!-- 탭 내용 영역 (매물정보) -->
+                <div id="tabInfoSection">
 
                 <!-- 매물 텍스트 정보 표 -->
                 <div class="detail-info-table">
@@ -340,6 +343,12 @@
                         <div class="realtor-address" id="docRealtorAddr">위치 정보 준비중</div>
                         <div class="realtor-phone" id="docRealtorPhone">010-0000-0000</div>
                     </div>
+                </div>
+                </div> <!-- tabInfoSection End -->
+
+                <!-- 탭 내용 영역 (사진 리스트) -->
+                <div id="tabPhotosSection" style="display: none; padding: 20px;">
+                    <!-- Photos will be added here -->
                 </div>
 
                 <div style="height: 100px;"></div>
@@ -542,10 +551,22 @@
                 // Bottom bar
                 document.getElementById('docBottomPrice').textContent = priceStr;
 
-                // Photo
-                const galleryImg = document.getElementById('detailMainImage');
-                if (galleryImg) {
-                    galleryImg.src = (p.images && p.images.length > 0) ? p.images[0] : 'https://via.placeholder.com/600x400/DDDDDD/666666?text=No+Image';
+                // Photo Update
+                window.currentPropertyPhotos = p.images || [];
+                window.currentPhotoIndex = 0;
+                
+                window.updateGalleryImage();
+                if(!window.currentPropertyPhotos || window.currentPropertyPhotos.length === 0) {
+                    const galleryImg = document.getElementById('detailMainImage');
+                    if(galleryImg) galleryImg.src = 'https://via.placeholder.com/600x400/DDDDDD/666666?text=No+Image';
+                    document.getElementById('galleryPageIndicator').textContent = '0/0';
+                }
+
+                // 탭 리셋 상태
+                const photosSec = document.getElementById('tabPhotosSection');
+                if (photosSec) photosSec.innerHTML = '';
+                if (typeof window.switchDetailTab === 'function') {
+                    window.switchDetailTab('info');
                 }
 
                 detailView.style.display = 'flex';
@@ -554,6 +575,56 @@
             window.hidePropertyDetail = function() {
                 const detailView = document.getElementById('propertyDetailView');
                 if (detailView) detailView.style.display = 'none';
+            };
+
+            window.switchDetailTab = function(tab) {
+                const btnInfo = document.getElementById('tabBtnInfo');
+                const btnPhotos = document.getElementById('tabBtnPhotos');
+                const secInfo = document.getElementById('tabInfoSection');
+                const secPhotos = document.getElementById('tabPhotosSection');
+
+                if (tab === 'info') {
+                    if(btnInfo) btnInfo.classList.add('active');
+                    if(btnPhotos) btnPhotos.classList.remove('active');
+                    if(secInfo) secInfo.style.display = 'block';
+                    if(secPhotos) secPhotos.style.display = 'none';
+                } else if (tab === 'photos') {
+                    if(btnPhotos) btnPhotos.classList.add('active');
+                    if(btnInfo) btnInfo.classList.remove('active');
+                    if(secPhotos) secPhotos.style.display = 'block';
+                    if(secInfo) secInfo.style.display = 'none';
+                    
+                    if (secPhotos && secPhotos.innerHTML.trim() === '') {
+                        if (window.currentPropertyPhotos && window.currentPropertyPhotos.length > 0) {
+                            secPhotos.innerHTML = window.currentPropertyPhotos.map(img => 
+                                `<img src="${img}" style="width:100%; border-radius:8px; margin-bottom:15px; object-fit:cover;" alt="매물사진">`
+                            ).join('');
+                        } else {
+                            secPhotos.innerHTML = '<div style="text-align:center; padding:30px; color:#999;">등록된 사진이 없습니다.</div>';
+                        }
+                    }
+                }
+            };
+
+            window.prevGalleryImage = function() {
+                if (!window.currentPropertyPhotos || window.currentPropertyPhotos.length <= 1) return;
+                window.currentPhotoIndex = (window.currentPhotoIndex - 1 + window.currentPropertyPhotos.length) % window.currentPropertyPhotos.length;
+                window.updateGalleryImage();
+            };
+
+            window.nextGalleryImage = function() {
+                if (!window.currentPropertyPhotos || window.currentPropertyPhotos.length <= 1) return;
+                window.currentPhotoIndex = (window.currentPhotoIndex + 1) % window.currentPropertyPhotos.length;
+                window.updateGalleryImage();
+            };
+
+            window.updateGalleryImage = function() {
+                const galleryImg = document.getElementById('detailMainImage');
+                const pageIndicator = document.getElementById('galleryPageIndicator');
+                if (window.currentPropertyPhotos && window.currentPropertyPhotos.length > 0) {
+                    if(galleryImg) galleryImg.src = window.currentPropertyPhotos[window.currentPhotoIndex];
+                    if(pageIndicator) pageIndicator.textContent = `${window.currentPhotoIndex + 1}/${window.currentPropertyPhotos.length}`;
+                }
             };
 
             function addMarkersToMap(props) {
