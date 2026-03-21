@@ -427,8 +427,23 @@
                     clusterer = new kakao.maps.MarkerClusterer({
                         map: mapInstance,
                         averageCenter: true,
-                        minLevel: 4,
-                        disableClickZoom: true // 클릭 시 자동 확대 방지
+                        minLevel: 1,
+                        minClusterSize: 1, // 1개 단일 마커도 원 숫자로 표시
+                        disableClickZoom: true, // 클릭 시 자동 확대 방지
+                        styles: [{ // 클리어한 맑은 하늘색 디자인
+                            width: '50px',
+                            height: '50px',
+                            background: 'rgba(66, 133, 244, 0.85)',
+                            color: '#fff',
+                            textAlign: 'center',
+                            fontWeight: 'bold',
+                            fontSize: '16px',
+                            lineHeight: '50px',
+                            borderRadius: '25px',
+                            border: '2px solid #fff',
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+                            cursor: 'pointer'
+                        }]
                     });
 
                     // 클러스터 클릭 시 리스트 업데이트
