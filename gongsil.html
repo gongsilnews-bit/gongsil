@@ -968,6 +968,24 @@
                     });
                 });
             }
+
+            async function checkViewIdAndShowPreview() {
+                const params = new URLSearchParams(window.location.search);
+                const viewId = params.get('view_id');
+                if (viewId && window.gongsiClient) {
+                    try {
+                        const { data, error } = await window.gongsiClient.from('properties').select('*').eq('id', viewId).single();
+                        if (data && !error && window.showPropertyDetail) {
+                            window.showPropertyDetail(data);
+                        }
+                    } catch (e) {
+                         console.error("Preview load error", e);
+                    }
+                }
+            }
+
+            // URL에 view_id가 있으면 자동으로 해당 매물 정보 표시
+            checkViewIdAndShowPreview();
         })();
     </script>
 </body>
