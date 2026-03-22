@@ -324,10 +324,10 @@
             },
             'sale': {
                 name: '분양',
-                pills: ['아파트분양', '오피스텔분양', '상가분양'],
-                basicFilters: ['지역선택', '분양단계', '분양가'],
-                detailFilters: [],
-                showToggle: false
+                pills: ['아파트', '오피스텔', '빌라', '도시형생활주택', '생활숙박시설', '상가/업무'],
+                basicFilters: ['분양단계', '분양형태', '분양가/보증금', '면적', '세대수'],
+                detailFilters: ['입주예정', '청약가능통장', '브랜드'],
+                showToggle: true
             },
             'wish': {
                 name: 'MY관심',
@@ -368,7 +368,7 @@
 
             // Detail toggle
             if (config.showToggle) {
-                midHtml += `<button class="btn-detail-toggle" onclick="toggleDetailRow()">상세매물검색 +</button>`;
+                midHtml += `<button class="btn-detail-toggle" onclick="toggleDetailRow()">상세조건검색 +</button>`;
             }
 
             midHtml += `<button class="btn-refresh" style="margin-left: auto;">↻ 초기화</button>`;
@@ -389,7 +389,7 @@
             const btn = document.querySelector('.btn-detail-toggle');
             row.classList.toggle('active');
             if (btn) {
-                btn.innerText = row.classList.contains('active') ? '상세매물검색 -' : '상세매물검색 +';
+                btn.innerHTML = row.classList.contains('active') ? '상세조건검색 닫기 ✕' : '상세조건검색 +';
             }
         }
     </script>
