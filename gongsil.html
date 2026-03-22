@@ -282,6 +282,11 @@
         .detail-filter-row { display: none; align-items: center; gap: 8px; padding: 10px 20px; border-bottom: 1px solid #eee; overflow-x: auto; background: #fff; }
         .detail-filter-row.active { display: flex; }
         
+        /* 원룸/투룸용 테두리가 있는 버튼 스타일 */
+        .mid-tab-rect { background: #fff; border: 1px solid #111; font-size: 13px; color: #111; cursor: pointer; padding: 6px 14px; border-radius: 4px; white-space: nowrap; transition: all 0.2s; position: relative; flex-shrink: 0; font-weight: bold; }
+        .mid-tab-rect:hover { background: #f9fafb; }
+        .mid-tab-rect.active { background: #111; color: #fff; }
+
         .btn-detail-toggle { background: none; border: none; font-size: 13px; font-weight: bold; color: #1a73e8; cursor: pointer; padding: 8px 12px; white-space: nowrap; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
         .btn-detail-toggle:hover { text-decoration: underline; }
     </style>
@@ -293,19 +298,22 @@
                 name: '아파트·오피스텔',
                 pills: ['아파트', '아파트분양권', '재건축', '오피스텔', '오피스텔분양권', '재개발'],
                 basicFilters: ['거래방식', '가격대', '면적', '사용승인일', '세대수'],
-                detailFilters: ['층수', '방/욕실수', '방향', '융자금', '기타옵션']
+                detailFilters: ['층수', '방/욕실수', '방향', '융자금', '기타옵션'],
+                showToggle: true
             },
             'villa': {
                 name: '빌라·주택',
                 pills: ['빌라/연립', '단독/다가구', '전원주택', '상가주택'],
-                basicFilters: ['거래방식', '가격대', '면적', '방/욕실수', '사용승인일'],
-                detailFilters: ['방향', '융자금', '기타옵션']
+                basicFilters: ['거래방식', '가격대', '면적', '방/욕실수', '사용승인일', '방향', '융자금', '기타옵션'],
+                detailFilters: [],
+                showToggle: false
             },
             'one': {
                 name: '원룸·투룸',
-                pills: ['전체', '원룸', '투룸', '쓰리룸+'],
-                basicFilters: ['거래방식', '가격대', '면적', '관리비'],
-                detailFilters: ['층수', '주차가능', '반려동물', '풀옵션', '단기임대']
+                pills: ['원룸', '투룸', '오피스텔만 보기'],
+                basicFilters: ['거래방식', '가격대', '관리비', '기타옵션'],
+                detailFilters: [],
+                showToggle: false
             },
             'biz': {
                 name: '상가·업무·공장·토지',
@@ -331,7 +339,9 @@
             
             // Pills
             config.pills.forEach((p, idx) => {
-                midHtml += `<button class="mid-tab ${idx===0?'active':''}" onclick="this.classList.toggle('active')">${p}</button>`;
+                const isSpecialPill = p.includes('오피스텔');
+                const pillClass = isSpecialPill ? 'mid-tab-rect' : 'mid-tab';
+                midHtml += `<button class="${pillClass} ${idx===0?'active':''}" onclick="this.classList.toggle('active')">${p}</button>`;
             });
             
             midHtml += `<div class="v-divider"></div>`;
@@ -341,8 +351,8 @@
                 midHtml += `<button class="filter-dropdown">${f} <span class="arrow">▼</span></button>`;
             });
 
-            // Detail toggle (Always show if there are detail filters)
-            if (config.detailFilters.length > 0) {
+            // Detail toggle
+            if (config.showToggle) {
                 midHtml += `<button class="btn-detail-toggle" onclick="toggleDetailRow()">상세매물검색 +</button>`;
             }
 
