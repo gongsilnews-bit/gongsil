@@ -13,6 +13,20 @@ let currentPeriod = 'all'; // 현재 선택된 기간 필터
 let ps; // 장소 검색 객체
 let currentOverlay = null; // 현재 열린 오버레이
 
+// 뉴스 네비게이션 설정
+const NEWS_NAV_CONFIG = {
+    'local': {
+        name: '우리동네부동산',
+        subs: ['아파트·오피스텔', '빌라·주택', '원룸·투룸', '상가·업무·공장·토지', '분양']
+    },
+    'column': {
+        name: '뉴스/칼럼',
+        subs: ['부동산·주식·재테크', '정치·경제·사회', '세무·법률', '여행·맛집', '건강·헬스', 'IT·가전·가구', '스포츠·연예·Car', '인물·미션·기타']
+    },
+    'interest': { name: 'MY관심기사', subs: ['찜한기사', '최근본기사'] },
+    'manage': { name: '기사관리', subs: ['작성하기', '내가쓴기사'] }
+};
+
 // 1. 지도 초기화
 function initMap() {
     const container = document.getElementById('map');
@@ -48,7 +62,52 @@ function initMap() {
         ps = new kakao.maps.services.Places();
     }
 
+    // 뉴스 네비게이션 초기화
+    initNewsNavigation();
+
     return { map: mapInstance, clusterer: clustererInstance };
+}
+
+// 뉴스 1, 2단 네비게이션 연동
+function initNewsNavigation() {
+    const tier1Items = document.querySelectorAll('.news-tab-item');
+    tier1Items.forEach(item => {
+        item.addEventListener('click', () => {
+            const catName = item.innerText.trim();
+            const configKey = Object.keys(NEWS_NAV_CONFIG).find(key => NEWS_NAV_CONFIG[key].name === catName);
+            
+            if (configKey) {
+                // Tier 1 활성화 상태 변경
+                tier1Items.forEach(el => el.classList.remove('active'));
+                item.classList.add('active');
+                
+                // Tier 2 렌더링
+                renderTier2(configKey);
+            }
+        });
+    });
+
+    // 초기값 (우리동네부동산) 설정
+    renderTier2('local');
+}
+
+function renderTier2(key) {
+    const container = document.querySelector('.filter-bar-news .filter-row');
+    if (!container) return;
+
+    const subs = NEWS_NAV_CONFIG[key].subs;
+    container.innerHTML = subs.map((sub, idx) => 
+        `<div class="news-sub-tab ${idx === 0 ? 'active' : ''}" onclick="selectSubTab(this)">${sub}</div>`
+    ).join('');
+}
+
+window.selectSubTab = function(el) {
+    document.querySelectorAll('.news-sub-tab').forEach(tab => tab.classList.remove('active'));
+    el.classList.add('active');
+    
+    // 서브 카테고리 클릭 시 데이터 로드 로직 (나중에 구현)
+    const category = el.innerText.trim();
+    loadNews(category);
 }
 
 // 2. 카카오 SDK 로드 및 초기화
