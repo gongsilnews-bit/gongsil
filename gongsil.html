@@ -285,6 +285,89 @@
         .btn-detail-toggle { background: none; border: none; font-size: 13px; font-weight: bold; color: #1a73e8; cursor: pointer; padding: 8px 12px; white-space: nowrap; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
         .btn-detail-toggle:hover { text-decoration: underline; }
     </style>
+    
+    <script>
+        // 전역 카테고리 설정 데이터 (디자인용 샘플)
+        const CATEGORY_CONFIG = {
+            'apart': {
+                name: '아파트·오피스텔',
+                pills: ['아파트', '아파트분양권', '재건축', '오피스텔', '오피스텔분양권', '재개발'],
+                basicFilters: ['거래방식', '가격대', '면적', '사용승인일', '세대수'],
+                detailFilters: ['층수', '방/욕실수', '방향', '융자금', '기타옵션']
+            },
+            'villa': {
+                name: '빌라·주택',
+                pills: ['빌라/연립', '단독/다가구', '전원주택', '상가주택'],
+                basicFilters: ['거래방식', '가격대', '면적', '방/욕실수', '사용승인일'],
+                detailFilters: ['방향', '융자금', '기타옵션']
+            },
+            'one': {
+                name: '원룸·투룸',
+                pills: ['전체', '원룸', '투룸', '쓰리룸+'],
+                basicFilters: ['거래방식', '가격대', '면적', '관리비'],
+                detailFilters: ['층수', '주차가능', '반려동물', '풀옵션', '단기임대']
+            },
+            'biz': {
+                name: '상가·업무·공장·토지',
+                pills: ['상가/점포', '사무실', '공장/창고', '토지', '지식산업센터'],
+                basicFilters: ['거래방식', '가격대', '면적', '해당층'],
+                detailFilters: ['융자금', '추천업종', '권리금여부', '엘리베이터']
+            }
+        };
+
+        function selectCategory(catKey) {
+            const config = CATEGORY_CONFIG[catKey];
+            if (!config) return;
+
+            // 1. 메인 탭 활성화 상태 변경
+            document.querySelectorAll('.top-tab').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.innerText.includes(config.name.split('·')[0])) btn.classList.add('active');
+            });
+
+            // 2. Mid Row (Pills + Basic Filters) 렌더링
+            const midRow = document.getElementById('midFilterRow');
+            let midHtml = '';
+            
+            // Pills
+            config.pills.forEach((p, idx) => {
+                midHtml += `<button class="mid-tab ${idx===0?'active':''}" onclick="this.classList.toggle('active')">${p}</button>`;
+            });
+            
+            midHtml += `<div class="v-divider"></div>`;
+            
+            // Basic Filters
+            config.basicFilters.forEach(f => {
+                midHtml += `<button class="filter-dropdown">${f} <span class="arrow">▼</span></button>`;
+            });
+
+            // Detail toggle (Always show if there are detail filters)
+            if (config.detailFilters.length > 0) {
+                midHtml += `<button class="btn-detail-toggle" onclick="toggleDetailRow()">상세매물검색 +</button>`;
+            }
+
+            midHtml += `<button class="btn-refresh" style="margin-left: auto;">↻ 초기화</button>`;
+            midRow.innerHTML = midHtml;
+
+            // 3. Detail Row 렌더링
+            const detailRow = document.getElementById('detailFilterRow');
+            detailRow.classList.remove('active'); // 일단 닫기
+            let detailHtml = '';
+            config.detailFilters.forEach(f => {
+                detailHtml += `<button class="filter-dropdown">${f} <span class="arrow">▼</span></button>`;
+            });
+            detailRow.innerHTML = detailHtml;
+        }
+
+        function toggleDetailRow() {
+            const row = document.getElementById('detailFilterRow');
+            const btn = document.querySelector('.btn-detail-toggle');
+            row.classList.toggle('active');
+            if (btn) {
+                btn.innerText = row.classList.contains('active') ? '상세매물검색 -' : '상세매물검색 +';
+            }
+        }
+    </script>
 </head>
 
 <body>
@@ -321,37 +404,35 @@
     <div class="top-filter-bar">
         <!-- 1. 메인 물건 정보 탭 -->
         <div class="top-row">
-            <button class="top-tab active" onclick="document.querySelectorAll('.top-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active')">아파트·오피스텔</button>
-            <button class="top-tab" onclick="document.querySelectorAll('.top-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active')">빌라·주택</button>
-            <button class="top-tab" onclick="document.querySelectorAll('.top-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active')">원룸·투룸</button>
-            <button class="top-tab" onclick="document.querySelectorAll('.top-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active')">상가·업무·공장·토지</button>
-            <button class="top-tab" onclick="document.querySelectorAll('.top-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active')">분양</button>
-            <button class="top-tab" onclick="document.querySelectorAll('.top-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active')">MY관심</button>
+            <button class="top-tab active" onclick="selectCategory('apart')">아파트·오피스텔</button>
+            <button class="top-tab" onclick="selectCategory('villa')">빌라·주택</button>
+            <button class="top-tab" onclick="selectCategory('one')">원룸·투룸</button>
+            <button class="top-tab" onclick="selectCategory('biz')">상가·업무·공장·토지</button>
+            <button class="top-tab" onclick="selectCategory('apart')">분양</button>
+            <button class="top-tab" onclick="selectCategory('apart')">MY관심</button>
             <button class="top-tab" onclick="location.href='user_admin.html'">공실관리</button>
         </div>
         
-        <div class="mid-row">
-            <button class="mid-tab active" onclick="this.classList.toggle('active')">아파트</button>
-            <button class="mid-tab" onclick="this.classList.toggle('active')">아파트분양권</button>
-            <button class="mid-tab" onclick="this.classList.toggle('active')">재건축</button>
-            <button class="mid-tab" onclick="this.classList.toggle('active')">오피스텔</button>
-            <button class="mid-tab" onclick="this.classList.toggle('active')">오피스텔분양권</button>
-            <button class="mid-tab" onclick="this.classList.toggle('active')">재개발</button>
-            
+        <div class="mid-row" id="midFilterRow">
+            <!-- JS dynamic render -->
+            <button class="mid-tab active">아파트</button>
+            <button class="mid-tab">아파트분양권</button>
+            <button class="mid-tab">재건축</button>
+            <button class="mid-tab">오피스텔</button>
+            <button class="mid-tab">오피스텔분양권</button>
+            <button class="mid-tab">재개발</button>
             <div class="v-divider"></div>
-            
             <button class="filter-dropdown">거래방식 <span class="arrow">▼</span></button>
             <button class="filter-dropdown">가격대 <span class="arrow">▼</span></button>
             <button class="filter-dropdown">면적 <span class="arrow">▼</span></button>
             <button class="filter-dropdown">사용승인일 <span class="arrow">▼</span></button>
             <button class="filter-dropdown">세대수 <span class="arrow">▼</span></button>
-            
-            <button class="btn-detail-toggle" onclick="document.getElementById('detailFilterRow').classList.toggle('active'); this.innerText = document.getElementById('detailFilterRow').classList.contains('active') ? '상세매물검색 -' : '상세매물검색 +'">상세매물검색 +</button>
-            
+            <button class="btn-detail-toggle" onclick="toggleDetailRow()">상세매물검색 +</button>
             <button class="btn-refresh" style="margin-left: auto;">↻ 초기화</button>
         </div>
 
         <div class="detail-filter-row" id="detailFilterRow">
+            <!-- JS dynamic render -->
             <button class="filter-dropdown">층수 <span class="arrow">▼</span></button>
             <button class="filter-dropdown">방/욕실수 <span class="arrow">▼</span></button>
             <button class="filter-dropdown">방향 <span class="arrow">▼</span></button>
