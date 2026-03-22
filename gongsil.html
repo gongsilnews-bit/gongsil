@@ -289,6 +289,24 @@
 
         .btn-detail-toggle { background: none; border: none; font-size: 13px; font-weight: bold; color: #1a73e8; cursor: pointer; padding: 8px 12px; white-space: nowrap; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
         .btn-detail-toggle:hover { text-decoration: underline; }
+
+        /* MY관심 전용 스타일 */
+        #wishFloatingFilter { display: none; position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 10; background: #fff; padding: 5px 15px; border-radius: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid #ddd; align-items: center; gap: 10px; font-size: 14px; color: #333; }
+        .wish-select { background: none; border: none; cursor: pointer; font-weight: bold; padding: 5px 10px; }
+        .wish-select::after { content: ' ▼'; font-size: 10px; color: #999; }
+        .wish-mode #midFilterRow { display: none; }
+        .wish-mode #wishFloatingFilter { display: flex; }
+
+        .interest-tabs { display: none; width: 100%; border-bottom: 1px solid #eee; }
+        .wish-mode .interest-tabs { display: flex; }
+        .wish-mode .sort-tabs { display: none; }
+        .interest-tab { flex: 1; padding: 12px 0; text-align: center; border: 1px solid #eee; background: #fff; font-size: 13px; cursor: pointer; color: #666; font-weight: bold; }
+        .interest-tab.active { background: #00ca62; color: #fff; border-color: #00ca62; }
+        .wish-sort-bar { display: none; padding: 12px 20px; justify-content: space-between; align-items: center; border-bottom: 1px solid #f5f5f5; font-size: 12px; color: #888; }
+        .wish-mode .wish-sort-bar { display: flex; }
+        .wish-sort-items { display: flex; gap: 10px; }
+        .wish-sort-item { cursor: pointer; }
+        .wish-sort-item.active { color: #00ca62; font-weight: bold; }
     </style>
     
     <script>
@@ -342,39 +360,44 @@
             const config = CATEGORY_CONFIG[catKey];
             if (!config) return;
 
-            // 1. 메인 탭 활성화 상태 변경
+            // 1. 모드 토글 (MY관심 모드)
+            const sidebar = document.querySelector('.sidebar');
+            if (catKey === 'wish') {
+                sidebar.classList.add('wish-mode');
+            } else {
+                sidebar.classList.remove('wish-mode');
+            }
+
+            // 2. 메인 탭 활성화 상태 변경
             document.querySelectorAll('.top-tab').forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.innerText.includes(config.name.split('·')[0])) btn.classList.add('active');
             });
 
-            // 2. Mid Row (Pills + Basic Filters) 렌더링
+            // 3. Mid Row (Pills + Basic Filters) 렌더링
             const midRow = document.getElementById('midFilterRow');
-            let midHtml = '';
-            
-            // Pills
-            config.pills.forEach((p, idx) => {
-                const isSpecialPill = p.includes('오피스텔');
-                const pillClass = isSpecialPill ? 'mid-tab-rect' : 'mid-tab';
-                midHtml += `<button class="${pillClass} ${idx===0?'active':''}" onclick="this.classList.toggle('active')">${p}</button>`;
-            });
-            
-            midHtml += `<div class="v-divider"></div>`;
-            
-            // Basic Filters
-            config.basicFilters.forEach(f => {
-                midHtml += `<button class="filter-dropdown">${f} <span class="arrow">▼</span></button>`;
-            });
-
-            // Detail toggle
-            if (config.showToggle) {
-                midHtml += `<button class="btn-detail-toggle" onclick="toggleDetailRow()">상세조건검색 +</button>`;
+            if (catKey === 'wish') {
+                midRow.style.display = 'none';
+            } else {
+                midRow.style.display = 'flex';
+                let midHtml = '';
+                config.pills.forEach((p, idx) => {
+                    const isSpecialPill = p.includes('오피스텔');
+                    const pillClass = isSpecialPill ? 'mid-tab-rect' : 'mid-tab';
+                    midHtml += `<button class="${pillClass} ${idx===0?'active':''}" onclick="this.classList.toggle('active')">${p}</button>`;
+                });
+                midHtml += `<div class="v-divider"></div>`;
+                config.basicFilters.forEach(f => {
+                    midHtml += `<button class="filter-dropdown">${f} <span class="arrow">▼</span></button>`;
+                });
+                if (config.showToggle) {
+                    midHtml += `<button class="btn-detail-toggle" onclick="toggleDetailRow()">상세조건검색 +</button>`;
+                }
+                midHtml += `<button class="btn-refresh" style="margin-left: auto;">↻ 초기화</button>`;
+                midRow.innerHTML = midHtml;
             }
 
-            midHtml += `<button class="btn-refresh" style="margin-left: auto;">↻ 초기화</button>`;
-            midRow.innerHTML = midHtml;
-
-            // 3. Detail Row 렌더링
+            // 4. Detail Row 렌더링
             const detailRow = document.getElementById('detailFilterRow');
             detailRow.classList.remove('active'); // 일단 닫기
             let detailHtml = '';
@@ -471,7 +494,25 @@
         <!-- 좌측 사이드바 (공실 리스트) -->
         <aside class="sidebar">
             <div class="sidebar-header" style="padding: 0; border-bottom: none;">
-                <!-- 4. 정렬 탭 -->
+                <!-- MY관심 전용 탭 -->
+                <div class="interest-tabs" id="interestTabs">
+                    <div class="interest-tab active">관심단지</div>
+                    <div class="interest-tab">관심매물</div>
+                    <div class="interest-tab">관심분양</div>
+                </div>
+
+                <!-- MY관심 정렬 바 -->
+                <div class="wish-sort-bar">
+                    <div class="wish-sort-items">
+                        <span class="wish-sort-item active">등록일순</span>
+                        <span class="wish-sort-item">가나다순</span>
+                        <span class="wish-sort-item">세대수순</span>
+                        <span class="wish-sort-item">최근입주순</span>
+                    </div>
+                    <span>⚙︎ 편집</span>
+                </div>
+
+                <!-- 기본 정렬 탭 -->
                 <div class="sort-tabs">
                     <button class="sort-tab active" onclick="document.querySelectorAll('.sort-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active')">랭킹순</button>
                     <button class="sort-tab" onclick="document.querySelectorAll('.sort-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active')">최신순</button>
@@ -480,7 +521,7 @@
                 </div>
                 
                 <div id="listCountHeader" style="padding: 15px 20px; font-weight: bold; font-size: 13px; color: #111; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee;">
-                    <span>선택된 클러스터 0개</span>
+                    <span>현재 지도 화면 0개</span>
                 </div>
             </div>
             <div class="property-list" id="propertyListArea">
@@ -612,6 +653,16 @@
         </div>
         <!-- 우측 지도 영역 -->
         <div class="map-wrapper" style="flex: 1; height: 100%; position: relative;">
+            <div id="wishFloatingFilter">
+                <span style="color:#00ca62; font-weight:bold;">📍</span>
+                <span class="wish-select">경기도</span>
+                <div class="v-divider" style="height:12px;"></div>
+                <span class="wish-select">시/군/구</span>
+                <div class="v-divider" style="height:12px;"></div>
+                <span class="wish-select">읍/면/동</span>
+                <div class="v-divider" style="height:12px;"></div>
+                <span class="wish-select">단지</span>
+            </div>
             <div id="map" style="width: 100%; height: 100%;"></div>
         </div>
     </main>
