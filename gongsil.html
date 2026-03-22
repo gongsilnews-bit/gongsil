@@ -279,11 +279,11 @@
         .btn-refresh:hover { background: #f0f0f0; color: #333; }
         .v-divider { width: 1px; height: 16px; background: #e0e0e0; margin: 0 8px; flex-shrink: 0; }
 
-        .sort-tabs { display: flex; width: 100%; border-bottom: 1px solid #eee; }
-        .sort-tab { flex: 1; background: #fff; border: none; border-right: 1px solid #f0f0f0; font-size: 13px; color: #888; cursor: pointer; padding: 12px 0; text-align: center; }
-        .sort-tab:last-child { border-right: none; }
-        .sort-tab.active { font-weight: bold; color: #00ca62; /* 랭킹순 초록색 */ }
-        .sort-tab:hover { background: #f9f9f9; color: #111; }
+        .detail-filter-row { display: none; align-items: center; gap: 8px; padding: 10px 20px; border-bottom: 1px solid #eee; overflow-x: auto; background: #fff; }
+        .detail-filter-row.active { display: flex; }
+        
+        .btn-detail-toggle { background: none; border: none; font-size: 13px; font-weight: bold; color: #1a73e8; cursor: pointer; padding: 8px 12px; white-space: nowrap; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        .btn-detail-toggle:hover { text-decoration: underline; }
     </style>
 </head>
 
@@ -331,23 +331,32 @@
         </div>
         
         <div class="mid-row">
-            <button class="mid-tab active" onclick="this.classList.toggle('active')">빌라/연립</button>
-            <button class="mid-tab" onclick="this.classList.toggle('active')">단독/다가구</button>
-            <button class="mid-tab active" onclick="this.classList.toggle('active')">전원주택</button>
-            <button class="mid-tab" onclick="this.classList.toggle('active')">상가주택</button>
+            <button class="mid-tab active" onclick="this.classList.toggle('active')">아파트</button>
+            <button class="mid-tab" onclick="this.classList.toggle('active')">아파트분양권</button>
+            <button class="mid-tab" onclick="this.classList.toggle('active')">재건축</button>
+            <button class="mid-tab" onclick="this.classList.toggle('active')">오피스텔</button>
+            <button class="mid-tab" onclick="this.classList.toggle('active')">오피스텔분양권</button>
+            <button class="mid-tab" onclick="this.classList.toggle('active')">재개발</button>
             
             <div class="v-divider"></div>
             
             <button class="filter-dropdown">거래방식 <span class="arrow">▼</span></button>
             <button class="filter-dropdown">가격대 <span class="arrow">▼</span></button>
             <button class="filter-dropdown">면적 <span class="arrow">▼</span></button>
-            <button class="filter-dropdown">방/욕실수 <span class="arrow">▼</span></button>
             <button class="filter-dropdown">사용승인일 <span class="arrow">▼</span></button>
+            <button class="filter-dropdown">세대수 <span class="arrow">▼</span></button>
+            
+            <button class="btn-detail-toggle" onclick="document.getElementById('detailFilterRow').classList.toggle('active'); this.innerText = document.getElementById('detailFilterRow').classList.contains('active') ? '상세매물검색 -' : '상세매물검색 +'">상세매물검색 +</button>
+            
+            <button class="btn-refresh" style="margin-left: auto;">↻ 초기화</button>
+        </div>
+
+        <div class="detail-filter-row" id="detailFilterRow">
+            <button class="filter-dropdown">층수 <span class="arrow">▼</span></button>
+            <button class="filter-dropdown">방/욕실수 <span class="arrow">▼</span></button>
             <button class="filter-dropdown">방향 <span class="arrow">▼</span></button>
             <button class="filter-dropdown">융자금 <span class="arrow">▼</span></button>
             <button class="filter-dropdown">기타옵션 <span class="arrow">▼</span></button>
-            
-            <button class="btn-refresh" style="margin-left: auto;">↻ 초기화</button>
         </div>
     </div>
 
