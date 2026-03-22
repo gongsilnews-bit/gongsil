@@ -177,13 +177,20 @@ async function loadNews(category) {
         // 사이드바 제목 업데이트
         const sidebarTitle = document.querySelector('.sidebar-header h2');
         if (sidebarTitle) {
-            sidebarTitle.textContent = category;
+            sidebarTitle.textContent = category === '우리동네부동산' ? '우리동네부동산' : category;
         }
+
+        let dbCategory = category;
+        // 공실뉴스 RSS를 우리동네부동산으로 연결 (매핑)
+        if (category === '우리동네부동산') dbCategory = '공실뉴스';
 
         let query = supabaseClient
             .from('news')
             .select('*')
-            .order('pub_date', { ascending: false }); // Limit은 뒤에 적용
+            .order('pub_date', { ascending: false });
+
+        // ... 필터 로직 생략 (기존 유지) ...
+        // (실제 코드 수정을 위해 아래 줄에 필터 처리 유지)
 
         // 기간 필터 적용
         if (currentPeriod !== 'all') {
@@ -207,8 +214,8 @@ async function loadNews(category) {
 
         query = query.limit(1000); // 1000개 제한은 마지막에
 
-        if (category !== '전체기사') {
-            query = query.eq('category', category);
+        if (dbCategory !== '전체기사') {
+            query = query.eq('category', dbCategory);
         }
 
         const { data: newsList, error } = await query;
@@ -349,7 +356,10 @@ function renderSidebar(newsList) {
         card.id = `news-card-${index}`;
 
         const locationBadge = (news.lat && news.lng) ? '📍' : '';
-        const categoryBadge = news.category ? `[${news.category}] ` : '';
+        // 화면 표시 시 '공실뉴스' -> '우리동네부동산'으로 이름 변경
+        let displayCategory = news.category;
+        if (displayCategory === '공실뉴스') displayCategory = '우리동네부동산';
+        const categoryBadge = displayCategory ? `[${displayCategory}] ` : '';
 
         card.innerHTML = `
             <div class="news-tag">${categoryBadge}NEWS ${locationBadge}</div>
