@@ -384,9 +384,7 @@ function renderSidebar(newsList) {
                     kakao.maps.event.trigger(allMarkers[index], 'click');
                 }
             }
-            
-            // 상세 기사 보기 표시
-            showNewsDetail(news);
+            // 상세 기사 자동 표시는 제거 (룰 변경)
         });
 
         container.appendChild(card);
@@ -452,7 +450,7 @@ function renderMarkers(newsList) {
                             <div class="overlay-desc" style="font-size: 13px; color: #666; margin-bottom: 12px; display: block;">${(news.description || '').length > 29 ? (news.description || '').substring(0, 29) + '...' : (news.description || '')}</div>
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <div class="overlay-meta" style="font-size: 12px; color: #888; font-weight: 400; margin: 0;">${date} | ${news.author || '공실뉴스'}</div>
-                                <a href="${news.link}" target="_blank" class="overlay-link" style="display: block; text-align: right; font-size: 12px; color: #3b82f6; text-decoration: none; font-weight: 600; margin: 0;">기사 보러가기 →</a>
+                                <a href="javascript:void(0)" onclick='window.showNewsDetail()' class="overlay-link" style="display: block; text-align: right; font-size: 12px; color: #3b82f6; text-decoration: none; font-weight: 600; margin: 0;">기사 보러가기 →</a>
                             </div>
                         </div>
                         <div style="position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 10px solid #ffffff; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.05));"></div>
