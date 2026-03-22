@@ -41,6 +41,17 @@
         .side-btn { display: block; width: 100%; padding: 12px; background: #00ca62; color: #fff; border: none; font-size: 14px; font-weight: bold; margin-bottom: 10px; text-align: center; text-decoration: none; border-radius: 4px; }
         .btn-close-detail { position: fixed; top: 120px; right: 40px; background: #111; color: #fff; padding: 10px 20px; border-radius: 40px; cursor: pointer; font-weight: bold; z-index: 1100; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .btn-close-detail:hover { background: #ff9f1c; }
+
+        /* 신규 뉴스 네비게이션 스타일 */
+        .news-nav-bar { background: #fff; border-bottom: 1px solid #eee; z-index: 50; position: relative; }
+        .news-tier1 { display: flex; align-items: center; gap: 40px; padding: 0 24px; height: 50px; border-bottom: 1px solid #f5f5f5; }
+        .news-tab-item { font-size: 15px; font-weight: bold; color: #444; cursor: pointer; height: 100%; display: flex; align-items: center; position: relative; transition: color 0.2s; }
+        .news-tab-item.active { color: #ff9f1c; }
+        .news-tab-item.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: #ff9f1c; }
+
+        .news-tier2 { display: flex; align-items: center; gap: 25px; padding: 0 24px; height: 45px; background: #fafafa; }
+        .news-sub-tab { font-size: 13px; font-weight: 500; color: #666; cursor: pointer; height: 100%; display: flex; align-items: center; transition: color 0.2s; }
+        .news-sub-tab.active { color: #ff9f1c; font-weight: bold; }
     </style>
 </head>
 
@@ -77,24 +88,31 @@
             <a href="https://smartstore.naver.com/mygongsil/products/10361563253" target="_blank" class="btn-biz">중개사무소 가입 및 상품문의 &gt;</a>
         </div>
     </header>
+ 
+    <!-- 뉴스 전용 네비게이션 필터 (2단) -->
+    <div class="news-nav-bar">
+        <div class="news-tier1">
+            <div class="news-tab-item active">우리동네부동산</div>
+            <div class="news-tab-item">뉴스/칼럼</div>
+            <div class="news-tab-item">MY관심기사</div>
+            <div class="news-tab-item">기사관리</div>
+        </div>
+        <div class="news-tier2">
+            <div class="news-sub-tab active">전체기사</div>
+            <div class="news-sub-tab">아파트·오피스텔</div>
+            <div class="news-sub-tab">빌라·주택</div>
+            <div class="news-sub-tab">원룸·투룸</div>
+            <div class="news-sub-tab">상가·업무·공장·토지</div>
+        </div>
+    </div>
 
     <!-- 메인 컨텐츠 (지도 + 사이드바) -->
     <main class="main-container">
         <!-- 좌측 사이드바 (뉴스 리스트) -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <div class="search-box">
-                    <input type="text" placeholder="지역, 지하철역, 학교 검색" class="search-input">
-                    <button class="search-btn">🔍</button>
-                </div>
-
-                <!-- 카테고리 필터 (검색 아래 배치) -->
-                <div class="category-filters">
-                    <button class="category-btn active" data-category="전체기사">전체뉴스</button>
-                    <button class="category-btn" data-category="우리동네부동산">우리동네부동산</button>
-                    <button class="category-btn" data-category="뉴스칼럼">뉴스칼럼</button>
-                </div>
-
+                <!-- 기존 카테고리 필터 제거 (위의 상단 2단 메뉴로 대체됨) -->
+ 
                 <h2>최신 뉴스</h2> <!-- 카테고리에 따라 변경됨 -->
             </div>
             <div id="news-content" class="news-list">
