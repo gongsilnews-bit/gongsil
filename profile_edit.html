@@ -380,9 +380,11 @@
                 }
 
                 // 필수 체크
-                document.getElementById('companyName').required = true;
-                document.getElementById('zipcode').required = true;
-                document.getElementById('address').required = true;
+                const realtorReqs = ['companyName', 'companyRegNo', 'ceoName', 'bizRegNo', 'telNum', 'cellNum', 'zipcode', 'address'];
+                realtorReqs.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.required = true;
+                });
             } else if (profile.role === 'admin') {
                 document.getElementById('pageTitle').textContent = '관리자 정보 수정';
             } else {
