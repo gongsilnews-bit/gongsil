@@ -295,12 +295,12 @@
         .btn-detail-toggle { background: none; border: none; font-size: 13px; font-weight: bold; color: #1a73e8; cursor: pointer; padding: 8px 12px; white-space: nowrap; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
         .btn-detail-toggle:hover { text-decoration: underline; }
 
-        /* MY관심 전용 스타일 */
-        #wishFloatingFilter { display: none; position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 10; background: #fff; padding: 5px 15px; border-radius: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid #ddd; align-items: center; gap: 10px; font-size: 14px; color: #333; }
+        /* 지도 통합 플로팅 검색 스타일 */
+        #wishFloatingFilter { display: flex; position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 10; background: #fff; padding: 5px 15px; border-radius: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid #ddd; align-items: center; gap: 10px; font-size: 14px; color: #333; cursor: pointer; transition: box-shadow 0.2s; }
+        #wishFloatingFilter:hover { box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
         .wish-select { background: none; border: none; cursor: pointer; font-weight: bold; padding: 5px 10px; }
         .wish-select::after { content: ' ▼'; font-size: 10px; color: #999; }
         .wish-mode #midFilterRow { display: none; }
-        .wish-mode #wishFloatingFilter { display: flex; }
 
         .interest-tabs { display: none; width: 100%; border-bottom: 1px solid #eee; }
         .wish-mode .interest-tabs { display: flex; }
@@ -653,16 +653,26 @@
         </div>
         <!-- 우측 지도 영역 -->
         <div class="map-wrapper" style="flex: 1; height: 100%; position: relative;">
-            <div id="wishFloatingFilter">
-                <span style="color:#00ca62; font-weight:bold;">📍</span>
-                <span class="wish-select">경기도</span>
+            <div id="wishFloatingFilter" onclick="window.toggleMapSearch()">
+                <span style="color:var(--primary-color); font-weight:bold;">📍</span>
+                <span class="wish-select" id="mapRegionDo">위치 파악중</span>
                 <div class="v-divider" style="height:12px;"></div>
-                <span class="wish-select">시/군/구</span>
+                <span class="wish-select" id="mapRegionGu">-</span>
                 <div class="v-divider" style="height:12px;"></div>
-                <span class="wish-select">읍/면/동</span>
+                <span class="wish-select" id="mapRegionDong">-</span>
                 <div class="v-divider" style="height:12px;"></div>
-                <span class="wish-select">단지</span>
+                <span class="wish-select" style="color:var(--primary-color);">검색 🔍</span>
             </div>
+
+            <!-- 지도 검색 입력 패널 -->
+            <div id="mapSearchPanel" style="display:none; position:absolute; top:70px; left:50%; transform:translateX(-50%); z-index:10; background:#fff; padding:15px; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.2); width:320px;">
+                <div style="display:flex; gap:8px; margin-bottom:10px;">
+                    <input type="text" id="mapSearchInput" placeholder="동, 읍, 면 또는 랜드마크 검색" style="flex:1; padding:8px; border:1px solid #ccc; border-radius:4px; outline:none;" onkeypress="if(event.key==='Enter') window.executeMapKeywordSearch()">
+                    <button onclick="window.executeMapKeywordSearch()" style="padding:8px 12px; background:var(--primary-color); color:#fff; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">이동</button>
+                </div>
+                <div id="mapSearchResultList" style="max-height:200px; overflow-y:auto; font-size:13px; color:#555;"></div>
+            </div>
+
             <div id="map" style="width: 100%; height: 100%;"></div>
         </div>
     </main>
@@ -752,10 +762,79 @@
                         if (countHeader) countHeader.textContent = `선택된 클러스터 ${props.length}개`;
                     });
 
-                    // 지도가 이동, 확대, 축소될 때 화면에 보이는 마커만 리스트 업데이트
+                    window.globalGeocoder = new kakao.maps.services.Geocoder();
+                    window.globalPlaces = new kakao.maps.services.Places();
+
+                    // 지도가 이동, 확대, 축소될 때 화면에 보이는 마커만 리스트 업데이트 + 중앙 지역 주소 업데이트
                     kakao.maps.event.addListener(mapInstance, 'idle', function() {
                         window.updateListByMapBounds();
+
+                        let center = window.mapInstance.getCenter();
+                        window.globalGeocoder.coord2RegionCode(center.getLng(), center.getLat(), (result, status) => {
+                            if (status === kakao.maps.services.Status.OK) {
+                                for(let i = 0; i < result.length; i++) {
+                                    if (result[i].region_type === 'H') {
+                                        document.getElementById('mapRegionDo').textContent = result[i].region_1depth_name || '-';
+                                        document.getElementById('mapRegionGu').textContent = result[i].region_2depth_name || '-';
+                                        document.getElementById('mapRegionDong').textContent = result[i].region_3depth_name || '-';
+                                        break;
+                                    }
+                                }
+                            }
+                        });
                     });
+
+                    window.toggleMapSearch = function() {
+                        const panel = document.getElementById('mapSearchPanel');
+                        if (panel.style.display === 'none') {
+                            panel.style.display = 'block';
+                            document.getElementById('mapSearchInput').focus();
+                        } else {
+                            panel.style.display = 'none';
+                        }
+                    };
+
+                    window.executeMapKeywordSearch = function() {
+                        const kw = document.getElementById('mapSearchInput').value.trim();
+                        const output = document.getElementById('mapSearchResultList');
+                        if (!kw) {
+                            output.innerHTML = '<div style="color:#e74c3c; padding:10px;">검색어를 입력해 주세요.</div>';
+                            return;
+                        }
+                        output.innerHTML = '<div style="padding:10px;">검색 중...</div>';
+                        
+                        window.globalPlaces.keywordSearch(kw, (data, status) => {
+                            if (status === kakao.maps.services.Status.OK) {
+                                output.innerHTML = data.map(item => `
+                                    <div style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;" onclick="window.moveToMapSearch(${item.y}, ${item.x}, '${item.place_name || ''}')">
+                                        <strong style="color:#111;">${item.place_name}</strong><br>
+                                        <span style="font-size:11px; color:#888;">${item.road_address_name || item.address_name}</span>
+                                    </div>
+                                `).join('');
+                            } else {
+                                window.globalGeocoder.addressSearch(kw, (addrData, addrStatus) => {
+                                    if (addrStatus === kakao.maps.services.Status.OK) {
+                                        output.innerHTML = addrData.map(item => `
+                                            <div style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;" onclick="window.moveToMapSearch(${item.y}, ${item.x}, '${item.address_name}')">
+                                                <strong style="color:#111;">${item.address_name}</strong>
+                                            </div>
+                                        `).join('');
+                                    } else {
+                                        output.innerHTML = '<div style="padding:10px;">검색 결과가 없습니다.</div>';
+                                    }
+                                });
+                            }
+                        });
+                    };
+
+                    window.moveToMapSearch = function(lat, lng, name) {
+                        if(!window.mapInstance) return;
+                        const coords = new kakao.maps.LatLng(parseFloat(lat), parseFloat(lng));
+                        window.mapInstance.setCenter(coords);
+                        window.mapInstance.setLevel(4);
+                        window.toggleMapSearch();
+                        if (name) setTimeout(() => document.getElementById('mapSearchInput').value = name, 100);
+                    };
 
                     console.log('gongsil: 지도 초기화 성공');
                 } catch (e) {
@@ -806,11 +885,17 @@
                     return;
                 }
 
+                window.currentlySelectedPropertyId = window.currentlySelectedPropertyId || null;
+
                 props.forEach(p => {
                     const card = document.createElement('div');
                     card.className = 'property-card';
+                    if (p.id === window.currentlySelectedPropertyId) {
+                        card.classList.add('active');
+                    }
                     card.id = `property-card-${p.id}`;
                     card.onclick = () => {
+                        window.currentlySelectedPropertyId = p.id;
                         document.querySelectorAll('.property-card').forEach(c => c.classList.remove('active'));
                         card.classList.add('active');
                         window.showPropertyDetail(p);
@@ -1123,6 +1208,7 @@
                                 content: `<div style="padding:5px;font-size:12px;">${formatPriceDisplay(p)}</div>`
                             });
                             kakao.maps.event.addListener(marker, 'click', () => {
+                                window.currentlySelectedPropertyId = p.id;
                                 document.querySelectorAll('.property-card').forEach(c => c.classList.remove('active'));
                                 const targetCard = document.getElementById(`property-card-${p.id}`);
                                 if (targetCard) {
