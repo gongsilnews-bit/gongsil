@@ -95,7 +95,12 @@ function renderPropertyCards(props) {
         try {
             const card = document.createElement('div');
             card.className = 'property-card';
-            card.onclick = () => showPropertyDetail(p);
+            card.id = `property-card-${p.id}`;
+            card.onclick = () => {
+                document.querySelectorAll('.property-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                showPropertyDetail(p);
+            };
             
             const priceStr = formatPriceDisplay(p);
             const imgUrl = (p.images && p.images.length > 0) ? p.images[0] : 'https://via.placeholder.com/150/EEEEEE/999999?text=No+Image';
@@ -199,6 +204,14 @@ function addMarkersToMap(props) {
                 });
 
                 kakao.maps.event.addListener(marker, 'click', () => {
+                    // 지도 클릭 시 리스트 활성화 연동
+                    document.querySelectorAll('.property-card').forEach(c => c.classList.remove('active'));
+                    const targetCard = document.getElementById(`property-card-${p.id}`);
+                    if (targetCard) {
+                        targetCard.classList.add('active');
+                        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+
                     showPropertyDetail(p);
                     infowindow.open(window.mapInstance, marker);
                     setTimeout(() => infowindow.close(), 3000);
