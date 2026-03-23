@@ -43,6 +43,23 @@ create table if not exists public.members (
     member_num bigint generated always as identity,
     membership_start_at timestamptz,
     expired_at timestamptz,
+    
+    -- 부동산/기업 상세 정보
+    name text,
+    phone text,
+    company_name text,
+    company_reg_no text,
+    ceo_name text,
+    biz_reg_no text,
+    tel_num text,
+    cell_num text,
+    zipcode text,
+    address text,
+    address_detail text,
+    license_image text,
+    license_image_brokerage text,
+    status text default 'active',
+    
     created_at timestamptz default now()
 );
 

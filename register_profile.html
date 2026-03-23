@@ -11,6 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <script src="base_path.js"></script>
     <script src="supabase_gongsi_config.js"></script>
 
@@ -140,15 +141,42 @@
         }
         .role-btn.active[data-role="realtor"] .role-text { color: var(--secondary-color); }
 
-        /* 부동산 전용 폼 (애니메이션) */
+        /* 부동산 전용 폼 (그리드 레이아웃 적용) */
         #realtorFields {
             display: none;
             background: #f8fafc;
-            padding: 20px;
+            padding: 24px;
             border-radius: 14px;
             margin-bottom: 25px;
             border: 1px solid #e2e8f0;
             animation: fadeIn 0.3s ease;
+        }
+
+        .realtor-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group-full {
+            grid-column: span 2;
+        }
+
+        .address-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .btn-address {
+            padding: 0 16px;
+            background: #333d4b;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
         }
 
         @keyframes fadeIn {
@@ -276,21 +304,59 @@
 
             <!-- 부동산 전용 필드 -->
             <div id="realtorFields">
-                <h3 style="font-size: 14px; margin-top: 0; margin-bottom: 15px; color:#1e293b;">🏢 부동산/기업 정보 입력</h3>
-                <div class="form-group">
-                    <label class="form-label">상호명</label>
-                    <input type="text" id="companyName" class="form-control" placeholder="예: 공실뉴스 부동산중개">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">중개등록번호 / 사업자번호</label>
-                    <input type="text" id="companyRegNo" class="form-control" placeholder="등록번호 또는 사업자번호">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">사업자등록증 첨부 (승인용)</label>
-                    <div class="file-upload-box">
-                        <span style="font-size: 12px; color:#64748b;">파일 선택 또는 사진 촬영</span>
-                        <input type="file" id="licenseFile" accept="image/*">
-                        <div id="filePreview" class="file-preview">📄 업로드 준비 완료!</div>
+                <h3 style="font-size: 14px; margin-top: 0; margin-bottom: 20px; color:#1e293b; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 10px;">🏢 부동산 / 기업 정보 입력</h3>
+                
+                <div class="realtor-form-grid">
+                    <div class="form-group">
+                        <label class="form-label">상호명 <span style="color:red">*</span></label>
+                        <input type="text" id="companyName" class="form-control realtor-req" placeholder="예: 공실뉴스 부동산중개">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">중개등록번호 <span style="color:red">*</span></label>
+                        <input type="text" id="companyRegNo" class="form-control realtor-req" placeholder="중개등록번호 입력">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">대표자명 <span style="color:red">*</span></label>
+                        <input type="text" id="ceoName" class="form-control realtor-req" placeholder="대표자 성함">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">사업자등록번호 <span style="color:red">*</span></label>
+                        <input type="text" id="bizRegNo" class="form-control realtor-req" placeholder="000-00-00000">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">일반번호 <span style="color:red">*</span></label>
+                        <input type="tel" id="telNum" class="form-control realtor-req" placeholder="02-000-0000">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">휴대번호 <span style="color:red">*</span></label>
+                        <input type="tel" id="cellNum" class="form-control realtor-req" placeholder="010-0000-0000">
+                    </div>
+
+                    <div class="form-group form-group-full">
+                        <label class="form-label">부동산 주소 <span style="color:red">*</span></label>
+                        <div class="address-group">
+                            <input type="text" id="zipcode" class="form-control realtor-req" placeholder="우편번호" readonly style="flex: 1;">
+                            <button type="button" class="btn-address" onclick="execDaumPostcode()">주소 찾기</button>
+                        </div>
+                        <input type="text" id="address" class="form-control realtor-req" placeholder="기본 주소" readonly style="margin-bottom: 8px;">
+                        <input type="text" id="addressDetail" class="form-control realtor-req" placeholder="상세 주소를 입력하세요">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">사업자등록증 첨부 <span style="color:red">*</span></label>
+                        <div class="file-upload-box">
+                            <span style="font-size: 11px; color:#64748b;">파일 선택 (사진)</span>
+                            <input type="file" id="licenseFile" class="realtor-req" accept="image/*">
+                            <div id="filePreview" class="file-preview">📄 선택됨</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">중개등록증 첨부 <span style="color:red">*</span></label>
+                        <div class="file-upload-box">
+                            <span style="font-size: 11px; color:#64748b;">파일 선택 (사진)</span>
+                            <input type="file" id="brokerLicenseFile" class="realtor-req" accept="image/*">
+                            <div id="brokerFilePreview" class="file-preview">📄 선택됨</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -355,22 +421,52 @@
             document.querySelector(`.role-btn[data-role="${role}"]`).classList.add('active');
 
             const realtorFields = document.getElementById('realtorFields');
+            const realtorInputs = document.querySelectorAll('.realtor-req');
+            
             if(role === 'realtor') {
                 realtorFields.style.display = 'block';
                 document.getElementById('btnSubmit').textContent = '부동산 가입 신청하기 🚀';
+                realtorInputs.forEach(input => input.required = true);
             } else {
                 realtorFields.style.display = 'none';
                 document.getElementById('btnSubmit').textContent = '공실뉴스 시작하기 ✨';
+                realtorInputs.forEach(input => {
+                    input.required = false;
+                    input.value = ''; // 초기화
+                });
             }
+        }
+
+        // 주소 검색 함수
+        window.execDaumPostcode = function() {
+            new daum.Postcode({
+                oncomplete: function(data) {
+                    var addr = '';
+                    if (data.userSelectedType === 'R') { addr = data.roadAddress; } 
+                    else { addr = data.jibunAddress; }
+                    document.getElementById('zipcode').value = data.zonecode;
+                    document.getElementById("address").value = addr;
+                    document.getElementById("addressDetail").focus();
+                }
+            }).open();
         }
 
         // 파일 선택 시 미리보기 처리
         const licenseInput = document.getElementById('licenseFile');
         licenseInput.addEventListener('change', (e) => {
-            selectedFile = e.target.files[0];
-            if(selectedFile) {
+            const file = e.target.files[0];
+            if(file) {
                 document.getElementById('filePreview').style.display = 'block';
-                document.getElementById('filePreview').textContent = `📄 ${selectedFile.name} (대기중)`;
+                document.getElementById('filePreview').textContent = `📄 ${file.name} (대기중)`;
+            }
+        });
+
+        const brokerLicenseInput = document.getElementById('brokerLicenseFile');
+        brokerLicenseInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(file) {
+                document.getElementById('brokerFilePreview').style.display = 'block';
+                document.getElementById('brokerFilePreview').textContent = `📄 ${file.name} (대기중)`;
             }
         });
 
@@ -391,42 +487,64 @@
 
             try {
                 let licenseUrl = null;
+                let brokerLicenseUrl = null;
 
                 // 1. 부동산 회원의 경우 사진 업로드
-                if(role === 'realtor' && selectedFile) {
-                    showLoading("등록증 사진을 압축 및 업로드 중...");
-                    const options = { maxSizeMB: 1, maxWidthOrHeight: 1280, useWebWorker: true };
-                    const compressed = await imageCompression(selectedFile, options);
+                if(role === 'realtor') {
+                    const lFile = document.getElementById('licenseFile').files[0];
+                    const bFile = document.getElementById('brokerLicenseFile').files[0];
 
-                    const fileName = `${user.id}/${Date.now()}_license.${compressed.name.split('.').pop()}`;
-                    const { error: uploadError } = await supabase.storage
-                        .from('member_documents')
-                        .upload(fileName, compressed);
+                    if (lFile) {
+                        showLoading("사업자등록증 사진을 업로드 중...");
+                        const options = { maxSizeMB: 1, maxWidthOrHeight: 1280, useWebWorker: true };
+                        const compressed = await imageCompression(lFile, options);
+                        const fileName = `${user.id}/${Date.now()}_license.${compressed.name.split('.').pop()}`;
+                        const { error: uploadError } = await supabase.storage.from('member_documents').upload(fileName, compressed);
+                        if (uploadError) throw uploadError;
+                        const { data: { publicUrl } } = supabase.storage.from('member_documents').getPublicUrl(fileName);
+                        licenseUrl = publicUrl;
+                    }
 
-                    if (uploadError) throw uploadError;
-                    
-                    const { data: { publicUrl } } = supabase.storage
-                        .from('member_documents')
-                        .getPublicUrl(fileName);
-                    
-                    licenseUrl = publicUrl;
+                    if (bFile) {
+                        showLoading("중개등록증 사진을 업로드 중...");
+                        const options = { maxSizeMB: 1, maxWidthOrHeight: 1280, useWebWorker: true };
+                        const compressed = await imageCompression(bFile, options);
+                        const fileName = `${user.id}/${Date.now()}_broker_license.${compressed.name.split('.').pop()}`;
+                        const { error: uploadError } = await supabase.storage.from('member_documents').upload(fileName, compressed);
+                        if (uploadError) throw uploadError;
+                        const { data: { publicUrl } } = supabase.storage.from('member_documents').getPublicUrl(fileName);
+                        brokerLicenseUrl = publicUrl;
+                    }
                 }
 
                 // 2. members 테이블에 저장
+                const memberData = {
+                    id: user.id,
+                    email: user.email,
+                    role: 'general', // 실제 권한은 관리자 승인 후 변경
+                    name: name,
+                    phone: phone,
+                    status: status,
+                    created_at: new Date().toISOString()
+                };
+
+                if (role === 'realtor') {
+                    memberData.company_name = document.getElementById('companyName').value;
+                    memberData.company_reg_no = document.getElementById('companyRegNo').value;
+                    memberData.ceo_name = document.getElementById('ceoName').value;
+                    memberData.biz_reg_no = document.getElementById('bizRegNo').value;
+                    memberData.tel_num = document.getElementById('telNum').value;
+                    memberData.cell_num = document.getElementById('cellNum').value;
+                    memberData.zipcode = document.getElementById('zipcode').value;
+                    memberData.address = document.getElementById('address').value;
+                    memberData.address_detail = document.getElementById('addressDetail').value;
+                    memberData.license_image = licenseUrl;
+                    memberData.license_image_brokerage = brokerLicenseUrl;
+                }
+
                 const { error: insertError } = await supabase
                     .from('members')
-                    .insert([{
-                        id: user.id,
-                        email: user.email,
-                        role: 'general', // 실제 권한은 관리자 승인 후 변경되거나, pending 상태로 구분
-                        name: name,
-                        phone: phone,
-                        company_name: document.getElementById('companyName').value || null,
-                        company_reg_no: document.getElementById('companyRegNo').value || null,
-                        license_image: licenseUrl,
-                        status: status,
-                        created_at: new Date().toISOString()
-                    }]);
+                    .insert([memberData]);
 
                 if (insertError) throw insertError;
 
@@ -438,7 +556,6 @@
                     alert("반갑습니다! 공실뉴스 가입이 완료되었습니다.");
                 }
 
-                // 가입 완료 후 메인 또는 어드민으로 이동
                 window.location.href = window.BASE_PATH + '/';
 
             } catch (err) {
