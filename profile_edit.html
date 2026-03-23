@@ -6,6 +6,7 @@
     <title>정보수정 - 공실뉴스 Admin</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable.css" />
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
     <style>
         :root {
             --primary-color: #4285f4;
@@ -158,6 +159,49 @@
         /* ── 부동산 정보 섹션 (조건부 표시) ── */
         #realtorSection { display: none; }
 
+        .image-preview-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .img-box {
+            width: 120px;
+            height: 120px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background-color: #f1f3f5;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .img-box span {
+            font-size: 11px;
+            color: #888;
+            text-align: center;
+            padding: 5px;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 5px 12px;
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -233,6 +277,24 @@
                 <div class="form-group full">
                     <label class="label">업체상세소개</label>
                     <textarea id="companyIntro" class="input-text" rows="5" style="resize: vertical; height: auto;" placeholder="업체에 대한 상세한 설명을 입력해 주세요. (예: 공실 전문 부동산, OO동 전문 등)"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="label">사업자등록증 사진</label>
+                    <div class="img-box" id="licenseImgBox">
+                        <span>이미지 없음</span>
+                    </div>
+                    <label class="file-input-label" for="licenseFile">사진 변경</label>
+                    <input type="file" id="licenseFile" accept="image/*" style="display:none;">
+                </div>
+
+                <div class="form-group">
+                    <label class="label">중개등록증 사진</label>
+                    <div class="img-box" id="brokerLicenseImgBox">
+                        <span>이미지 없음</span>
+                    </div>
+                    <label class="file-input-label" for="brokerLicenseFile">사진 변경</label>
+                    <input type="file" id="brokerLicenseFile" accept="image/*" style="display:none;">
                 </div>
             </div>
         </div>
@@ -310,6 +372,13 @@
                 document.getElementById('addressDetail').value = profile.address_detail || '';
                 document.getElementById('companyIntro').value = profile.company_intro || '';
                 
+                if (profile.license_image) {
+                    document.getElementById('licenseImgBox').innerHTML = `<img src="${profile.license_image}" alt="사업자등록증">`;
+                }
+                if (profile.license_image_brokerage) {
+                    document.getElementById('brokerLicenseImgBox').innerHTML = `<img src="${profile.license_image_brokerage}" alt="중개등록증">`;
+                }
+
                 // 필수 체크
                 document.getElementById('companyName').required = true;
                 document.getElementById('zipcode').required = true;
@@ -321,6 +390,29 @@
             }
         }
     }
+
+    // 파일 선택 시 미리보기
+    document.getElementById('licenseFile').addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = ev => {
+                document.getElementById('licenseImgBox').innerHTML = `<img src="${ev.target.result}" style="opacity:0.6;">`;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    document.getElementById('brokerLicenseFile').addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = ev => {
+                document.getElementById('brokerLicenseImgBox').innerHTML = `<img src="${ev.target.result}" style="opacity:0.6;">`;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
 
     document.getElementById('profileForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -345,6 +437,38 @@
             updateData.address = document.getElementById('address').value;
             updateData.address_detail = document.getElementById('addressDetail').value;
             updateData.company_intro = document.getElementById('companyIntro').value;
+
+            // 이미지 업로드 처리
+            const lFile = document.getElementById('licenseFile').files[0];
+            const bFile = document.getElementById('brokerLicenseFile').files[0];
+
+            if (lFile) {
+                const options = { maxSizeMB: 1, maxWidthOrHeight: 1280, useWebWorker: true };
+                const compressed = await imageCompression(lFile, options);
+                const fileName = `${session.user.id}/${Date.now()}_license.${compressed.name.split('.').pop()}`;
+                const { error: uploadError } = await supabase.storage.from('member_documents').upload(fileName, compressed);
+                if (uploadError) {
+                    console.error("사업자등록증 업로드 에러:", uploadError);
+                    alert("사업자등록증 업로드 중 오류가 발생했습니다.");
+                    return;
+                }
+                const { data: { publicUrl } } = supabase.storage.from('member_documents').getPublicUrl(fileName);
+                updateData.license_image = publicUrl;
+            }
+
+            if (bFile) {
+                const options = { maxSizeMB: 1, maxWidthOrHeight: 1280, useWebWorker: true };
+                const compressed = await imageCompression(bFile, options);
+                const fileName = `${session.user.id}/${Date.now()}_broker_license.${compressed.name.split('.').pop()}`;
+                const { error: uploadError } = await supabase.storage.from('member_documents').upload(fileName, compressed);
+                if (uploadError) {
+                    console.error("중개등록증 업로드 에러:", uploadError);
+                    alert("중개등록증 업로드 중 오류가 발생했습니다.");
+                    return;
+                }
+                const { data: { publicUrl } } = supabase.storage.from('member_documents').getPublicUrl(fileName);
+                updateData.license_image_brokerage = publicUrl;
+            }
         }
 
         try {
