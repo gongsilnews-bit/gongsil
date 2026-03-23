@@ -660,7 +660,6 @@
         <!-- 우측 지도 영역 -->
         <div class="map-wrapper" style="flex: 1; height: 100%; position: relative;">
             <div id="wishFloatingFilter">
-                <span style="color:var(--primary-color); font-weight:bold;">📍</span>
                 <span class="wish-select" id="mapRegionDo" onclick="window.openRegionSelector('sido')">위치 파악중</span>
                 <div class="v-divider" style="height:12px;"></div>
                 <span class="wish-select" id="mapRegionGu" onclick="window.openRegionSelector('gugun')">-</span>
@@ -816,19 +815,9 @@
                         }
                     };
 
-                    // ---- 지역 선택 (Cascading Dropdown) 로직 ----
-                    const mapRegionData = {
-                        sido: ['서울특별시', '경기도', '인천광역시', '부산광역시', '대구광역시', '광주광역시', '대전광역시', '울산광역시', '세종특별자치시', '강원특별자치도', '충청북도', '충청남도', '전북특별자치도', '전라남도', '경상북도', '경상남도', '제주특별자치도'],
-                        gugun: {
-                            '서울특별시': ["강남구","강동구","강북구","강서구","관악구","광진구","구로구","금천구","노원구","도봉구","동대문구","동작구","마포구","서대문구","서초구","성동구","성북구","송파구","양천구","영등포구","용산구","은평구","종로구","중구","중랑구"],
-                            '경기도': ["가평군","고양시","과천시","광명시","광주시","구리시","군포시","김포시","남양주시","동두천시","부천시","성남시","수원시","시흥시","안산시","안성시","안양시","양주시","양평군","여주시","연천군","오산시","용인시","의왕시","의정부시","이천시","파주시","평택시","포천시","하남시","화성시"]
-                        },
-                        dong: {
-                            '강남구': ["개포동","논현동","대치동","도곡동","삼성동","세곡동","수서동","신사동","압구정동","역삼동","율현동","일원동","자곡동","청담동"],
-                            '서초구': ["내곡동","반포동","방배동","서초동","신원동","양재동","염곡동","우면동","원지동","잠원동"],
-                            '송파구': ["가락동","거여동","마천동","문정동","방이동","삼전동","석촌동","송파동","신천동","오금동","잠실동","장지동","풍납동"]
-                        }
-                    };
+                    // ---- 전국 단위 실시간 주소 분류 시스템 ----
+                    window.currentRegCodeDo = '';
+                    window.currentRegCodeGu = '';
                     window.currentSelectedSido = '서울특별시';
                     window.currentSelectedGugun = '강남구';
 
@@ -841,39 +830,76 @@
                         window.switchRegTab(tabName);
                     };
 
-                    window.switchRegTab = function(tabName) {
+                    window.switchRegTab = async function(tabName) {
                         document.querySelectorAll('.region-tab').forEach(el => el.classList.remove('active'));
                         document.querySelectorAll('.reg-panel').forEach(el => el.style.display = 'none');
                         
                         let activeBtn;
-                        if(tabName === 'sido') { activeBtn = document.getElementById('tabSido'); document.getElementById('panelSido').style.display = 'grid'; renderRegPanel('sido'); }
-                        if(tabName === 'gugun') { activeBtn = document.getElementById('tabGugun'); document.getElementById('panelGugun').style.display = 'grid'; renderRegPanel('gugun'); }
-                        if(tabName === 'dong') { activeBtn = document.getElementById('tabDong'); document.getElementById('panelDong').style.display = 'grid'; renderRegPanel('dong'); }
+                        if(tabName === 'sido') { activeBtn = document.getElementById('tabSido'); document.getElementById('panelSido').style.display = 'grid'; await window.loadRegSido(); }
+                        if(tabName === 'gugun') { activeBtn = document.getElementById('tabGugun'); document.getElementById('panelGugun').style.display = 'grid'; await window.loadRegGugun(); }
+                        if(tabName === 'dong') { activeBtn = document.getElementById('tabDong'); document.getElementById('panelDong').style.display = 'grid'; await window.loadRegDong(); }
                         if(activeBtn) activeBtn.classList.add('active');
                     };
 
-                    function renderRegPanel(type) {
-                        const makeItems = (list, clk) => {
-                            if(!list || list.length === 0) return `<div style="grid-column:1/-1; padding:20px; text-align:center; color:#888;">상세 지역 정보는 우측 <span style="color:#1a73e8;font-weight:bold;">[검색🔍]</span> 버튼을 이용해주세요.</div>`;
-                            return list.map(item => `<button class="reg-item-btn" onclick="${clk}('${item}')">${item}</button>`).join('');
-                        };
-                        if(type === 'sido') document.getElementById('panelSido').innerHTML = makeItems(mapRegionData.sido, "window.onRegSelectSido");
-                        else if(type === 'gugun') document.getElementById('panelGugun').innerHTML = makeItems(mapRegionData.gugun[window.currentSelectedSido]||[], "window.onRegSelectGugun");
-                        else if(type === 'dong') document.getElementById('panelDong').innerHTML = makeItems(mapRegionData.dong[window.currentSelectedGugun]||[], "window.onRegSelectDong");
-                    }
+                    window.loadRegSido = async function() {
+                        const panel = document.getElementById('panelSido');
+                        if(panel.innerHTML.includes('reg-item-btn')) return;
+                        panel.innerHTML = '<div style="grid-column:1/-1; padding:20px; text-align:center;">로딩중...</div>';
+                        try {
+                            const res = await fetch('https://grpc-proxy-server-mkvo6j4wsq-du.a.run.app/v1/regcodes?regcode_pattern=*00000000');
+                            const data = await res.json();
+                            panel.innerHTML = data.regcodes.map(c => `<button class="reg-item-btn" onclick="window.onRegSelectSido('${c.code}', '${c.name}')">${c.name}</button>`).join('');
+                        } catch(e) { panel.innerHTML = '<div style="grid-column:1/-1; color:red; text-align:center;">데이터를 로드하지 못했습니다.</div>'; }
+                    };
 
-                    window.onRegSelectSido = function(val) {
-                        window.currentSelectedSido = val;
-                        window.moveToMapSearchByKeyword(val, 8); // Move rough
+                    window.loadRegGugun = async function() {
+                        const panel = document.getElementById('panelGugun');
+                        if(!window.currentRegCodeDo) return panel.innerHTML = '<div style="grid-column:1/-1; padding:20px; text-align:center; color:#888;">먼저 시/도를 선택해주세요.</div>';
+                        panel.innerHTML = '<div style="grid-column:1/-1; padding:20px; text-align:center;">로딩중...</div>';
+                        const prefix = window.currentRegCodeDo.substring(0, 2);
+                        try {
+                            const res = await fetch(`https://grpc-proxy-server-mkvo6j4wsq-du.a.run.app/v1/regcodes?regcode_pattern=${prefix}*00000&is_ignore_zero=true`);
+                            const data = await res.json();
+                            panel.innerHTML = data.regcodes.map(c => {
+                                const name = c.name.split(' ').slice(1).join(' ');
+                                return `<button class="reg-item-btn" onclick="window.onRegSelectGugun('${c.code}', '${name}')">${name}</button>`;
+                            }).join('');
+                        } catch(e) { panel.innerHTML = '<div style="grid-column:1/-1; color:red; text-align:center;">데이터를 로드하지 못했습니다.</div>'; }
+                    };
+
+                    window.loadRegDong = async function() {
+                        const panel = document.getElementById('panelDong');
+                        if(!window.currentRegCodeGu) return panel.innerHTML = '<div style="grid-column:1/-1; padding:20px; text-align:center; color:#888;">먼저 시/군/구를 선택해주세요.</div>';
+                        panel.innerHTML = '<div style="grid-column:1/-1; padding:20px; text-align:center;">로딩중...</div>';
+                        const prefix = window.currentRegCodeGu.substring(0, 5);
+                        try {
+                            const res = await fetch(`https://grpc-proxy-server-mkvo6j4wsq-du.a.run.app/v1/regcodes?regcode_pattern=${prefix}*&is_ignore_zero=true`);
+                            const data = await res.json();
+                            let html = '';
+                            data.regcodes.forEach(c => {
+                                if(c.code === window.currentRegCodeGu) return;
+                                const parts = c.name.split(' ');
+                                const name = parts[parts.length - 1];
+                                html += `<button class="reg-item-btn" onclick="window.onRegSelectDong('${name}')">${name}</button>`;
+                            });
+                            panel.innerHTML = html || '<div style="grid-column:1/-1; padding:20px; text-align:center; color:#888;">세부 지역 없음</div>';
+                        } catch(e) { panel.innerHTML = '<div style="grid-column:1/-1; color:red; text-align:center;">데이터를 로드하지 못했습니다.</div>'; }
+                    };
+
+                    window.onRegSelectSido = function(code, name) {
+                        window.currentRegCodeDo = code;
+                        window.currentSelectedSido = name;
+                        window.moveToMapSearchByKeyword(name, 8); 
                         window.switchRegTab('gugun');
                     };
-                    window.onRegSelectGugun = function(val) {
-                        window.currentSelectedGugun = val;
-                        window.moveToMapSearchByKeyword(window.currentSelectedSido + ' ' + val, 6); // Move narrower
+                    window.onRegSelectGugun = function(code, name) {
+                        window.currentRegCodeGu = code;
+                        window.currentSelectedGugun = name;
+                        window.moveToMapSearchByKeyword(window.currentSelectedSido + ' ' + name, 6); 
                         window.switchRegTab('dong');
                     };
-                    window.onRegSelectDong = function(val) {
-                        window.moveToMapSearchByKeyword(window.currentSelectedSido + ' ' + window.currentSelectedGugun + ' ' + val, 5); // Move strictly
+                    window.onRegSelectDong = function(name) {
+                        window.moveToMapSearchByKeyword(window.currentSelectedSido + ' ' + window.currentSelectedGugun + ' ' + name, 4); 
                         document.getElementById('regionSelectorPanel').style.display = 'none';
                     };
 
