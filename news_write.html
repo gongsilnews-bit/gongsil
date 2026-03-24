@@ -867,6 +867,133 @@
         </div>
     </div>
 
+    <!-- AI 기사작성 마법사 모달 -->
+    <div id="aiWizardModal" class="modal-overlay" style="display:none; z-index:9999;">
+        <div class="modal-content" style="width: 1400px; height: 90vh; max-width: 95%; max-height: 95%; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 12px; border: 2px solid #f97316; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+            <!-- 모달 헤더 -->
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; border-bottom: 1px solid #eee; background: white;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="color: #f97316; font-size: 24px;">▶</span>
+                    <strong style="font-size: 20px; color: #333;">공실뉴스 <span style="font-size: 14px; color: #666; font-weight: normal;">부동산 콘텐츠 AI <span style="background: #fef08a; padding: 2px 6px; border-radius: 4px; font-size: 11px; color: #ca8a04; font-weight: bold;">V1.2</span></span></strong>
+                </div>
+                <button type="button" onclick="closeAiwizard()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #999;">&times;</button>
+            </div>
+
+            <!-- 모달 바디 (2단 레이아웃) -->
+            <div style="display: flex; flex: 1; overflow: hidden; background: #fafafa;">
+                <!-- 좌측 설정 영역 -->
+                <div style="width: 380px; min-width: 380px; padding: 25px; background: white; border-right: 1px solid #eee; overflow-y: auto;">
+                    
+                    <div style="font-weight: 700; color: #ea580c; border-left: 3px solid #ea580c; padding-left: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 14px;">
+                        원문/자료 입력
+                        <span style="background: #22c55e; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px;">N 네이버부동산</span>
+                    </div>
+                    <textarea style="width: 100%; height: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; resize: none; font-size: 13px; color: #666;" placeholder="매물정보를 등록하시거나, 매물광고 이미지 파일을 첨부하세요."></textarea>
+                    
+                    <div style="font-weight: 700; color: #ea580c; border-left: 3px solid #ea580c; padding-left: 8px; margin: 25px 0 15px 0; font-size: 14px;">매물 정보 입력</div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <div style="flex:1;"><div style="font-size: 11px; color: #666; margin-bottom: 4px;">물건 구분</div><select class="input-text" style="width:100%; height:34px;"><option>선택하세요</option></select></div>
+                        <div style="flex:1;"><div style="font-size: 11px; color: #666; margin-bottom: 4px;">거래 구분</div><select class="input-text" style="width:100%; height:34px;"><option>선택하세요</option></select></div>
+                    </div>
+                    <input type="text" class="input-text" style="width: 100%; margin-bottom: 10px; height:34px;" placeholder="주소">
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="text" class="input-text" style="flex:1; height:34px;" placeholder="면적">
+                        <input type="text" class="input-text" style="flex:1; height:34px;" placeholder="특징">
+                    </div>
+
+                    <div style="font-weight: 700; color: #ea580c; border-left: 3px solid #ea580c; padding-left: 8px; margin: 25px 0 15px 0; font-size: 14px;">물건 관련 키워드</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 10px;">
+                        <button style="background: #f59e0b; color: white; border: none; padding: 8px; border-radius: 4px; font-size: 12px; cursor: pointer;">교통</button>
+                        <button style="background: #fbbf24; color: white; border: none; padding: 8px; border-radius: 4px; font-size: 12px; cursor: pointer;">학군</button>
+                        <button style="background: #fbbf24; color: white; border: none; padding: 8px; border-radius: 4px; font-size: 12px; cursor: pointer;">지하철</button>
+                        <button style="background: #fbbf24; color: white; border: none; padding: 8px; border-radius: 4px; font-size: 12px; cursor: pointer;">쇼핑</button>
+                        <button style="background: #fbbf24; color: white; border: none; padding: 8px; border-radius: 4px; font-size: 12px; cursor: pointer;">문화</button>
+                        <button style="background: #fbbf24; color: white; border: none; padding: 8px; border-radius: 4px; font-size: 12px; cursor: pointer;">호재</button>
+                    </div>
+                    <div style="font-size: 11px; color: #666; margin-bottom: 4px;">기타 키워드</div>
+                    <input type="text" class="input-text" style="width: 100%; font-size:12px; height:34px;" placeholder="태그 입력 후 Enter...">
+
+                    <div style="font-weight: 700; color: #ea580c; border-left: 3px solid #ea580c; padding-left: 8px; margin: 30px 0 15px 0; font-size: 14px;">생성 조건 설정</div>
+                    <div style="font-size: 11px; color: #666; margin-bottom: 4px;">콘텐츠 유형</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 15px;">
+                        <button style="background: #fbbf24; color: white; border: none; padding: 8px 4px; border-radius: 4px; font-size: 11px;">쇼츠 대본</button>
+                        <button style="background: #f59e0b; color: white; border: none; padding: 8px 4px; border-radius: 4px; font-size: 11px;">기사</button>
+                        <button style="background: #fbbf24; color: white; border: none; padding: 8px 4px; border-radius: 4px; font-size: 11px;">프롬프트 생성</button>
+                        <button style="background: #fbbf24; color: white; border: none; padding: 8px 4px; border-radius: 4px; font-size: 11px;">블로그</button>
+                        <button style="background: #fbbf24; color: white; border: none; padding: 8px 4px; border-radius: 4px; font-size: 11px;">카드뉴스</button>
+                        <button style="background: #fbbf24; color: white; border: none; padding: 8px 4px; border-radius: 4px; font-size: 11px;">팩트체크 리스크</button>
+                    </div>
+
+                    <div style="font-size: 11px; color: #666; margin-bottom: 4px;">프롬프트 개수</div>
+                    <input type="text" class="input-text" style="width: 100%; margin-bottom: 12px; height:34px;" value="3">
+                    
+                    <div style="font-size: 11px; color: #666; margin-bottom: 4px;">문체</div>
+                    <select class="input-text" style="width: 100%; margin-bottom: 12px; height:34px;"><option>존댓말</option></select>
+
+                    <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                        <div style="flex:1;"><div style="font-size: 11px; color: #666; margin-bottom: 4px;">기사 글자 수</div><input type="text" class="input-text" style="width:100%; height:34px;" value="1500"></div>
+                        <div style="flex:1;"><div style="font-size: 11px; color: #666; margin-bottom: 4px;">블로그 글자 수</div><input type="text" class="input-text" style="width:100%; height:34px;" value="1000"></div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                        <div style="flex:1;"><div style="font-size: 11px; color: #666; margin-bottom: 4px;">톤 & 채널</div><select class="input-text" style="width:100%; height:34px;"><option>공식 뉴스</option></select></div>
+                        <div style="flex:1;"><div style="font-size: 11px; color: #666; margin-bottom: 4px;">타겟</div><select class="input-text" style="width:100%; height:34px;"><option>일반 독자</option></select></div>
+                    </div>
+
+                    <div style="font-size: 11px; color: #666; margin-bottom: 4px;">패널명</div>
+                    <input type="text" class="input-text" style="width: 100%; margin-bottom: 25px; height:34px;" value="공실뉴스">
+
+                    <button class="btn" onclick="document.getElementById('aiGenLoader').style.display='flex'; setTimeout(()=>{document.getElementById('aiGenLoader').style.display='none';}, 1500);" style="width: 100%; background: #f97316; color: white; border: none; padding: 14px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; position:relative;">
+                        ✨ 공실뉴스 기사 생성
+                        <div id="aiGenLoader" style="display:none; position:absolute; inset:0; background:rgba(249,115,22,0.9); align-items:center; justify-content:center; border-radius:6px;">생성 중...</div>
+                    </button>
+                </div>
+
+                <!-- 우측 결과 영역 -->
+                <div style="flex: 1; display: flex; flex-direction: column; background: white;">
+                    <div style="padding: 20px 30px; border-bottom: 1px solid #eee;">
+                        <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: #333; margin-bottom: 15px; font-size: 16px;">
+                            <span style="color: #f97316; border: 1px solid #f97316; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; justify-content: center; align-items: center; font-size: 10px;">▶</span>
+                            생성 결과 미리보기
+                        </div>
+                        <div style="display: flex; gap: 20px; font-size: 13px; color: #999; border-bottom: 2px solid #f1f1f1;">
+                            <span style="padding-bottom: 10px; cursor: pointer;">쇼츠 대본</span>
+                            <span style="padding-bottom: 10px; cursor: pointer; color: #f97316; font-weight: bold; border-bottom: 2px solid #f97316;">기사</span>
+                            <span style="padding-bottom: 10px; cursor: pointer;">블로그</span>
+                            <span style="padding-bottom: 10px; cursor: pointer;">카드뉴스</span>
+                            <span style="padding-bottom: 10px; cursor: pointer;">팩트체크 리스크</span>
+                            <span style="padding-bottom: 10px; cursor: pointer; display: flex; align-items: center; gap: 4px;">이미지 생성</span>
+                        </div>
+                    </div>
+                    
+                    <div style="flex: 1; padding: 30px; overflow-y: auto; font-size: 14px; line-height: 1.8; color: #333;">
+                        <div id="aiGeneratedTitle" style="font-size: 24px; font-weight: 700; margin-top: 0; margin-bottom: 20px; color: #111;">대치동 중심에서 만나는 5억 원대 소형 아파트... 강남 진입 장벽 낮아지나</div>
+                        <div id="aiGeneratedContent">
+                            <ul style="padding-left: 20px; margin-bottom: 20px; color: #555;">
+                                <li>교육 1번지 강남구 대치동 선릉로 일대, 매매가 5억 원 소형 아파트 등장</li>
+                                <li>우수한 학군과 수인분당선 3호선 교통망, 풍부한 생활 인프라까지 '주목'</li>
+                                <li>1인 가구 증가 추세 속 강남권 핵심 입지 소형 주거 상품 수요 상승 압력</li>
+                            </ul>
+                            <p>최근 대한민국 사교육의 1번지이자 강남의 핵심 주거지인 강남구 대치동 일대에서 매매가 5억 원 수준의 소형 아파트 물건이 화제 되어 시장의 이목이 쏠리고 있습니다. 전통적으로 진입 장벽이 높은 대치동에서 1인 가구 및 실수요를 겨냥한 소형 주거 상품의 시세가 새롭게 형성되는 모습입니다.</p>
+                            <p><br>■ 위치: 서울 강남구 대치동 선릉로 206 (동부센트레빌)<br>■ 가격: 매매 5억 원<br>■ 특징: 방 1개/욕실 1개, 풀옵션(에어컨, 냉장고, 세탁기), 관리비 10만 원</p>
+                            <p>부동산 업계에 따르면, 해당 매물은 대치동 선릉로 206에 위치한 동부센트레빌 단지 내 또는 인근 소형 상품으로 추정됩니다. 방 1개와 욕실 1개 구조로 이루어져 있으며, 에어컨, 냉장고, 세탁기 등 생활에 필수적인 가전제품이 기본 옵션으로 제공되어 초기 주거 비용 부담을 줄일 수 있는 것이 특징입니다. 월 관리비는 약 10만 원 선으로 형성되어 있습니다.</p>
+                        </div>
+                        <div style="margin-top: 30px; display: flex; gap: 8px;">
+                            <span style="color: #f59e0b;">#대치동아파트</span> <span style="color: #f59e0b;">#강남부동산</span> <span style="color: #f59e0b;">#소형아파트</span>
+                        </div>
+                    </div>
+
+                    <div style="padding: 15px 30px; border-top: 1px solid #eee; background: #fff; display: flex; justify-content: flex-end;">
+                        <button class="btn" onclick="applyAiwizardToEditor()" style="background: #2563eb; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                            기반 기사 본문에 바로 적용하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // 간단한 자바라(아코디언) 토글 스크립트 기능 추가
         function toggleSection() {
@@ -898,6 +1025,22 @@
         // 포토DB 모달 스크립트
         function openPhotodbModal() { document.getElementById('photodbModal').style.display = 'flex'; }
         function closePhotodbModal() { document.getElementById('photodbModal').style.display = 'none'; }
+
+        // AI 마법사 모달 스크립트
+        function openAiwizard() { document.getElementById('aiWizardModal').style.display = 'flex'; }
+        function closeAiwizard() { document.getElementById('aiWizardModal').style.display = 'none'; }
+        function applyAiwizardToEditor() {
+            // 1. 에디터 밖 제목칸 데이터 넣기
+            const titleTarget = document.querySelector('input[placeholder="제목을 입력하세요"]');
+            if(titleTarget) titleTarget.value = document.getElementById('aiGeneratedTitle').innerText;
+            
+            // 2. Summernote 에디터 본문칸 내용 복사 넣기
+            const contentHtml = document.getElementById('aiGeneratedContent').innerHTML;
+            $('#summernote').summernote('code', contentHtml);
+            
+            alert("✨ AI가 작성한 기사 제목과 본문이 편집기 화면으로 완벽하게 연동되었습니다!");
+            closeAiwizard();
+        }
 
         // 1차/2차 섹션 연동 스크립트
         const sec2Data = {
