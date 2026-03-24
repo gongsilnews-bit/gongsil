@@ -121,7 +121,7 @@
             display: none;
             flex: 1;
             width: 100%;
-            background: #f4f6f8;
+            background: #fff;
             overflow-y: auto;
             position: relative;
         }
@@ -267,7 +267,12 @@
         .portal-btn-more:hover { background: #f9f9f9; border-color: #999; color: #111; }
 
         /* ==== 우측 사이드바 영역 ==== */
-        .portal-side { min-width: 0; }
+        .portal-side { 
+            min-width: 0; 
+            position: sticky;
+            top: 40px;
+            align-self: flex-start;
+        }
         
         /* 우측 상단 소형 기사 4개 */
         .portal-side-top { margin-bottom: 30px; }
