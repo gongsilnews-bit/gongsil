@@ -319,6 +319,15 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
+            // URL 파라미터 체크 (예: ?page=news_write)
+            const urlParams = new URLSearchParams(window.location.search);
+            const pageParam = urlParams.get('page');
+            if (pageParam === 'news_write') {
+                loadPage(null, '기사쓰기', 'news_write.html');
+                // 메뉴 활성화 상태 해제
+                document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
+            }
+
             // 유저 정보 로드 및 UI 업데이트
             setTimeout(() => {
                 const ud = JSON.parse(localStorage.getItem('gongsil_user') || '{}');
