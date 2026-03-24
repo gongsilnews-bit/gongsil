@@ -115,7 +115,7 @@
 
         /* 우리동네부동산 맵 위 플로팅 모드 (단일 단 레이아웃) */
         #news-detail-view.map-floating-mode {
-            width: 550px;
+            width: 850px;
             height: 100%;
             border-right: 1px solid #ddd;
             box-shadow: 5px 0 20px rgba(0,0,0,0.1);
@@ -128,17 +128,30 @@
         }
 
         #news-detail-view.map-floating-mode .detail-container {
-            display: block; /* 우측 광고 영역 무시하고 1단으로 */
+            display: grid; 
+            grid-template-columns: 1fr 280px; /* 좌측 기사, 우측 매물 플로팅 */
+            gap: 30px;
             padding: 40px 30px;
             max-width: none;
         }
+
+        #news-detail-view.map-floating-mode .portal-sidebar-content {
+            display: none !important; /* 포털용 배너 숨김 */
+        }
         
-        #news-detail-view.map-floating-mode .detail-sidebar {
-            display: none !important; /* 플로팅 시 우측 광고영역 완전히 숨김 */
+        #news-detail-view:not(.map-floating-mode) .map-sidebar-content {
+            display: none !important; /* 포털 모드인 경우 매물 사이드바 숨김 */
         }
 
         #news-detail-view.map-floating-mode .detail-title {
             font-size: 26px; /* 좁은 폭에 맞게 제목 폰트 살짝 축소 */
+            line-height: 1.35;
+            margin-bottom: 20px;
+        }
+        
+        #news-detail-view.map-floating-mode .article-body {
+            font-size: 16px;
+            line-height: 1.7;
         }
 
         #news-detail-view.map-floating-mode .btn-close-detail {
@@ -557,27 +570,68 @@
                     
                     <div class="detail-sidebar">
                         
-                        <div class="ad-banner">
-                            <div style="font-weight:bold; font-size:15px; color:#ff9f1c; margin-bottom:10px;">HOT 매물/광고</div>
-                            <div style="width:100%; height:140px; background:#e0e0e0; border-radius:4px; display:flex; align-items:center; justify-content:center; color:#999;">공실가이드맵 (지도 이미지)</div>
-                            <div style="background:#333; color:#fff; text-align:center; padding:8px; font-size:12px; margin-top:8px; border-radius:4px;">강남구 역삼동 신축 빌딩 (수익률 6%)</div>
-                        </div>
-                        
-                        <div style="background:#00b894; color:#fff; text-align:center; padding:15px; border-radius:8px; margin-bottom:10px; font-weight:bold; font-size:14px; cursor:pointer;">
-                            공실알림<br><span style="font-size:12px;font-weight:normal;">(관심도 1,000개 부동산 가입)</span>
-                        </div>
-                        <div style="background:#00cec9; color:#fff; text-align:center; padding:15px; border-radius:8px; margin-bottom:30px; font-weight:bold; font-size:14px; cursor:pointer;">
-                            신축/분양/권리조회<br><span style="font-size:12px;font-weight:normal;">(부동산 전문가에게 의뢰)</span>
+                        <!-- 포털 모드 전용 사이드바 (광고, 배너, 많이 본 기사) -->
+                        <div class="portal-sidebar-content">
+                            <div class="ad-banner">
+                                <div style="font-weight:bold; font-size:15px; color:#ff9f1c; margin-bottom:10px;">HOT 매물/광고</div>
+                                <div style="width:100%; height:140px; background:#e0e0e0; border-radius:4px; display:flex; align-items:center; justify-content:center; color:#999;">공실가이드맵 (지도 이미지)</div>
+                                <div style="background:#333; color:#fff; text-align:center; padding:8px; font-size:12px; margin-top:8px; border-radius:4px;">강남구 역삼동 신축 빌딩 (수익률 6%)</div>
+                            </div>
+                            
+                            <div style="background:#00b894; color:#fff; text-align:center; padding:15px; border-radius:8px; margin-bottom:10px; font-weight:bold; font-size:14px; cursor:pointer;">
+                                공실알림<br><span style="font-size:12px;font-weight:normal;">(관심도 1,000개 부동산 가입)</span>
+                            </div>
+                            <div style="background:#00cec9; color:#fff; text-align:center; padding:15px; border-radius:8px; margin-bottom:30px; font-weight:bold; font-size:14px; cursor:pointer;">
+                                신축/분양/권리조회<br><span style="font-size:12px;font-weight:normal;">(부동산 전문가에게 의뢰)</span>
+                            </div>
+
+                            <h3 style="font-size:16px; font-weight:800; border-bottom:2px solid #111; padding-bottom:10px; margin-bottom:15px;">많이 본 뉴스</h3>
+                            <ul class="portal-popular-list">
+                                <li><span class="portal-popular-num">1</span><span class="portal-popular-text">대법원, 신반포2차 재건축 상가 분쟁 마침표</span></li>
+                                <li><span class="portal-popular-num">2</span><span class="portal-popular-text">부모님 자산 형태에 따른 세무 가이드</span></li>
+                                <li><span class="portal-popular-num">3</span><span class="portal-popular-text">강남 아파트값 3년 만에 최고 상승률</span></li>
+                                <li><span class="portal-popular-num">4</span><span class="portal-popular-text">5호선 연장·위례신사선 확정... 서부 호재</span></li>
+                                <li><span class="portal-popular-num">5</span><span class="portal-popular-text">다주택자 양도세 중과 완화 정책 분석</span></li>
+                            </ul>
                         </div>
 
-                        <h3 style="font-size:16px; font-weight:800; border-bottom:2px solid #111; padding-bottom:10px; margin-bottom:15px;">많이 본 뉴스</h3>
-                        <ul class="portal-popular-list">
-                            <li><span class="portal-popular-num">1</span><span class="portal-popular-text">대법원, 신반포2차 재건축 상가 분쟁 마침표</span></li>
-                            <li><span class="portal-popular-num">2</span><span class="portal-popular-text">부모님 자산 형태에 따른 세무 가이드</span></li>
-                            <li><span class="portal-popular-num">3</span><span class="portal-popular-text">강남 아파트값 3년 만에 최고 상승률</span></li>
-                            <li><span class="portal-popular-num">4</span><span class="portal-popular-text">5호선 연장·위례신사선 확정... 서부 호재</span></li>
-                            <li><span class="portal-popular-num">5</span><span class="portal-popular-text">다주택자 양도세 중과 완화 정책 분석</span></li>
-                        </ul>
+                        <!-- 맵 플로팅 모드 전용 사이드바 (작성 부동산 매물) -->
+                        <div class="map-sidebar-content">
+                            <h3 style="font-size: 16px; font-weight: 800; border-bottom: 2px solid #111; padding-bottom: 10px; margin-bottom: 15px;">해당 부동산 등록 매물</h3>
+                            
+                            <!-- 더미 매물 아이템 1 -->
+                            <div style="display: flex; gap: 12px; margin-bottom: 15px; cursor: pointer; border: 1px solid #f0f0f0; border-radius: 8px; padding: 10px; transition: 0.2s;">
+                                <div style="width: 80px; height: 80px; background: #eee url('https://via.placeholder.com/80?text=Room') center/cover; border-radius: 4px; flex-shrink: 0;"></div>
+                                <div style="display: flex; flex-direction: column; justify-content: center; min-width: 0;">
+                                    <span style="font-size: 11px; font-weight: bold; color: #00ca62; border: 1px solid #00ca62; border-radius: 3px; padding: 1px 4px; align-self: flex-start; margin-bottom: 4px;">추천</span>
+                                    <div style="font-size: 14px; font-weight: 800; color: #111;">매매 5억 5천</div>
+                                    <div style="font-size: 13px; color: #666; margin-top: 2px;">전용 59㎡ · 관리비 10만</div>
+                                    <div style="font-size: 12px; color: #888; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">서울 강남구 역삼동</div>
+                                </div>
+                            </div>
+
+                            <!-- 더미 매물 아이템 2 -->
+                            <div style="display: flex; gap: 12px; margin-bottom: 15px; cursor: pointer; border: 1px solid #f0f0f0; border-radius: 8px; padding: 10px; transition: 0.2s;">
+                                <div style="width: 80px; height: 80px; background: #eee url('https://via.placeholder.com/80?text=Bldg') center/cover; border-radius: 4px; flex-shrink: 0;"></div>
+                                <div style="display: flex; flex-direction: column; justify-content: center; min-width: 0;">
+                                    <span style="font-size: 11px; font-weight: bold; color: #ff9f1c; border: 1px solid #ff9f1c; border-radius: 3px; padding: 1px 4px; align-self: flex-start; margin-bottom: 4px;">급매</span>
+                                    <div style="font-size: 14px; font-weight: 800; color: #111;">단기 300 / 300</div>
+                                    <div style="font-size: 13px; color: #666; margin-top: 2px;">전용 35㎡ · 관리비 15만</div>
+                                    <div style="font-size: 12px; color: #888; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">서울 서초구 방배동</div>
+                                </div>
+                            </div>
+                            
+                            <!-- 더미 매물 아이템 3 -->
+                            <div style="display: flex; gap: 12px; margin-bottom: 15px; cursor: pointer; border: 1px solid #f0f0f0; border-radius: 8px; padding: 10px; transition: 0.2s;">
+                                <div style="width: 80px; height: 80px; background: #eee url('https://via.placeholder.com/80?text=Office') center/cover; border-radius: 4px; flex-shrink: 0;"></div>
+                                <div style="display: flex; flex-direction: column; justify-content: center; min-width: 0;">
+                                    <div style="font-size: 14px; font-weight: 800; color: #111; margin-top: 4px;">전세 8억</div>
+                                    <div style="font-size: 13px; color: #666; margin-top: 2px;">전용 84㎡ · 아파트</div>
+                                    <div style="font-size: 12px; color: #888; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">서울 강남구 논현동</div>
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
                 </div>
             </div>
