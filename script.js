@@ -90,6 +90,10 @@ function initNewsNavigation() {
 
                 // Tier 2 렌더링
                 renderTier2(configKey);
+
+                // [추가] 탭 전환 시 첫 번째 서브 카테고리 기사 자동 로드
+                const firstSub = NEWS_NAV_CONFIG[configKey].subs[0];
+                loadNews(firstSub);
             }
         });
     });
@@ -475,8 +479,16 @@ async function loadNews(category) {
         }
 
         let dbCategory = category;
-        // 공실뉴스 RSS를 우리동네부동산으로 연결 (매핑)
-        if (category === '우리동네부동산') dbCategory = '공실뉴스';
+        // 카테고리 매핑 로직 고도화
+        const COLUMN_SUBS = NEWS_NAV_CONFIG['column'].subs;
+        
+        if (category === '우리동네부동산') {
+            dbCategory = '공실뉴스';
+        } else if (COLUMN_SUBS.includes(category)) {
+            // 뉴스/칼럼의 서브 카테고리들은 일단 '전체기사' 혹은 '뉴스칼럼'에서 가져오도록 함
+            // 향후 DB에 정교한 카테고리가 생기면 query.eq('subcategory', category) 등으로 확장 가능
+            dbCategory = '전체기사'; 
+        }
 
         let query = supabaseClient
             .from('news')
