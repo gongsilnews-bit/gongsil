@@ -3,212 +3,412 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>공실뉴스 - 스마트 기사 작성</title>
-    <!-- Supabase CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css">
-    <!-- 카카오 맵 API (위치 등록용) -->
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=9635eeb0006d6499effdf5f935f8d975&libraries=services,clusterer"></script>
+    <title>기사 쓰기 - 공실뉴스 Admin</title>
+    <!-- 구글 폰트 적용 -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable.css" />
     <style>
-        .write-container {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 40px;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        :root {
+            --bg-body: #f4f5f7;
+            --border-color: #e1e4e8;
+            --text-main: #333333;
+            --text-sub: #666666;
+            --cyan-color: #14b8a6; /* 저장 버튼 색상 */
+            --btn-gray: #f3f4f6;
         }
-        .page-title {
-            font-size: 28px;
-            font-weight: 900;
-            color: #111;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #222;
+
+        body {
+            font-family: 'Pretendard Variable', sans-serif;
+            background-color: var(--bg-body);
+            margin: 0;
+            padding: 24px;
+            color: var(--text-main);
+        }
+
+        /* 큰 3단 레이아웃 */
+        .layout-wrapper {
+            display: flex;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            align-items: flex-start;
+        }
+
+        /* 1. 좌측 툴바 (스티키) */
+        .col-tools {
+            width: 240px;
+            position: sticky;
+            top: 24px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 24px 20px;
+            flex-shrink: 0;
+        }
+
+        .tools-title { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 20px; }
+        
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px 10px;
+            margin-bottom: 40px;
+        }
+        
+        .tool-icon {
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            font-size: 11px; color: #555; cursor: pointer; transition: opacity 0.2s;
+        }
+        .tool-icon:hover { opacity: 0.7; }
+        .tool-icon span.img { font-size: 20px; }
+
+        .tools-bottom {
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .tools-bottom-title { font-size: 13px; font-weight: 600; color: #333; }
+        .tools-bottom-icons { display: flex; gap: 10px; font-size: 18px; color: #aaa; cursor: pointer; }
+
+        /* 2. 중앙 메인 폼 */
+        .col-main {
+            flex: 1;
+            min-width: 500px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 32px 40px;
+            position: relative;
+        }
+
+        .main-title { font-size: 20px; font-weight: 800; color: #111; margin-bottom: 30px; }
+
+        .form-row {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid #f0f0f0;
         }
-        .ai-banner {
-            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
-            border: 1px solid #e0e0e0;
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            position: relative;
-            overflow: hidden;
-        }
-        .ai-banner::before {
-            content: "✨";
-            position: absolute;
-            right: 20px;
-            top: 20px;
-            font-size: 40px;
-            opacity: 0.2;
-        }
-        .form-group {
-            margin-bottom: 24px;
-        }
-        .form-group label {
-            display: block;
-            font-size: 15px;
+        
+        .form-row.no-border { border-bottom: none; }
+        .form-row.align-top { align-items: flex-start; }
+
+        .form-label {
+            width: 110px;
+            font-size: 14px;
             font-weight: 700;
-            color: #333;
-            margin-bottom: 10px;
+            color: #444;
+            flex-shrink: 0;
         }
-        .form-control {
-            width: 100%;
-            padding: 14px 16px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 15px;
-            font-family: 'Pretendard', sans-serif;
-            transition: border-color 0.2s;
+
+        .form-content { flex: 1; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+        /* 뱃지, 라디오, 인풋 조각들 */
+        .badge-status {
+            background: #1f2937; color: white; padding: 5px 14px; border-radius: 40px;
+            font-size: 13px; font-weight: 600; cursor: pointer;
         }
-        .form-control:focus {
-            outline: none;
-            border-color: #ff9f1c;
-            box-shadow: 0 0 0 3px rgba(255,159,28,0.1);
+        .radio-label { font-size: 14px; color: #333; display: flex; align-items: center; gap: 6px; cursor: pointer;}
+        
+        .input-text {
+            padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 4px;
+            font-size: 14px; width: 100%; outline: none; transition: border 0.2s;
+            font-family: inherit;
         }
-        .row-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        .btn {
-            padding: 14px 24px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-primary { background: #ff9f1c; color: white; }
-        .btn-primary:hover { background: #f79000; }
-        .btn-ai {
-            background: #2563eb;
-            color: white;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-ai:hover { background: #1d4ed8; }
-        .editor-box {
-            width: 100%;
-            min-height: 400px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            padding: 16px;
-            font-size: 16px;
-            line-height: 1.6;
-        }
-        .map-picker-box {
-            width: 100%;
-            height: 300px;
-            background: #eee;
-            border-radius: 6px;
-            margin-top: 10px;
+        .input-text:focus { border-color: #3b82f6; }
+        
+        select.input-text { padding: 9px 14px; cursor: pointer; }
+
+        /* 확장/축소(아코디언) 영역 (자바라) */
+        .accordion-wrapper {
             position: relative;
+            background: #fafafa;
+            border: 1px solid var(--border-color);
+            padding: 0 20px;
+            border-radius: 4px;
+            margin: 10px 0;
         }
-        .hint-text {
-            font-size: 13px;
-            color: #888;
-            margin-top: 8px;
+        
+        /* 오른쪽 토글 버튼 (-/+) */
+        .accordion-toggle {
+            position: absolute;
+            right: -36px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background: #fff;
+            border: 1px solid #ccc;
+            font-weight: bold;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
         }
+
+        .btn-type-active { background: #6b7280; color: #fff; padding: 6px 14px; border-radius: 40px; font-size: 12px; font-weight: 600; border: none; }
+        .btn-type-inactive { background: #fff; color: #666; border: 1px solid #ccc; padding: 6px 14px; border-radius: 40px; font-size: 12px; border: none; cursor: pointer;}
+
+        /* 에디터 가짜 툴바 및 텍스트 영역 */
+        .editor-wrap { border: 1px solid var(--border-color); border-radius: 4px; margin-top: 10px; }
+        .editor-toolbar {
+            background: #f9fafb; padding: 10px; border-bottom: 1px solid var(--border-color);
+            display: flex; gap: 15px; font-size: 12px; color: #444; align-items: center;
+            flex-wrap: wrap; font-family: sans-serif;
+        }
+        .editor-body {
+            height: 400px; width: 100%; padding: 15px; border: none; outline: none; resize: vertical;
+            font-family: inherit; font-size: 14px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px; background: #6b7280; color: #fff; text-decoration: none;
+            border-radius: 4px; font-size: 12px; border: none; cursor: pointer; display: inline-block;
+        }
+        .btn-gray-sm { background: #9ca3af; }
+        
+        /* 저장버튼 */
+        .btn-save-large {
+            width: 100%; background: var(--cyan-color); color: #fff; font-size: 16px; font-weight: 700;
+            padding: 16px; border: none; border-radius: 6px; cursor: pointer; margin-top: 40px;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+            transition: background 0.2s;
+        }
+        .btn-save-large:hover { background: #0d9488; }
+
+        /* 3. 우측 라이브러리 (스티키) */
+        .col-library {
+            width: 320px;
+            position: sticky;
+            top: 24px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 24px;
+            flex-shrink: 0;
+        }
+
+        .library-title { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 15px; }
+        .search-box { position: relative; margin-bottom: 24px; }
+        .search-box input {
+            width: 100%; padding: 10px 30px 10px 10px; background: #f9fafb;
+            border: 1px solid #e5e7eb; border-radius: 4px; font-size: 13px; outline:none;
+        }
+        .search-box .icon { position: absolute; right: 10px; top: 10px; font-size: 12px; color: #aaa; }
+
+        .lib-section { margin-bottom: 20px; }
+        .lib-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .lib-header strong { font-size: 14px; color: #333; font-weight: 600; }
+        .lib-toggle {
+            width: 20px; height: 20px; border: 1px solid #ccc; display: flex; align-items: center;
+            justify-content: center; font-size: 12px; color: #666; cursor: pointer; background: #fff;
+            line-height:1;
+        }
+
+        .dash-drop-box {
+            border: 1px dashed #d1d5db; background: #fdfdfd; padding: 20px;
+            text-align: center; color: #9ca3af; font-size: 12px; border-radius: 4px;
+            min-height: 80px; display: flex; flex-direction: column; justify-content: center;
+        }
+
     </style>
 </head>
-<body style="background: #f8f9fa;">
-    <!-- 헤더 영역 (기존 참조) -->
-    <header class="header">
-        <div class="header-container">
-            <div class="logo">
-                <a href="index.html" style="text-decoration:none; color:inherit;">
-                공실뉴스 <span style="font-size:12px; font-weight:normal; color:#888;">스마트 작성폼</span>
-                </a>
-            </div>
-            <div class="auth-buttons">
-                <a href="user_admin.html" class="btn" style="background:#f1f1f1; color:#333; text-decoration:none;">마이페이지(API 설정)</a>
-            </div>
-        </div>
-    </header>
+<body>
 
-    <div class="write-container">
-        <div class="page-title">
-            기사 / 칼럼 작성하기
-            <span style="font-size:14px; color:#666; font-weight:normal;">승인 후 포털 노출</span>
-        </div>
-
-        <!-- AI 어시스턴트 배너 -->
-        <div class="ai-banner">
-            <h3 style="margin:0 0 10px 0; color:#1e40af; font-size:18px;">🤖 AI 뉴스 초안 작성 어시스턴트</h3>
-            <p style="margin:0 0 15px 0; color:#475569; font-size:14px; line-height:1.5;">
-                직접 등록한 매물을 선택하거나, 다루고 싶은 지역 이슈 키워드를 입력하시면<br>
-                회원님의 <strong>연동된 AI API (ChatGPT/Gemini)</strong>를 통해 전문적인 기사 초안을 10초 만에 작성해 드립니다.
-            </p>
-            <div style="display: flex; gap: 10px;">
-                <select class="form-control" style="width: auto; flex: 1;">
-                    <option value="">-- 내 매물 불러오기 (선택) --</option>
-                    <option value="1">[매매 5억 5천] 강남구 역삼동 신축 아파트</option>
-                    <option value="2">[단기 300] 강남구 논현동 풀옵션</option>
-                </select>
-                <input type="text" class="form-control" style="flex: 1;" placeholder="또는 주요 키워드 입력 (예: 강남구, 전세가 상승)">
-                <button class="btn btn-ai">✨ AI 기사 생성</button>
+    <div class="layout-wrapper">
+        <!-- 1. 좌측 글쓰기도구 -->
+        <aside class="col-tools">
+            <div class="tools-title">글쓰기도구</div>
+            
+            <div class="tools-grid">
+                <div class="tool-icon"><span class="img">🖼️</span> <span style="color:#0ea5e9;">사진</span></div>
+                <div class="tool-icon"><span class="img">▶️</span> <span>영상</span></div>
+                <div class="tool-icon"><span class="img">📁</span> <span>파일</span></div>
+                <div class="tool-icon"><span class="img">📸</span> <span>포토DB</span></div>
+                <div class="tool-icon"><span class="img">🗃️</span> <span>임시보관함</span></div>
+                <div class="tool-icon"><span class="img">🪄</span> <span>사진편집</span></div>
+                <div class="tool-icon"><span class="img">📑</span> <span>템플릿</span></div>
+                <div class="tool-icon"><span class="img">@</span> <span>특수문자</span></div>
+                <div class="tool-icon"><span class="img">➖</span> <span style="color:#0ea5e9;">구분선</span></div>
             </div>
-        </div>
 
-        <form id="articleForm" onsubmit="event.preventDefault(); submitArticle();">
-            <div class="row-grid">
-                <div class="form-group">
-                    <label>섹션 구분 (필수)</label>
-                    <select class="form-control" required id="sectionType">
-                        <option value="우리동네부동산">우리동네부동산 (매물 타겟)</option>
-                        <option value="뉴스칼럼">뉴스/칼럼 (지역 이슈 타겟)</option>
+            <div class="tools-bottom">
+                <span class="tools-bottom-title">본문크기</span>
+                <div class="tools-bottom-icons">
+                    <span style="color:#0ea5e9;">💻</span>
+                    <span>📱</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 2. 중앙 메인 수록폼 -->
+        <main class="col-main">
+            <div class="main-title">기사쓰기</div>
+
+            <div class="form-row">
+                <div class="form-label">기사검토 ⓘ</div>
+                <div class="form-content">
+                    <span class="badge-status">작성중</span>
+                    <label class="radio-label"><input type="radio" name="status"> 승인신청</label>
+                    <label class="radio-label"><input type="radio" name="status"> 반려</label>
+                </div>
+            </div>
+
+            <!-- 접을 수 있는 자바라 영역 -->
+            <div class="accordion-wrapper" id="typeSection">
+                <div class="form-row" style="border-bottom: 1px dashed #e1e4e8;">
+                    <div class="form-label">형태 ⓘ</div>
+                    <div class="form-content">
+                        <button class="btn-type-active">일반</button>
+                        <button class="btn-type-inactive">카드뉴스</button>
+                        <button class="btn-type-inactive">갤러리</button>
+                    </div>
+                </div>
+                <div class="form-row no-border">
+                    <div class="form-label">노출시간 ⓘ</div>
+                    <div class="form-content">
+                        <input type="date" class="input-text" style="width:160px; color:#666;" value="2026-03-24">
+                        <input type="time" class="input-text" style="width:100px; color:#666;" value="00:00">
+                    </div>
+                </div>
+                <!-- 우측 바깥쪽 토글 버튼 -->
+                <div class="accordion-toggle" onclick="toggleSection()">－</div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-label">섹션</div>
+                <div class="form-content">
+                    <select class="input-text" style="width: 150px;">
+                        <option>1차섹션</option>
+                        <option>우리동네부동산</option>
+                        <option>뉴스칼럼</option>
+                    </select>
+                    <select class="input-text" style="width: 150px;">
+                        <option>2차섹션</option>
+                    </select>
+                    <select class="input-text" style="width: 120px;">
+                        <option>연재</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>조회 대상 등급</label>
-                    <select class="form-control" id="viewLevel">
-                        <option value="all">전체 공개</option>
-                        <option value="paid">유료 회원 전용 (프리미엄)</option>
-                    </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-label">기자명</div>
+                <div class="form-content">
+                    <input type="text" class="input-text" style="width:150px;" value="공실뉴스">
+                    <input type="text" class="input-text" style="width:250px;" value="webmaster@gongsilnews.com">
                 </div>
             </div>
 
-            <div class="form-group">
-                <label>기사 제목 (필수)</label>
-                <input type="text" class="form-control" id="title" placeholder="매력적인 기사 제목을 입력하세요." required>
-            </div>
-
-            <div class="form-group">
-                <label>본문 내용 (에디터)</label>
-                <!-- 실제 도입 시에는 Quill, TinyMCE, CKEditor 같은 라이브러리를 사용합니다 -->
-                <textarea class="editor-box" id="content" placeholder="이곳에 기사 내용을 작성하거나 AI 자동생성 버튼을 활용해 보세요..."></textarea>
-            </div>
-
-            <div class="form-group">
-                <label>지도 위치 (마커) 등록</label>
-                <div class="hint-text" style="margin-bottom:10px;">우리동네부동산 탭 지도에 기사가 표시될 위치를 클릭해 주세요. (매물을 불러온 경우 자동 세팅됩니다)</div>
-                <div id="mapPicker" class="map-picker-box">
-                    <!-- 지도 라이브러리 연동 -->
-                    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:#888;">(지도 렌더링 영역) 위도/경도 피커</div>
+            <div class="form-row">
+                <div class="form-label">제목</div>
+                <div class="form-content">
+                    <input type="text" class="input-text" placeholder="제목을 입력하세요">
                 </div>
-                <input type="hidden" id="lat">
-                <input type="hidden" id="lng">
             </div>
 
-            <div class="form-group" style="margin-top:40px; text-align:center;">
-                <button type="submit" class="btn btn-primary" style="width: 250px; font-size: 18px; padding: 18px;">기사 승인 요청하기</button>
-                <p class="hint-text" style="margin-top:15px;">저장하신 기사는 관리자 검토 후 상태가 '승인'으로 변경되면 포털에 즉시 노출됩니다.</p>
+            <div class="form-row align-top">
+                <div class="form-label" style="padding-top:12px;">부제목</div>
+                <div class="form-content">
+                    <textarea class="input-text" rows="2" style="resize:vertical; color:#aaa; font-size:13px;" placeholder="부제목을 입력하세요(여러 줄 입력도 가능합니다.)"></textarea>
+                </div>
             </div>
-        </form>
+
+            <!-- 에디터 영역 -->
+            <div class="editor-wrap">
+                <div class="editor-toolbar">
+                    <span>소스</span> <span>🖨️</span> <span>📋</span> | 
+                    <strong>B</strong> <i>I</i> <u>U</u> <s>S</s> x₂ x² | 
+                    <span>⬅️</span> <span>🀄</span> <span>➡️</span> <span>🔗</span> | 
+                    <span>표</span> <span>이미지</span> <span>Ω</span> <br>
+                    스타일 ▾ | 글꼴 ▾ | 크기 ▾ | <span style="background:#000; color:#fff; padding:0 3px;">A ▾</span> <span style="border:1px solid #ccc; padding:0 3px;">A ▾</span>
+                </div>
+                <textarea class="editor-body" placeholder="내용을 입력하세요."></textarea>
+            </div>
+
+            <div class="form-row" style="margin-top:20px;">
+                <div class="form-label">키워드</div>
+                <div class="form-content">
+                    <input type="text" class="input-text" style="background:#fafafa; color:#aaa;" placeholder="#입력 (최대 20개)">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-label">관련기사</div>
+                <div class="form-content">
+                    <button class="btn-sm">+ 관련기사추가</button>
+                </div>
+            </div>
+
+            <div class="form-row no-border">
+                <div class="form-label">위치등록</div>
+                <div class="form-content" style="gap: 5px;">
+                    <button class="btn-sm">지도검색</button>
+                    <input type="text" class="input-text" style="width:250px; background:#fafafa;" placeholder="위도, 경도를 입력해주세요.">
+                    <button class="btn-sm btn-gray-sm">#위도 경도 넣는법</button>
+                </div>
+            </div>
+
+            <button class="btn-save-large">💾 저장</button>
+        </main>
+
+        <!-- 3. 우측 라이브러리 -->
+        <aside class="col-library">
+            <div class="library-title">라이브러리</div>
+            <div class="search-box">
+                <input type="text" placeholder="포토DB 간편검색">
+                <span class="icon">🔍</span>
+            </div>
+
+            <div class="lib-section">
+                <div class="lib-header">
+                    <strong>사진</strong>
+                    <div class="lib-toggle">－</div>
+                </div>
+                <div class="dash-drop-box">
+                    마우스로 이미지를 끌어오거나, 클릭해주세요.<br>
+                    (허용용량 10MB)
+                </div>
+            </div>
+
+            <div class="lib-section">
+                <div class="lib-header">
+                    <strong>영상</strong>
+                    <div class="lib-toggle">－</div>
+                </div>
+                <div style="display:flex; gap:6px;">
+                    <input type="text" class="input-text" style="flex:1; padding:8px; font-size:12px; background:#fafafa;" placeholder="YouTube영상링크입력">
+                    <button class="btn-sm style=background:#666;">입력하기</button>
+                </div>
+            </div>
+
+            <div class="lib-section" style="margin-bottom: 0;">
+                <div class="lib-header">
+                    <strong>파일</strong>
+                    <div class="lib-toggle">－</div>
+                </div>
+                <div class="dash-drop-box">
+                    마우스로 파일을 끌어오거나, 클릭해주세요.<br>
+                    (허용용량 2MB)
+                </div>
+            </div>
+        </aside>
+
     </div>
 
     <script>
-        function submitArticle() {
-            alert('기사가 성공적으로 접수되었습니다! \n관리자 승인 후 (약 1~2시간 소요) 공실뉴스 포털에 발행됩니다.');
-            // 실제 구현 시 Supabase Insert ('status': 'pending')
-            window.location.href = 'index.html';
+        // 간단한 자바라(아코디언) 토글 스크립트 기능 추가
+        function toggleSection() {
+            const wrap = document.getElementById('typeSection');
+            const toggleBtn = wrap.querySelector('.accordion-toggle');
+            const rows = wrap.querySelectorAll('.form-row');
+            
+            if (rows[0].style.display === 'none') {
+                rows.forEach(r => r.style.display = 'flex');
+                toggleBtn.textContent = '－';
+            } else {
+                rows.forEach(r => r.style.display = 'none');
+                toggleBtn.textContent = '＋';
+            }
         }
     </script>
 </body>
