@@ -452,7 +452,7 @@
                     <select id="sec1" class="input-text" style="width: 150px;" onchange="updateSec2()">
                         <option value="">1차섹션 선택</option>
                         <option value="우리동네부동산">우리동네부동산</option>
-                        <option value="뉴스칼럼">뉴스칼럼</option>
+                        <option value="뉴스/칼럼">뉴스/칼럼</option>
                     </select>
                     <select id="sec2" class="input-text" style="width: 150px;">
                         <option value="">2차섹션 선택</option>
@@ -900,8 +900,8 @@
 
         // 1차/2차 섹션 연동 스크립트
         const sec2Data = {
-            "우리동네부동산": ["매매", "전세/월세", "분양정보", "상가/업무용", "지역소식"],
-            "뉴스칼럼": ["전문가칼럼", "현장르포", "오피니언", "사설"]
+            "우리동네부동산": ["아파트·오피스텔", "빌라·주택", "원룸·투룸", "상가·업무·공장·토지", "분양"],
+            "뉴스/칼럼": ["전문가칼럼", "현장르포", "오피니언", "사설"]
         };
 
         function updateSec2() {
