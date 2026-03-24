@@ -897,10 +897,19 @@
         document.addEventListener('DOMContentLoaded', () => {
             const icons = document.querySelectorAll('.tools-grid .tool-icon');
             
+            // 1. 사진
             if(icons[0]) { icons[0].style.cursor = 'pointer'; icons[0].onclick = openPhotoModal; }
+            // 2. 영상
             if(icons[1]) { icons[1].style.cursor = 'pointer'; icons[1].onclick = openVideoModal; }
+            // 3. 파일
             if(icons[2]) { icons[2].style.cursor = 'pointer'; icons[2].onclick = openFileModal; }
+            // 4. 포토DB
             if(icons[3]) { icons[3].style.cursor = 'pointer'; icons[3].onclick = openPhotodbModal; }
+            // 6. 사진편집 (외부 에디터 새 창 띄우기)
+            if(icons[5]) { 
+                icons[5].style.cursor = 'pointer'; 
+                icons[5].onclick = () => window.open('https://pixlr.com/kr/editor/', '_blank'); 
+            }
         });
     </script>
 </body>
