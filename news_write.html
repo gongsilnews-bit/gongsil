@@ -449,16 +449,18 @@
             <div class="form-row">
                 <div class="form-label">섹션</div>
                 <div class="form-content">
-                    <select class="input-text" style="width: 150px;">
-                        <option>1차섹션</option>
-                        <option>우리동네부동산</option>
-                        <option>뉴스칼럼</option>
+                    <select id="sec1" class="input-text" style="width: 150px;" onchange="updateSec2()">
+                        <option value="">1차섹션 선택</option>
+                        <option value="우리동네부동산">우리동네부동산</option>
+                        <option value="뉴스칼럼">뉴스칼럼</option>
                     </select>
-                    <select class="input-text" style="width: 150px;">
-                        <option>2차섹션</option>
+                    <select id="sec2" class="input-text" style="width: 150px;">
+                        <option value="">2차섹션 선택</option>
                     </select>
-                    <select class="input-text" style="width: 120px;">
-                        <option>연재</option>
+                    <select id="sec3" class="input-text" style="width: 120px;">
+                        <option value="">연재</option>
+                        <option value="기획연재">기획연재</option>
+                        <option value="현장브리핑">현장브리핑</option>
                     </select>
                 </div>
             </div>
@@ -895,6 +897,30 @@
         // 포토DB 모달 스크립트
         function openPhotodbModal() { document.getElementById('photodbModal').style.display = 'flex'; }
         function closePhotodbModal() { document.getElementById('photodbModal').style.display = 'none'; }
+
+        // 1차/2차 섹션 연동 스크립트
+        const sec2Data = {
+            "우리동네부동산": ["매매", "전세/월세", "분양정보", "상가/업무용", "지역소식"],
+            "뉴스칼럼": ["전문가칼럼", "현장르포", "오피니언", "사설"]
+        };
+
+        function updateSec2() {
+            const sec1Val = document.getElementById('sec1').value;
+            const sec2Select = document.getElementById('sec2');
+            
+            // 기존 옵션 지우기
+            sec2Select.innerHTML = '<option value="">2차섹션 선택</option>';
+            
+            // 데이터가 있으면 추가
+            if(sec1Val && sec2Data[sec1Val]) {
+                sec2Data[sec1Val].forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item;
+                    opt.textContent = item;
+                    sec2Select.appendChild(opt);
+                });
+            }
+        }
 
         // 좌측 도구 모음 아이콘 이벤트 연결
         document.addEventListener('DOMContentLoaded', () => {
