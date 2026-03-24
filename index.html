@@ -47,12 +47,12 @@
             background: #fff; 
             z-index: 2000; 
             overflow-y: auto; 
-            animation: slideUp 0.3s ease;
+            animation: fadeIn 0.2s ease;
         }
 
-        @keyframes slideUp {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .detail-container { 
@@ -119,12 +119,7 @@
             height: 100%;
             border-right: none;
             box-shadow: none;
-            animation: slideRight 0.3s ease;
-        }
-        
-        @keyframes slideRight {
-            from { transform: translateX(-100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            animation: fadeIn 0.2s ease;
         }
 
         #news-detail-view.map-floating-mode .detail-container {
