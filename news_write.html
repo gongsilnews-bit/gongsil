@@ -1315,7 +1315,41 @@
                 ],
                 // 추가적인 폰트 설정
                 fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New','맑은 고딕','궁서','굴림체','굴림','돋움체','바탕체'],
-                fontNamesIgnoreCheck: ['맑은 고딕']
+                fontNamesIgnoreCheck: ['맑은 고딕'],
+                // 붙여넣기 스타일 초기화 (Clean Paste)
+                callbacks: {
+                    onPaste: function (e) {
+                        var bufferText = ((e.originalEvent || e).clipboardData || window.clipboardData).getData('Text');
+                        var bufferHtml = ((e.originalEvent || e).clipboardData || window.clipboardData).getData('text/html');
+                        
+                        e.preventDefault(); // 기본 붙여넣기 차단
+                        
+                        setTimeout(function () {
+                            if (bufferHtml) {
+                                var tempDiv = document.createElement("div");
+                                tempDiv.innerHTML = bufferHtml;
+                                
+                                // 위험하거나 불필요한 태그 제거
+                                var ignoreTags = tempDiv.querySelectorAll('script, style, iframe, meta, link, object, embed');
+                                ignoreTags.forEach(function(el) { el.remove(); });
+                                
+                                // 모든 요소의 스타일, 클래스, ID 제거 (순수 뼈대 태그만 유지)
+                                var allTags = tempDiv.querySelectorAll('*');
+                                allTags.forEach(function(el) {
+                                    el.removeAttribute('style');
+                                    el.removeAttribute('class');
+                                    el.removeAttribute('id');
+                                    el.removeAttribute('dir');
+                                });
+                                
+                                document.execCommand('insertHtml', false, tempDiv.innerHTML);
+                            } else {
+                                // 순수 텍스트인 경우 (줄바꿈 보존을 위해 pre-wrap 처리)
+                                document.execCommand('insertText', false, bufferText);
+                            }
+                        }, 10);
+                    }
+                }
             });
         });
     </script>
