@@ -1355,40 +1355,66 @@ window.shareArticleUrl = function() {
     }
 };
 
-// 이전/다음 기사 탐색
-window.navigateArticle = function(direction) {
+// 이전/다음 기사 탐색 (같은 카테고리 내에서 시간순 탐색)
+window.navigateArticle = async function(direction) {
+    if (!window.currentArticleId) return;
+
+    // 현재 기사의 카테고리 및 작성일자 정보 가져오기
     const isPortal = document.body.classList.contains('portal-mode');
     const navArr = isPortal ? (window.portalState && window.portalState.articles ? window.portalState.articles : []) : (typeof allNewsData !== 'undefined' ? allNewsData : []);
-
-    if (!navArr || navArr.length === 0) {
-        alert('이전/다음 기사 정보가 없습니다.');
-        return;
-    }
-    const currentId = window.currentArticleId;
-    if (!currentId) return;
-
-    const currentIndex = navArr.findIndex(a => (a.id || a.article_id) === currentId);
     
-    if (currentIndex === -1) {
-        alert('현재 기사가 목록에 없습니다.');
-        return;
+    let currentNews = navArr.find(a => (a.id || a.article_id) === window.currentArticleId);
+    
+    if (!currentNews) {
+        // 배열에 없으면 딥링크 등으로 직접 들어온 경우 -> 서버에서 직접 조회
+        if (window.supabase) {
+            const { data } = await supabase.from('articles').select('*').eq('id', window.currentArticleId).single();
+            if (data) currentNews = data;
+        }
     }
 
-    // 배열상 이전(더 최근) = index - 1
-    // 배열상 다음(더 과거) = index + 1
-    // 직관적으로 사용자가 < 를 누르면 direction -1 => 최신 기사, > 를 누르면 +1 => 과거 기사
-    let targetIndex = currentIndex + direction;
-    
-    if (targetIndex < 0) {
-        alert('첫 번째(가장 최신) 기사입니다.');
-        return;
-    } else if (targetIndex >= navArr.length) {
-        alert('마지막 기사입니다.');
+    if (!currentNews) {
+        alert('현재 기사 정보를 확인할 수 없어 탐색이 불가능합니다.');
         return;
     }
+
+    const cat = currentNews.section1; // 1차 카테고리 기준
+    const createdAt = currentNews.created_at || currentNews.pub_date;
     
-    const targetNews = navArr[targetIndex];
-    window.showNewsDetail(targetNews);
+    // direction = 1 : 이전 기사 (과거 시간) -> DB에서는 created_at < current
+    // direction = -1 : 다음 기사 (최신 시간) -> DB에서는 created_at > current
+    // 사용자가 < (왼쪽) 클릭 시 1 넘김 -> "과거" 기사를 뜻함. 
+    // 사용자가 > (오른쪽) 클릭 시 -1 넘김 -> "최신" 기사를 뜻함.
+    
+    try {
+        let query = supabase.from('articles').select('*').eq('status', 'published');
+        
+        if (cat && cat !== '전체기사') {
+            query = query.or(`section1.eq.${cat},section2.eq.${cat}`);
+        }
+
+        if (direction === 1) {
+            // 과거 기사 탐색
+            query = query.lt('created_at', createdAt).order('created_at', { ascending: false }).limit(1);
+        } else {
+            // 최신 기사 탐색
+            query = query.gt('created_at', createdAt).order('created_at', { ascending: true }).limit(1);
+        }
+
+        const { data, error } = await query;
+        if (error || !data || data.length === 0) {
+            alert(direction === 1 ? '마지막(가장 과거) 기사입니다.' : '첫 번째(가장 최신) 기사입니다.');
+            return;
+        }
+
+        const targetNews = data[0];
+        targetNews._source = 'articles'; // 렌더링 호환용
+        window.showNewsDetail(targetNews);
+
+    } catch (e) {
+        console.error("탐색 에러:", e);
+        alert('기사 탐색 중 오류가 발생했습니다.');
+    }
 };
 
 // 초기화 완료 및 스크롤 인디케이터 로직
