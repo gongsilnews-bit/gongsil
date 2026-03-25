@@ -157,6 +157,55 @@
         }
 
         /* ========================================
+           기사 스크롤 리더 인디케이터 (플로팅 헤더)
+           ======================================== */
+        #stickyReadHeader {
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+            z-index: 3000;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease, opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+        }
+        #stickyReadHeader.visible {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .str-container {
+            display: flex;
+            height: 64px;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .str-left, .str-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+        .str-btn { 
+            background: #fff; border: 1px solid #ddd; padding: 6px; width: 34px; height: 34px; font-size: 16px; border-radius: 6px;
+            cursor: pointer; color: #333; font-weight: bold; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .str-btn:hover { background: #f9f9f9; color: #ff9f1c; border-color: #ff9f1c; }
+        .str-logo { height: 26px; margin-left: 15px; cursor: pointer; }
+        .str-center { flex: 1; min-width: 0; padding: 0 30px; display: flex; align-items: center; justify-content: center; }
+        .str-title { 
+            font-size: 17px; font-weight: 800; color: #111; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+        }
+        .str-progress-bar { width: 100%; height: 3px; background: #e2e8f0; }
+        .str-progress-indicator { height: 100%; background: #ea580c; width: 0%; transition: width 0.1s ease-out; }
+
+        /* ========================================
            포털 뉴스 그리드 전용 레이어 스타일
            ======================================== */
         #portal-view {
@@ -580,7 +629,29 @@
         <div class="map-wrapper">
             <!-- 뉴스 상세 페이지 (레이아웃) -->
             <div id="news-detail-view">
-                <div class="btn-close-detail" id="btnCloseDetail" onclick="closeNewsDetail()">지도 보기 ✕</div>
+                
+                <!-- 스크롤 리더 인디케이터 헤더 -->
+                <div id="stickyReadHeader">
+                    <div class="str-container">
+                        <div class="str-left">
+                            <button class="str-btn" onclick="closeNewsDetail()" title="목록으로 가기" style="border:none; font-size: 20px;">❮</button>
+                            <img src="https://gongsilnews.com/image/logo/logo.png" alt="로고" class="str-logo" onerror="this.src='./images/logo.png'">
+                        </div>
+                        <div class="str-center">
+                            <div class="str-title" id="stickyReadTitle">기사 제목</div>
+                        </div>
+                        <div class="str-right">
+                            <button class="str-btn" title="스크랩" style="border:none;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"></path></svg></button>
+                            <button class="str-btn" title="공유" style="border:none;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
+                            <button class="str-btn" title="기사 목록" onclick="closeNewsDetail()" style="border:none; font-size:20px; font-weight:normal;">❯</button>
+                        </div>
+                    </div>
+                    <!-- 프로그레스 바 영역 -->
+                    <div class="str-progress-bar">
+                        <div class="str-progress-indicator" id="readProgressIndicator"></div>
+                    </div>
+                </div>
+
                 <div class="detail-container">
                     <!-- 상단 헤더 영역 (그리드 전체 폭 차지) -->
                     <div class="detail-header-full" style="grid-column: 1 / -1; margin-bottom: 5px;">

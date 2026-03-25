@@ -1086,6 +1086,9 @@ window.showNewsDetail = async function(news) {
 
     document.getElementById('detailCategory').innerText = `뉴스/칼럼 > ${category}${section2}`;
     document.getElementById('detailTitle').innerText = news.title || '(제목 없음)';
+    const stickyReadTitle = document.getElementById('stickyReadTitle');
+    if(stickyReadTitle) stickyReadTitle.innerText = news.title || '(제목 없음)';
+    
     document.getElementById('detailAuthor').innerText = news.reporter_name || news.author || '공실뉴스';
     document.getElementById('detailDate').innerText = `입력 ${new Date(pubDate).toLocaleString('ko-KR')}`;
     document.getElementById('detailViews').innerText = `조회수 ${news.view_count || 0}`;
@@ -1220,7 +1223,50 @@ window.closeNewsDetail = function() {
     }
 };
 
-// 초기화 완료
+// 초기화 완료 및 스크롤 인디케이터 로직
 document.addEventListener('DOMContentLoaded', () => {
     console.log('초기화 완료');
+    
+    // 기사 상세 뷰 스크롤 이벤트 (인디케이터 표출 및 프로그레스 갱신)
+    const detailView = document.getElementById('news-detail-view');
+    if (detailView) {
+        detailView.addEventListener('scroll', function() {
+            const header = document.getElementById('stickyReadHeader');
+            const detailTitle = document.getElementById('detailTitle');
+            const progressInd = document.getElementById('readProgressIndicator');
+            
+            if(!header || !detailTitle || !progressInd) return;
+
+            // 타이틀이 화면 위로 사라지면 플로팅 헤더 나타남
+            const titleRect = detailTitle.getBoundingClientRect();
+            // margin 등을 고려해 약간 여유를 둡니다.
+            if (titleRect.bottom < -20) {
+                header.classList.add('visible');
+            } else {
+                header.classList.remove('visible');
+            }
+
+            // 스크롤 프로그레스 계산
+            const scrollTop = detailView.scrollTop;
+            const scrollHeight = detailView.scrollHeight - detailView.clientHeight;
+            let progress = 0;
+            if(scrollHeight > 0) {
+                progress = (scrollTop / scrollHeight) * 100;
+            }
+            if(progress > 100) progress = 100;
+            if(progress < 0) progress = 0;
+            progressInd.style.width = progress + '%';
+        });
+    }
 });
+
+// 폰트 확대/축소 기능
+let currentArticleFontSize = 17;
+window.changeArticleFontSize = function(delta) {
+    const bodyContainer = document.getElementById('detailBody');
+    if(!bodyContainer) return;
+    currentArticleFontSize += delta;
+    if(currentArticleFontSize < 12) currentArticleFontSize = 12;
+    if(currentArticleFontSize > 32) currentArticleFontSize = 32;
+    bodyContainer.style.fontSize = currentArticleFontSize + 'px';
+};
