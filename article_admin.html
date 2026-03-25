@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -236,7 +236,7 @@
             <!-- 기사 쓰기 폼으로 이동 (동일 프레임 내부에서 열림) -->
             <button onclick="window.parent.loadPage(null, '기사쓰기', 'news_write.html')" class="btn-write" style="cursor:pointer;">+ 기사쓰기</button>
             <button class="btn">⭐ 광고순위갱신</button>
-            <button class="btn">🗑️ 선택삭제</button>
+            <button class="btn" onclick="deleteSelected()">🗑️ 선택삭제</button>
         </div>
         <div class="right-actions"></div>
     </div>
@@ -246,16 +246,17 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 40px;"><input type="checkbox"></th>
+                    <th style="width: 40px;"><input type="checkbox" id="checkAll" onchange="toggleAll(this)"></th>
                     <th style="width: 100px;">진행상황</th>
                     <th>기사명</th>
                     <th style="width: 140px;">1차섹션</th>
                     <th style="width: 160px;">2차섹션</th>
                     <th style="width: 150px;">승인일자</th>
+                    <th style="width: 90px;">관리</th>
                 </tr>
             </thead>
             <tbody id="articleTableBody">
-                <tr><td colspan="6" style="text-align:center; color:#aaa; padding:40px;">로딩 중...</td></tr>
+                <tr><td colspan="7" style="text-align:center; color:#aaa; padding:40px;">로딩 중...</td></tr>
             </tbody>
         </table>
     </div>
@@ -304,10 +305,10 @@
 
     async function loadArticles() {
         if (!sb) {
-            document.getElementById('articleTableBody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#e11d48;padding:40px;">Supabase 클라이언트 초기화 실패. 세션을 확인하세요.</td></tr>';
+            document.getElementById('articleTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:#e11d48;padding:40px;">Supabase 클라이언트 초기화 실패. 세션을 확인하세요.</td></tr>';
             return;
         }
-        document.getElementById('articleTableBody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:40px;">로딩 중...</td></tr>';
+        document.getElementById('articleTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:#aaa;padding:40px;">로딩 중...</td></tr>';
 
         var from = (currentPage-1)*PAGE_SIZE, to = from+PAGE_SIZE-1;
         var q = sb.from('articles')
@@ -331,19 +332,23 @@
     function renderTable(rows) {
         var tbody = document.getElementById('articleTableBody');
         if (!rows.length) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:40px;">등록된 기사가 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#aaa;padding:40px;">등록된 기사가 없습니다.</td></tr>';
             return;
         }
         tbody.innerHTML = rows.map(function(a){
             var si = statusInfo(a.status);
             var icon = (a.article_type !== 'normal') ? ' 🖼️' : '';
             return '<tr>'
-              +'<td><input type="checkbox" data-id="'+a.id+'"></td>'
+              +'<td><input type="checkbox" class="row-check" data-id="'+a.id+'"></td>'
               +'<td><span class="badge-status '+si.cls+'">'+si.label+'</span></td>'
-              +'<td class="cell-title" onclick="editArticle('+a.id+')">'+escHtml(a.title||'(제목없음)')+icon+'</td>'
+              +'<td class="cell-title" onclick="goEdit('+a.id+')">'+escHtml(a.title||'(제목없음)')+icon+'</td>'
               +'<td class="section-primary">'+(a.section1||'-')+'</td>'
               +'<td class="section-secondary">'+(a.section2||'-')+'</td>'
               +'<td class="date-text">'+formatDate(a.created_at)+'</td>'
+              +'<td style="white-space:nowrap;">'
+              +  '<button onclick="goEdit('+a.id+')" style="background:#3b82f6;color:#fff;border:none;padding:4px 10px;border-radius:4px;font-size:12px;cursor:pointer;margin-right:4px;">수정</button>'
+              +  '<button onclick="deleteArticle('+a.id+',\''+escHtml(a.title||'')+'\'" style="background:#ef4444;color:#fff;border:none;padding:4px 10px;border-radius:4px;font-size:12px;cursor:pointer;">삭제</button>'
+              +'</td>'
               +'</tr>';
         }).join('');
     }
@@ -380,7 +385,41 @@
         currentPage=1; loadArticles();
     }
 
-    function editArticle(id){ alert('기사 ID '+id+' 수정 기능은 전로 준비 중입니다.'); }
+    // 수정 페이지로 이동
+    function goEdit(id) {
+        if (window.parent && window.parent.loadPage) {
+            window.parent.loadPage(null, '기사수정', 'news_write.html?editId='+id);
+        } else {
+            window.location.href = 'news_write.html?editId='+id;
+        }
+    }
+
+    // 삭제
+    async function deleteArticle(id, title) {
+        if (!confirm('[❌ 삭제 확인]\n\n"' + title + '"\n\n기사를 영구적으로 삭제합니다.\n체 이미지/영상도 함께 제거됩니다.\n\n정말 삭제하시겠습니까?')) return;
+        var res = await sb.from('articles').delete().eq('id', id);
+        if (res.error) {
+            alert('삭제 실패: ' + res.error.message);
+        } else {
+            loadCounts();
+            loadArticles();
+        }
+    }
+
+    // 선택 전체 토글
+    function toggleAll(chk) {
+        document.querySelectorAll('.row-check').forEach(function(c){ c.checked = chk.checked; });
+    }
+
+    // 선택삭제
+    async function deleteSelected() {
+        var ids = Array.from(document.querySelectorAll('.row-check:checked')).map(function(c){ return c.dataset.id; });
+        if (ids.length === 0) { alert('삭제할 기사를 선택하세요.'); return; }
+        if (!confirm(ids.length+'건의 기사를 삭제합니다. 계속하시겠습니까?')) return;
+        var res = await sb.from('articles').delete().in('id', ids);
+        if (res.error) { alert('삭제 실패: '+res.error.message); }
+        else { loadCounts(); loadArticles(); }
+    }
 
     var secondaryOptions = {
         '우리동네부동산':['아파트·오피스텔','빌라·주택','원룸·투룸','상가·업무·공장·토지','분양'],

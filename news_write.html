@@ -2309,31 +2309,43 @@
                     return;
                 }
 
-                // ── 3. articles 테이블에 기사 INSERT ────────────
+                // ── 3. articles INSERT(신규) 또는 UPDATE(수정) ──
                 var articlePayload = {
-                    author_id:      authorId,
-                    status:         status,
-                    article_type:   currentArticleType,
-                    section1, section2, section3,
-                    reporter_name:  reporterName,
-                    reporter_email: reporterEmail,
-                    title,
-                    subtitle,
-                    content,
+                    status:          status,
+                    article_type:    currentArticleType,
+                    section1: section1, section2: section2, section3: section3,
+                    reporter_name:   reporterName,
+                    reporter_email:  reporterEmail,
+                    title:           title,
+                    subtitle:        subtitle,
+                    content:         content,
                     card_text_above: cardTextAbove,
                     card_text_below: cardTextBelow,
-                    keywords,
-                    expose_at: new Date().toISOString()
+                    keywords:        keywords,
+                    expose_at:       new Date().toISOString()
                 };
 
-                var { data: article, error: artErr } = await sb
-                    .from('articles')
-                    .insert(articlePayload)
-                    .select('id')
-                    .single();
+                var articleId;
 
-                if (artErr) throw artErr;
-                var articleId = article.id;
+                if (editArticleId) {
+                    // ── 수정 모드: UPDATE ──────────────────────
+                    var { error: updErr } = await sb
+                        .from('articles')
+                        .update(articlePayload)
+                        .eq('id', editArticleId);
+                    if (updErr) throw updErr;
+                    articleId = editArticleId;
+                } else {
+                    // ── 신규: INSERT ───────────────────────────
+                    articlePayload.author_id = authorId;
+                    var { data: article, error: artErr } = await sb
+                        .from('articles')
+                        .insert(articlePayload)
+                        .select('id')
+                        .single();
+                    if (artErr) throw artErr;
+                    articleId = article.id;
+                }
 
                 // ── 4. 미디어 Storage 업로드 + article_media INSERT ─
                 var mediaRows = [];
@@ -2415,7 +2427,7 @@
                     saveBtn.disabled = false;
                 }, 2500);
 
-                alert('기사가 저장되었습니다!\n기사 ID: ' + articleId);
+                alert((editArticleId ? '기사가 수정되었습니다!' : '기사가 저장되었습니다!') + '\n기사 ID: ' + articleId);
 
             } catch(err) {
                 console.error('저장 오류:', err);
@@ -2424,6 +2436,107 @@
                 saveBtn.disabled = false;
             }
         }
+
+        // ==========================================
+        // ✏️ 수정 모드 (URL ?editId= 파라미터 감지)
+        // ==========================================
+        var editArticleId = null; // null = 신규, 숫자 = 수정
+
+        async function checkEditMode() {
+            var params = new URLSearchParams(window.location.search);
+            var id = params.get('editId');
+            if (!id) return;
+            editArticleId = parseInt(id);
+
+            var saveBtn = document.querySelector('.btn-save-large');
+            if (saveBtn) {
+                saveBtn.innerHTML = '💾 수정 저장';
+                saveBtn.style.background = '#3b82f6';
+            }
+
+            var sb = window.gongsiClient;
+            if (!sb) { setTimeout(checkEditMode, 600); return; }
+
+            // 기사 데이터 로드
+            var { data: a, error } = await sb
+                .from('articles')
+                .select('*')
+                .eq('id', editArticleId)
+                .single();
+            if (error || !a) { alert('기사 데이터를 불러올 수 없습니다.'); return; }
+
+            // ── 폼 채우기 ──────────────────────────────────
+            var q = function(sel) { return document.querySelector(sel); };
+
+            // 형태 버튼
+            setArticleType(a.article_type || 'normal');
+
+            // 섹션
+            var s1 = document.getElementById('sec1');
+            if (s1 && a.section1) { s1.value = a.section1; updateSec2(); }
+            setTimeout(function() {
+                var s2 = document.getElementById('sec2');
+                if (s2 && a.section2) s2.value = a.section2;
+                var s3 = document.getElementById('sec3');
+                if (s3 && a.section3) s3.value = a.section3;
+            }, 200);
+
+            // 기자 정보
+            var rn = document.getElementById('reporterName');
+            var re = document.getElementById('reporterEmail');
+            if (rn) rn.value = a.reporter_name || '';
+            if (re) re.value = a.reporter_email || '';
+
+            // 제목 / 부제목
+            var titleEl = q('input[placeholder="제목을 입력하세요"]');
+            if (titleEl) titleEl.value = a.title || '';
+            var subEl = q('textarea[placeholder*="부제목"]');
+            if (subEl) subEl.value = a.subtitle || '';
+
+            // 키워드
+            var kwEl = q('input[placeholder*="입력 (최대"]');
+            if (kwEl) kwEl.value = a.keywords || '';
+
+            // 본문
+            if (a.article_type === 'normal') {
+                setTimeout(function() {
+                    $('#summernote').summernote('code', a.content || '');
+                }, 500);
+            } else if (a.article_type === 'card') {
+                var above = document.getElementById('cardTextAbove');
+                var below = document.getElementById('cardTextBelow');
+                if (above) above.innerHTML = a.card_text_above || '';
+                if (below) below.innerHTML = a.card_text_below || '';
+            }
+
+            // 미디어 로드
+            var { data: mediaList } = await sb
+                .from('article_media')
+                .select('*')
+                .eq('article_id', editArticleId)
+                .order('sort_order');
+
+            (mediaList || []).forEach(function(m) {
+                if (m.media_type === 'image') {
+                    var id2 = 'photo_edit_' + m.id;
+                    libPhotos.push({ id: id2, dataUrl: m.url, caption: m.caption || '', dbId: m.id });
+                    if (m.is_representative) globalRepId = id2;
+                } else if (m.media_type === 'youtube') {
+                    var vid = m.url.replace('https://www.youtube.com/embed/', '');
+                    var id3 = 'video_edit_' + m.id;
+                    libVideos.push({ id: id3, videoId: vid, caption: m.caption || '', dbId: m.id });
+                    if (m.is_representative) globalRepId = id3;
+                }
+            });
+            renderPhotoGrid();
+            renderVideoGrid();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            fillReporterInfo();
+            setTimeout(fillReporterInfo, 1200);
+            setTimeout(checkEditMode, 500); // 수정 모드 감지
+        });
 
     </script>
 </body>
