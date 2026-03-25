@@ -367,18 +367,23 @@
         /* ==== 우측 사이드바 영역 ==== */
         .portal-side { 
             min-width: 0; 
+        }
+        .portal-side.sticky-sidebar {
             position: sticky;
             top: 40px;
             align-self: flex-start;
         }
-        
         /* 우측 상단 소형 기사 4개 */
-        .portal-side-top { margin-bottom: 30px; }
+        .portal-side-top { 
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
         .portal-side-item {
             display: flex;
             gap: 16px;
-            padding-bottom: 20px;
-            margin-bottom: 20px;
+            padding-bottom: 15px; /* 약간 여백 축소 */
             border-bottom: 1px solid #eee;
             cursor: pointer;
             text-decoration: none;

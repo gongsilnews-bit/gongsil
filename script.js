@@ -307,7 +307,7 @@ async function loadPortalNews(category, isLoadMore = false) {
                     </div>
 
                     <!-- 하단 사이드바 영역 -->
-                    <div class="portal-side" style="padding-left: 20px; box-sizing: border-box; border-left: 1px solid #eee;">
+                    <div class="portal-side sticky-sidebar" style="padding-left: 20px; box-sizing: border-box; border-left: 1px solid #eee;">
                         <div class="portal-banner" style="margin-bottom: 30px;">
                             <!-- 광고 배너 공간 (더미) -->
                             <div style="padding:40px;">YOU HAVE ONLY 2 MOVES<br><span>(광고 영역)</span></div>
