@@ -138,10 +138,22 @@ async function loadPortalNews(category, isLoadMore = false) {
         // _source 마킹하여 showNewsDetail에서 articles 테이블로 인식 및 콘텐츠 파싱
         const data = (rawData || []).map(function(a) {
             let imgUrl = a.image_url;
-            if (!imgUrl && a.content) {
-                const match = a.content.match(/<img[^>]+src=["']([^"'>]+)["']/);
-                if (match) imgUrl = match[1];
+            let videoId = null;
+
+            if (a.content) {
+                // 유튜브 아이디 추출 로직
+                const ytMatch = a.content.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+                if (ytMatch) {
+                    videoId = ytMatch[1];
+                    imgUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                }
+
+                if (!videoId && !imgUrl) {
+                    const match = a.content.match(/<img[^>]+src=["']([^"'>]+)["']/);
+                    if (match) imgUrl = match[1];
+                }
             }
+
             if (!imgUrl) {
                 // 더미 이미지 제공으로 리스트 화면을 예쁘게 구성
                 imgUrl = `https://picsum.photos/seed/${a.id || Math.random()}/600/400`;
@@ -156,6 +168,7 @@ async function loadPortalNews(category, isLoadMore = false) {
                 _source: 'articles', 
                 pub_date: a.created_at,
                 image_url: imgUrl,
+                video_id: videoId,
                 description: desc,
                 author: a.reporter_name || '공실뉴스'
             });
@@ -185,12 +198,23 @@ async function loadPortalNews(category, isLoadMore = false) {
             // 1. 좌측 핫 아티클 (Top 1)
             if (data.length > 0) {
                 const hot = data[0];
-                const img = hot.image_url ? `<img src="${hot.image_url}" class="portal-hot-img" onerror="this.style.display='none'">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;color:#ccc;background:#f0f0f0;">📰</div>';
+                const img = hot.image_url ? `<img src="${hot.image_url}" class="portal-hot-img" onerror="this.src='https://picsum.photos/seed/${hot.id||Math.random()}/600/400';">` : '<div style="width:100%;height:100%;background:#eee;"></div>';
                 const escHot = JSON.stringify(hot).replace(/"/g, '&quot;');
+                
+                let playOverlay = '';
+                let hoverEvent = '';
+                if (hot.video_id) {
+                    playOverlay = '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:60px; height:60px; background:rgba(0,0,0,0.6); border-radius:50%; display:flex; align-items:center; justify-content:center; padding-left:4px;"><svg viewBox="0 0 24 24" width="30" height="30" fill="white"><path d="M8 5v14l11-7z"/></svg></div>';
+                    hoverEvent = `onmouseenter="if(!this.querySelector('iframe')) { const i=document.createElement('iframe'); i.src='https://www.youtube.com/embed/${hot.video_id}?autoplay=1&mute=1&controls=0&modestbranding=1&loop=1&playlist=${hot.video_id}'; i.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2;border:none;'; this.appendChild(i);}" onmouseleave="const i=this.querySelector('iframe'); if(i) i.remove();"`;
+                }
+
                 leftHtml += `
                     <a href="javascript:void(0)" class="portal-hot-article" onclick="window.showNewsDetail(${escHot})">
                         <div class="portal-hot-title">${hot.title}</div>
-                        <div class="portal-hot-img-wrap" style="margin-bottom:0px;">${img}</div>
+                        <div class="portal-hot-img-wrap" style="position:relative; margin-bottom:0px;" ${hoverEvent}>
+                            ${img}
+                            ${playOverlay}
+                        </div>
                     </a>
                 `;
                 listStartIndex = 1;
@@ -203,13 +227,17 @@ async function loadPortalNews(category, isLoadMore = false) {
                 
                 sideItems.forEach(news => {
                     const esc = JSON.stringify(news).replace(/"/g, '&quot;');
-                    const img = news.image_url ? `<img src="${news.image_url}" class="portal-side-item-img" onerror="this.style.display='none'">` : '<div style="width:100%;height:100%;background:#eee;"></div>';
+                    const img = news.image_url ? `<img src="${news.image_url}" class="portal-side-item-img" onerror="this.src='https://picsum.photos/seed/${news.id||Math.random()}/600/400';">` : '<div style="width:100%;height:100%;background:#eee;"></div>';
+                    let playOverlay = news.video_id ? '<div style="position:absolute; bottom:5px; left:5px; width:24px; height:24px; background:rgba(0,0,0,0.7); border-radius:4px; display:flex; align-items:center; justify-content:center; padding-left:2px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M8 5v14l11-7z"/></svg></div>' : '';
                     rightSideTopHtml += `
-                        <a href="javascript:void(0)" class="portal-side-item" style="margin-bottom: 12px;" onclick="window.showNewsDetail(${esc})">
+                        <a href="javascript:void(0)" class="portal-side-item" onclick="window.showNewsDetail(${esc})">
                             <div class="portal-side-item-content">
                                 <div class="portal-side-item-title">${news.title}</div>
                             </div>
-                            <div class="portal-side-item-img-wrap">${img}</div>
+                            <div class="portal-side-item-img-wrap" style="position:relative;">
+                                ${img}
+                                ${playOverlay}
+                            </div>
                         </a>
                     `;
                 });
@@ -303,13 +331,17 @@ function generatePortalListHtml(newsList) {
     if (!newsList || newsList.length === 0) return '';
     return newsList.map(news => {
         const esc = JSON.stringify(news).replace(/"/g, '&quot;');
-        const img = news.image_url ? `<img src="${news.image_url}" class="portal-list-img" onerror="this.style.display='none'">` : '<div style="width:100%;height:100%;background:#f0f0f0;"></div>';
+        const img = news.image_url ? `<img src="${news.image_url}" class="portal-list-img" onerror="this.src='https://picsum.photos/seed/${news.id||Math.random()}/600/400';">` : '<div style="width:100%;height:100%;background:#f0f0f0;"></div>';
+        let playOverlay = news.video_id ? '<div style="position:absolute; bottom:8px; left:8px; width:30px; height:30px; background:rgba(0,0,0,0.7); border-radius:4px; display:flex; align-items:center; justify-content:center; padding-left:3px;"><svg viewBox="0 0 24 24" width="18" height="18" fill="white"><path d="M8 5v14l11-7z"/></svg></div>' : '';
         return `
             <a href="javascript:void(0)" class="portal-list-item" style="padding: 12px 0;" onclick="window.showNewsDetail(${esc})">
                 <div class="portal-list-content" style="justify-content:center;">
                     <div class="portal-list-title" style="margin-bottom:0;">${news.title}</div>
                 </div>
-                <div class="portal-list-img-wrap">${img}</div>
+                <div class="portal-list-img-wrap" style="position:relative;">
+                    ${img}
+                    ${playOverlay}
+                </div>
             </a>
         `;
     }).join('');
