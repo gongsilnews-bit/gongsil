@@ -2496,8 +2496,12 @@
                     saveBtn.disabled = false;
                 }, 2500);
 
-                alert((editArticleId ? '기사가 수정되었습니다!' : '기사가 저장되었습니다!') + '\n기사 ID: ' + articleId);
-
+                // 저장 후 alert 대신 기사 뷰 페이지로 바로 이동
+                if (window.parent && typeof window.parent.loadPage === 'function') {
+                    window.parent.loadPage(null, '기사 보기', 'article_view.html?id=' + articleId);
+                } else {
+                    window.location.href = 'article_view.html?id=' + articleId;
+                }
             } catch(err) {
                 console.error('저장 오류:', err);
                 alert('저장 중 오류가 발생했습니다:\n' + (err.message || JSON.stringify(err)));
