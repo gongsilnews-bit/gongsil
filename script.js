@@ -87,6 +87,9 @@ window.closePortalView = function() {
 
 // 포털 탭 선택
 window.selectPortalTab = function(category) {
+    if (typeof window.closeNewsDetail === 'function') {
+        window.closeNewsDetail(); // 기사 상세뷰가 열려있다면 닫기
+    }
     const title = document.getElementById('portalSectionTitle');
     if (title) title.textContent = (category === '전체기사' ? '최신 뉴스' : category);
     loadPortalNews(category);
