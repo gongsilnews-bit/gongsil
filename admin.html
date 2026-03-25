@@ -491,9 +491,9 @@
 
                 tr.innerHTML = `
                     <td><input type="checkbox" name="prop_chk" value="${p.id}"></td>
-                    <td><div class="cell-num">${p.id}</div></td>
+                    <td><div class="cell-num">${p.id.substring(0,8).toUpperCase()}</div></td>
                     <td>
-                        <button class="btn-ad-toggle ${stateCls}" onclick="toggleAdStatus(${p.id}, '${p.status}')">${stateText}</button>
+                        <button class="btn-ad-toggle ${stateCls}" onclick="toggleAdStatus('${p.id}', '${p.status}')">${stateText}</button>
                         <div class="ad-date">${dateStr}</div>
                     </td>
                     <td>${p.property_type || '-'}</td>
@@ -510,7 +510,7 @@
                             <span class="price-amount ${priceCls}">${priceText}</span>
                         </div>
                     </td>
-                    <td class="cell-spec">${p.room_count || '-'} / ${p.area || '-'}㎡ / ${p.room_number ? p.room_number + '호' : '-'}</td>
+                    <td class="cell-spec">${p.room_count || '-'} / ${p.dedicated_area || p.area || '-'}㎡ / ${p.current_floor ? p.current_floor + '층' : '-'}</td>
                     <td class="date-text">${dateStr}</td>
                     <td class="cell-registrar">
                         <div><span class="member-badge ${roleBadgeCls}">${roleText}</span></div>
@@ -519,8 +519,8 @@
                     </td>
                     <td>
                         <div class="cell-actions">
-                            <button class="btn-edit" onclick="editProperty(${p.id})">수정</button>
-                            <button class="btn-delete" onclick="deleteProperty(${p.id})">삭제</button>
+                            <button class="btn-edit" onclick="editProperty('${p.id}')">수정</button>
+                            <button class="btn-delete" onclick="deleteProperty('${p.id}')">삭제</button>
                         </div>
                     </td>
                 `;
