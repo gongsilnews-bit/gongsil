@@ -459,6 +459,24 @@
             background: #111; border-radius: 12px; overflow: hidden;
             min-height: 320px; position: relative;
         }
+        /* 카드뉴스 위아래 텍스트 영역 */
+        .card-text-editor {
+            width: 100%; box-sizing: border-box;
+            min-height: 80px; padding: 14px 16px;
+            border: 1px dashed #d1d5db; border-radius: 8px;
+            font-size: 15px; line-height: 1.7; color: #333;
+            outline: none; background: #fafafa;
+            margin: 10px 0;
+            font-family: 'Pretendard Variable', 'Noto Sans KR', sans-serif;
+        }
+        .card-text-editor:focus {
+            border-color: #3b82f6; background: #fff;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+        .card-text-editor:empty:before {
+            content: attr(data-placeholder);
+            color: #bbb; pointer-events: none;
+        }
         .cs-track-wrap { flex: 1; overflow: hidden; position: relative; }
         .cs-track {
             display: flex; transition: transform 0.4s cubic-bezier(.4,0,.2,1);
@@ -691,6 +709,13 @@
             <!-- 〖카드뉴스〗 미리보기 패널 -->
             <div id="cardNewsPanel" style="display:none; margin-top:20px;">
                 <div class="preview-label">포토를 우측 라이브러리에서 선택하면 슬라이드에 자동 반영됩니다</div>
+
+                <!-- 위 텍스트 영역 -->
+                <div class="card-text-editor" contenteditable="true"
+                    data-placeholder="카드뉴스 위에 표시될 도입글을 작성하세요..."
+                    id="cardTextAbove"></div>
+
+                <!-- 슬라이더 -->
                 <div class="card-slider-box">
                     <button class="cs-arrow cs-prev" onclick="cardMove(-1)">&#8249;</button>
                     <div class="cs-track-wrap">
@@ -699,6 +724,11 @@
                     <button class="cs-arrow cs-next" onclick="cardMove(1)">&#8250;</button>
                 </div>
                 <div class="cs-dots" id="csDots"></div>
+
+                <!-- 아래 텍스트 영역 -->
+                <div class="card-text-editor" contenteditable="true"
+                    data-placeholder="카드뉴스 아래에 표시될 마무리 글을 작성하세요..."
+                    id="cardTextBelow"></div>
             </div>
 
             <!-- 〖걤러리〗 미리보기 패널 -->
