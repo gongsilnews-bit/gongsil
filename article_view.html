@@ -215,21 +215,11 @@
 </head>
 <body>
 
-<!-- 상단 툴바 -->
-<div class="view-toolbar">
-    <div class="toolbar-title">📰 기사뷰</div>
-    <div class="toolbar-actions">
-        <button class="btn-toolbar" onclick="goBack()">← 목록</button>
-        <button class="btn-toolbar blue" id="btnEdit" onclick="goEdit()">✏️ 수정</button>
-    </div>
-</div>
-
 <!-- 메인 레이아웃 -->
 <div class="page-body" id="pageBody">
     <div class="loading" id="loadingMsg">⏳ 기사를 불러오는 중...</div>
 </div>
 
-<script>
 var sb = window.gongsiClient;
 var articleId = null;
 var articleData = null;
@@ -297,20 +287,23 @@ function render() {
     };
     var si = statusMap[a.status] || { cls: 'status-draft', label: a.status };
 
-    var pubDate = a.created_at ? new Date(a.created_at).toLocaleString('ko-KR') : '-';
-    var updDate = a.updated_at ? new Date(a.updated_at).toLocaleString('ko-KR') : '-';
+    // ── 조립용 날짜/시간 포맷: "2026.03.19 11:04" 스타일 ──
+    function fmt(dateStr) {
+        if (!dateStr) return '';
+        var d = new Date(dateStr);
+        var pad = function(n){ return n<10?'0'+n:n; };
+        return d.getFullYear()+'.'+pad(d.getMonth()+1)+'.'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes());
+    }
 
-    // 브레드크럼
-    var crumb = 'HOME <span>›</span> 공실뉴스'
-        + (a.section1 ? ' <span>›</span> ' + escHtml(a.section1) : '')
-        + (a.section2 ? ' <span>›</span> ' + escHtml(a.section2) : '');
+    var pubDate = fmt(a.created_at) || '-';
 
-    // 대표 이미지
-    var repImg = mediaList.find(function(m){ return m.is_representative; }) || mediaList[0];
+    // 브레드크럼 (홈 아이콘 추가)
+    var crumb = '<span style="color:#555;"><svg style="vertical-align:text-bottom;margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>HOME</span>'
+        + (a.section1 ? ' <span style="margin:0 8px;color:#ccc;">›</span> <span style="color:#888;">' + escHtml(a.section1) + '</span>' : '')
+        + (a.section2 ? ' <span style="margin:0 8px;color:#ccc;">›</span> <span style="color:#888;">' + escHtml(a.section2) + '</span>' : '');
 
     // 본문 빌드
     var bodyHtml = a.content || '';
-    // 이미지가 본문에 없고 미디어가 있으면 추가 표시
     if (!bodyHtml && mediaList.length) {
         bodyHtml = mediaList.map(function(m) {
             if (m.media_type === 'image') {
@@ -322,39 +315,68 @@ function render() {
         }).join('');
     }
 
+    // 승인/숨기기 텍스트
+    var approveBtnHtml = '';
+    if (a.status === 'published') {
+        approveBtnHtml = '<button class="meta-action-btn" data-action="hidden" onclick="changeStatus(this.dataset.action)" style="background:#f3f4f6;">🚫 숨기기</button>';
+    } else {
+        approveBtnHtml = '<button class="meta-action-btn" data-action="published" onclick="changeStatus(this.dataset.action)" style="background:#f3f4f6;color:#111;font-weight:600;">체크 승인</button>';
+    }
+
+    // ── 서브타이틀 (요약문 지정) ──
+    var subtitleHtml = '';
+    if (a.subtitle) {
+        subtitleHtml = '<div style="border-left: 3px solid #ccc; padding-left: 16px; margin: 24px 0; font-size: 16px; color: #111; font-weight: 600; line-height: 1.6; word-break: keep-all;">' + 
+            escHtml(a.subtitle).replace(/\n/g, '<br>') + 
+            '</div>';
+    }
+
     // ── HTML 조립 ──
     document.getElementById('pageBody').innerHTML =
     '<div class="preview-frame" id="previewFrame">'+
+      
+      // 상단 중앙 디바이스 버튼
+      '<div style="display:flex; justify-content:center; margin-bottom: 20px;">' +
+        '<div class="device-btns" style="background:#fff; border:1px solid #eee; display:flex; gap:4px; padding:6px 8px; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">' +
+            '<button class="device-btn active" id="devPC" data-dev="pc" onclick="setDevice(this.dataset.dev)" title="PC" style="padding:4px 16px; background:#0bc2c2; color:#fff;">🖥️</button>' +
+            '<button class="device-btn" id="devTB" data-dev="tablet" onclick="setDevice(this.dataset.dev)" title="태블릿" style="padding:4px 16px;">📱</button>' +
+            '<button class="device-btn" id="devMB" data-dev="mobile" onclick="setDevice(this.dataset.dev)" title="모바일" style="padding:4px 16px;">📲</button>' +
+        '</div>' +
+      '</div>' +
+
       '<div class="article-card">'+
-        '<div class="breadcrumb">'+crumb+'</div>'+
-        '<div class="article-header">'+
-          '<h1 class="article-title">'+escHtml(a.title||'(제목 없음)')+'</h1>'+
-          (a.subtitle ? '<p style="color:#555;font-size:15px;margin-bottom:12px;">'+escHtml(a.subtitle)+'</p>' : '')+
-          '<div class="article-meta">'+
-            '<div class="meta-item">✍️ <strong>'+(a.reporter_name||'공실뉴스')+'</strong></div>'+
-            '<span class="meta-divider">|</span>'+
-            '<div class="meta-item">📅 작성 '+pubDate+'</div>'+
-            '<span class="meta-divider">|</span>'+
-            '<div class="meta-item">🔄 수정 '+updDate+'</div>'+
-            '<span class="meta-divider">|</span>'+
-            '<div class="meta-item">👁️ 조회 '+(a.view_count||0)+'</div>'+
-            '<div class="meta-actions">'+
-              '<span class="badge-status '+si.cls+'">'+si.label+'</span>'+
+        '<div class="breadcrumb" style="border:none; padding-bottom:0;">'+crumb+'</div>'+
+        '<div class="article-header" style="padding-top:12px;">'+
+          '<h1 class="article-title" style="font-size:28px; letter-spacing:-0.5px; margin-bottom:20px;">'+escHtml(a.title||'(제목 없음)')+'</h1>'+
+          '<div class="article-meta" style="border:none; padding:0; display:flex; justify-content:space-between; align-items:center; flex-wrap:nowrap;">'+
+            '<div style="display:flex; align-items:center; gap:12px; font-size:13px; color:#888;">'+
+              '<div class="meta-item"><span style="color:#aaa;">👤</span> '+(a.reporter_name||'공실뉴스')+'</div>'+
+              '<span style="color:#eee;">|</span>'+
+              '<div class="meta-item"><span style="color:#aaa;">🕒</span> 입력 '+pubDate+'</div>'+
+              '<span style="color:#eee;">|</span>'+
+              '<div class="meta-item"><span style="color:#aaa;">👁️</span> 조회수 '+(a.view_count||0)+'</div>'+
+              '<span style="color:#eee;">|</span>'+
+              '<div class="meta-item"><span style="color:#aaa;">💬</span> 댓글 0</div>'+
+            '</div>'+
+            '<div style="display:flex; gap:6px;">'+
+              '<button class="meta-action-btn" onclick="shareArticle()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;vertical-align:-1px;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>주소복사</button>'+
+              '<button class="meta-action-btn" data-msg="미리보기 기능" onclick="alert(this.dataset.msg)">💻 미리보기</button>'+
+              approveBtnHtml +
             '</div>'+
           '</div>'+
         '</div>'+
-        '<div class="article-body">'+bodyHtml+'</div>'+
-        '<div class="related-section">'+
-          '<div class="related-title">📎 관련기사</div>'+
-          '<div class="related-empty">연결된 관련기사가 없습니다.</div>'+
+        
+        '<div class="article-body" style="border-top: 1px solid #f4f4f4; padding-top: 30px;">'+
+          subtitleHtml +
+          bodyHtml + 
         '</div>'+
-        '<div class="reporter-box">'+
-          '<div class="reporter-avatar">뉴</div>'+
-          '<div class="reporter-info">'+
-            '<h4>'+(a.reporter_name||'공실뉴스')+'</h4>'+
-            '<p>'+(a.reporter_email||'')+'</p>'+
-          '</div>'+
+        
+        // 목록/수정 버튼을 하단에 배치 (상단 툴바가 없어졌으므로)
+        '<div style="padding:24px; text-align:center; border-top:1px solid #f0f0f0; background:#fafafa;">'+
+            '<button class="btn-toolbar" onclick="goBack()" style="margin-right:8px; padding:8px 20px;">← 목록으로</button>'+
+            '<button class="btn-toolbar blue" onclick="goEdit()" style="padding:8px 20px;">✏️ 기사 수정</button>'+
         '</div>'+
+
       '</div>'+
     '</div>';
 
