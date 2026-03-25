@@ -1876,6 +1876,12 @@
                 globalRepId = libVideos.length ? libVideos[0].id
                             : libPhotos.length ? libPhotos[0].id : null;
             }
+            // 에디터내 연동된 영상 삭제
+            var editorEl = document.querySelector('.note-editable');
+            if (editorEl) {
+                var vids = editorEl.querySelectorAll('.yt-block[data-video-id="' + id + '"]');
+                vids.forEach(function(vid) { vid.parentNode.removeChild(vid); });
+            }
             renderVideoGrid();
         }
 
@@ -1883,12 +1889,17 @@
             const vid = libVideos.find(function(v) { return v.id === id; });
             if (!vid) return;
             let html = '<div class="yt-block" draggable="true" data-type="lib-video" contenteditable="false" data-video-id="' + vid.id + '">'
-                + '<div class="yt-drag-handle"><span class="drag-icon">&#x2630;</span></div>'
+                + '<div class="yt-drag-handle" style="display:flex; justify-content:space-between; align-items:center;">'
+                +   '<span class="drag-icon">&#x2630;</span>'
+                +   '<button type="button" onclick="this.closest(\'.yt-block\').remove()" title="본문에서 삭제" style="background:none; border:none; color:#f44336; cursor:pointer; font-size:12px; font-weight:bold;">삭제 ✕</button>'
+                + '</div>'
                 + '<div class="yt-ratio-box"><iframe src="https://www.youtube.com/embed/' + vid.videoId + '" frameborder="0" allowfullscreen></iframe></div>'
                 + '</div>';
             if (vid.caption && vid.caption.trim()) {
                 html += '<p style="text-align:center; font-size:13px; color:#888; margin:2px 0 12px;">' + vid.caption.trim() + '</p>';
             }
+            // 삽입 후 커서가 갇히지 않도록 빈 문단 추가
+            html += '<p><br></p>';
             insertNodeAtCursor(html);
         }
 
