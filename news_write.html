@@ -1673,19 +1673,22 @@
                 return;
             }
 
-            // 유튜브 URL에서 Video ID 추출 정규식
+            // 유튜브 URL에서 Video ID 추출 정규식 (shorts 포함)
             let videoId = "";
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const isShorts = ytUrl.includes('/shorts/');
+            const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
             const match = ytUrl.match(regExp);
-            if (match && match[2].length === 11) {
-                videoId = match[2];
+            if (match && match[1].length === 11) {
+                videoId = match[1];
             } else {
                 alert("유효한 YouTube 링크 형식이 아닙니다.\n올바른 공유 링크를 복사해 주세요.");
                 return;
             }
 
-            // 반응형 iFrame 래퍼 HTML 생성
-            const iframeHtml = `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;max-width:100%;border-radius:8px;"><iframe src="https://www.youtube.com/embed/${videoId}" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allowfullscreen></iframe></div>`;
+            // 반응형 iFrame 래퍼 HTML 생성 (쇼츠 감지 시 비율/크기 자동 조절)
+            const paddingRatio = isShorts ? '177.77%' : '56.25%';
+            const maxWidthStr = isShorts ? '; max-width: 400px; margin: 0 auto;' : '';
+            const iframeHtml = `<div style="position:relative;padding-bottom:${paddingRatio};height:0;overflow:hidden;max-width:100%;border-radius:8px${maxWidthStr}"><iframe src="https://www.youtube.com/embed/${videoId}" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allowfullscreen></iframe></div><p><br></p>`;
             insertNodeAtCursor(iframeHtml);
 
             ytInput.value = ''; // 입력창 초기화
@@ -1845,14 +1848,17 @@
             const ytUrl = ytInput.value.trim();
             if (!ytUrl) { alert('YouTube 링크를 입력해주세요.'); return; }
 
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const isShortsCheckbox = document.getElementById('libYoutubeShorts');
+            const isShorts = (isShortsCheckbox && isShortsCheckbox.checked) || ytUrl.includes('/shorts/');
+
+            const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
             const match = ytUrl.match(regExp);
-            if (!match || match[2].length !== 11) {
+            if (!match || match[1].length !== 11) {
                 alert('유효한 YouTube 링크 형식이 아닙니다.'); return;
             }
-            const videoId = match[2];
+            const videoId = match[1];
             const id = 'video_' + Date.now();
-            libVideos.push({ id: id, videoId: videoId, caption: '' });
+            libVideos.push({ id: id, videoId: videoId, caption: '', isShorts: isShorts });
             if (!globalRepId) globalRepId = id;
             renderVideoGrid();
             insertVideoToEditor(id); // 첨부 즉시 커서 위치 삽입
@@ -1916,14 +1922,17 @@
         function insertVideoToEditor(id) {
             const vid = libVideos.find(function(v) { return v.id === id; });
             if (!vid) return;
+
+            const paddingRatio = vid.isShorts ? '177.77%' : '56.25%';
+            const maxW = vid.isShorts ? 'max-width:400px; margin:0 auto;' : 'width:100%;';
             
-            let ratioClass = vid.isShorts ? 'yt-shorts-box' : 'yt-ratio-box';
             let html = '<div class="yt-block" draggable="true" data-type="lib-video" contenteditable="false" data-video-id="' + vid.id + '">'
                 + '<div class="yt-drag-handle" style="display:flex; justify-content:space-between; align-items:center;">'
                 +   '<span class="drag-icon">&#x2630;</span>'
                 +   '<button type="button" onclick="this.closest(\'.yt-block\').remove()" title="본문에서 삭제" style="background:none; border:none; color:#f44336; cursor:pointer; font-size:12px; font-weight:bold;">삭제 ✕</button>'
                 + '</div>'
-                + '<div class="' + ratioClass + '"><iframe src="https://www.youtube.com/embed/' + vid.videoId + '" frameborder="0" allowfullscreen></iframe></div>'
+                + '<div style="position:relative; padding-bottom:' + paddingRatio + '; height:0; overflow:hidden; border-radius:8px; ' + maxW + '">'
+                + '<iframe src="https://www.youtube.com/embed/' + vid.videoId + '" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allowfullscreen></iframe></div>'
                 + '</div>';
             if (vid.caption && vid.caption.trim()) {
                 html += '<p style="text-align:center; font-size:13px; color:#888; margin:2px 0 12px;">' + vid.caption.trim() + '</p>';
