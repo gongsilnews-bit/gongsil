@@ -130,6 +130,25 @@
         
         select.input-text { padding: 9px 14px; cursor: pointer; }
 
+        /* 쇼츠(세로형) 유튜브 영상 플레이어 */
+        .yt-shorts-box {
+            position: relative;
+            width: 100%;
+            max-width: 320px; /* 스마트폰 세로 비율 최대 너비 제한 */
+            aspect-ratio: 9 / 16;
+            margin: 30px auto; /* 가운데 정렬 */
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .yt-shorts-box iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
         /* 확장/축소(아코디언) 영역 (자바라) */
         .accordion-wrapper {
             position: relative;
@@ -820,9 +839,14 @@
                     <strong style="font-size:14px;">영상</strong>
                     <div class="lib-toggle" style="border:1px solid #ddd; padding:0 8px; border-radius:4px; color:#666; cursor:pointer;">－</div>
                 </div>
-                <div style="display:flex; border:1px solid #6b7280; border-radius:4px; overflow:hidden;">
-                    <input type="text" id="libYoutubeInput" placeholder="YouTube영상링크입력" style="flex:1; padding:10px; border:none; outline:none; font-size:13px; color:#6b7280; background:#fff;">
-                    <button type="button" class="btn" onclick="addLibraryVideo()" style="background:#6b7280; color:white; border:none; padding:0 15px; border-radius:0; cursor:pointer; font-size:13px;">입력하기</button>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <div style="display:flex; border:1px solid #6b7280; border-radius:4px; overflow:hidden;">
+                        <input type="text" id="libYoutubeInput" placeholder="YouTube영상링크입력" style="flex:1; padding:10px; border:none; outline:none; font-size:13px; color:#6b7280; background:#fff;">
+                        <button type="button" class="btn" onclick="addLibraryVideo()" style="background:#6b7280; color:white; border:none; padding:0 15px; border-radius:0; cursor:pointer; font-size:13px;">입력하기</button>
+                    </div>
+                    <label style="font-size:12px; color:#555; cursor:pointer; display:flex; align-items:center; gap:4px; padding-left:4px;">
+                        <input type="checkbox" id="libYoutubeIsShorts"> 쇼츠(세로) 영상으로 크기 맞춤
+                    </label>
                 </div>
                 <!-- 영상 카드 그리드 -->
                 <div id="libVideoGrid" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;"></div>
@@ -1888,12 +1912,14 @@
         function insertVideoToEditor(id) {
             const vid = libVideos.find(function(v) { return v.id === id; });
             if (!vid) return;
+            
+            let ratioClass = vid.isShorts ? 'yt-shorts-box' : 'yt-ratio-box';
             let html = '<div class="yt-block" draggable="true" data-type="lib-video" contenteditable="false" data-video-id="' + vid.id + '">'
                 + '<div class="yt-drag-handle" style="display:flex; justify-content:space-between; align-items:center;">'
                 +   '<span class="drag-icon">&#x2630;</span>'
                 +   '<button type="button" onclick="this.closest(\'.yt-block\').remove()" title="본문에서 삭제" style="background:none; border:none; color:#f44336; cursor:pointer; font-size:12px; font-weight:bold;">삭제 ✕</button>'
                 + '</div>'
-                + '<div class="yt-ratio-box"><iframe src="https://www.youtube.com/embed/' + vid.videoId + '" frameborder="0" allowfullscreen></iframe></div>'
+                + '<div class="' + ratioClass + '"><iframe src="https://www.youtube.com/embed/' + vid.videoId + '" frameborder="0" allowfullscreen></iframe></div>'
                 + '</div>';
             if (vid.caption && vid.caption.trim()) {
                 html += '<p style="text-align:center; font-size:13px; color:#888; margin:2px 0 12px;">' + vid.caption.trim() + '</p>';

@@ -447,6 +447,26 @@
             width: 100% !important;
             height: 100% !important;
         }
+
+        /* 쇼츠(세로형) 유튜브 영상 플레이어 */
+        .yt-shorts-box {
+            position: relative;
+            width: 100%;
+            max-width: 320px; /* 스마트폰 세로 비율 최대 너비 제한 */
+            aspect-ratio: 9 / 16;
+            margin: 30px auto; /* 가운데 정렬 */
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .yt-shorts-box iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
         
         /* 혹시라도 위 클래스 없이 에디터에서 단순 비디오 추가한 경우 대비 */
         .article-body iframe[src*="youtube"] {
