@@ -293,16 +293,21 @@
             <h2 class="section-title">매물정보 (전세, 월세, 단기 임대정보)</h2>
 
             <div class="form-group">
-                <label class="form-label">매물종류 <span>*</span></label>
-                <input type="hidden" id="propertyType" required>
+                <label class="form-label">매물 대분류 (1차) <span>*</span></label>
                 <div class="trade-btn-group" style="flex-wrap: wrap;">
-                    <button type="button" class="trade-btn" onclick="selectPropertyType('아파트', this)">아파트</button>
-                    <button type="button" class="trade-btn" onclick="selectPropertyType('오피스텔', this)">오피스텔</button>
-                    <button type="button" class="trade-btn" onclick="selectPropertyType('원룸', this)">원룸</button>
-                    <button type="button" class="trade-btn" onclick="selectPropertyType('빌라/주택', this)">빌라/주택</button>
-                    <button type="button" class="trade-btn" onclick="selectPropertyType('사무실/상가', this)">사무실/상가</button>
-                    <button type="button" class="trade-btn" onclick="selectPropertyType('빌딩/건물', this)">빌딩/건물</button>
-                    <button type="button" class="trade-btn" onclick="selectPropertyType('토지/공장/기타', this)">토지/공장/기타</button>
+                    <button type="button" class="trade-btn" onclick="selectMainCategory('아파트·오피스텔', this)">아파트·오피스텔</button>
+                    <button type="button" class="trade-btn" onclick="selectMainCategory('빌라·주택', this)">빌라·주택</button>
+                    <button type="button" class="trade-btn" onclick="selectMainCategory('원룸·투룸', this)">원룸·투룸</button>
+                    <button type="button" class="trade-btn" onclick="selectMainCategory('상가·업무·공장·토지', this)">상가·업무·공장·토지</button>
+                    <button type="button" class="trade-btn" onclick="selectMainCategory('분양', this)">분양</button>
+                </div>
+            </div>
+
+            <div class="form-group" id="subCategoryContainer" style="display: none; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef;">
+                <label class="form-label" style="color: #3b82f6;">상세 종류 선택 (2차) <span>*</span></label>
+                <input type="hidden" id="propertyType" required>
+                <div class="trade-btn-group" style="flex-wrap: wrap;" id="subCategoryGroup">
+                    <!-- JS로 동적 생성 -->
                 </div>
             </div>
 
@@ -859,12 +864,53 @@
             updateKoreanAmount('deposit', 'depositKorean');
         }
 
-        // 매물 종류 버튼 선택 처리
+        const CATEGORY_MAP = {
+            '아파트·오피스텔': ['아파트', '아파트분양권', '재건축', '오피스텔', '오피스텔분양권', '재개발'],
+            '빌라·주택': ['빌라/연립', '단독/다가구', '전원주택', '상가주택'],
+            '원룸·투룸': ['원룸', '투룸'],
+            '상가·업무·공장·토지': ['상가', '사무실', '공장/창고', '지식산업센터', '건물', '토지'],
+            '분양': ['아파트', '오피스텔', '빌라', '도시형생활주택', '생활숙박시설', '상가/업무']
+        };
+
+        window.currentMainCategory = '';
+
+        window.selectMainCategory = function(mainType, btn) {
+            window.currentMainCategory = mainType;
+            
+            // 1차 버튼 활성화
+            const parent = btn.parentElement;
+            parent.querySelectorAll('.trade-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // 2차 카테고리 렌더링
+            const subContainer = document.getElementById('subCategoryContainer');
+            const subGroup = document.getElementById('subCategoryGroup');
+            subGroup.innerHTML = '';
+            
+            // 이전에 선택된 propertyType 초기화
+            document.getElementById('propertyType').value = '';
+            window.updatePropertyFields();
+
+            CATEGORY_MAP[mainType].forEach(subType => {
+                const subBtn = document.createElement('button');
+                subBtn.type = 'button';
+                subBtn.className = 'trade-btn';
+                subBtn.style.padding = '8px 12px'; // 소분류는 조금 작게
+                subBtn.style.fontSize = '13px';
+                subBtn.innerText = subType;
+                subBtn.onclick = () => selectPropertyType(subType, subBtn);
+                subGroup.appendChild(subBtn);
+            });
+
+            subContainer.style.display = 'block';
+        }
+
+        // 매물 종류 버튼 선택 처리 (2차)
         window.selectPropertyType = function(type, btn) {
             // hidden input 값 업데이트
             document.getElementById('propertyType').value = type;
             
-            // 버튼들 스타일 초기화 (해당 그룹 내 버튼만)
+            // 2차 버튼들 스타일 초기화
             const parent = btn.parentElement;
             const btns = parent.querySelectorAll('.trade-btn');
             btns.forEach(b => b.classList.remove('active'));
@@ -879,6 +925,7 @@
         // 매물 종류에 따른 동적 필드 표시
         window.updatePropertyFields = function() {
             const propertyType = document.getElementById('propertyType').value;
+            const mainType = window.currentMainCategory;
             const residentialFields = document.getElementById('residentialFields');
             const commercialFields = document.getElementById('commercialFields');
             const buildingLabel = document.getElementById('buildingLabel');
@@ -890,17 +937,23 @@
             dongDiv.style.display = 'none';
             buildingLabel.innerText = "건물명";
             
-            if (['아파트', '오피스텔', '원룸', '빌라/주택'].includes(propertyType)) {
+            if (['아파트·오피스텔', '빌라·주택', '원룸·투룸'].includes(mainType)) {
                 residentialFields.style.display = 'block';
-                // 아파트, 오피스텔인 경우 '단지명'으로 라벨 변경 및 '동' 필드 노출
-                if (['아파트', '오피스텔'].includes(propertyType)) {
+                // 아파트, 분양권, 오피스텔 성격인 경우 '단지명'으로 라벨 변경 및 '동' 필드 노출
+                if (['아파트', '아파트분양권', '재건축', '오피스텔', '오피스텔분양권', '재개발'].includes(propertyType)) {
                     buildingLabel.innerText = "단지명";
                     dongDiv.style.display = 'block';
                 }
-            } else if (['사무실/상가', '빌딩/건물'].includes(propertyType)) {
+            } else if (['상가·업무·공장·토지'].includes(mainType)) {
                 commercialFields.style.display = 'block';
+            } else if (mainType === '분양') {
+                if (['상가/업무'].includes(propertyType)) {
+                    commercialFields.style.display = 'block';
+                } else {
+                    residentialFields.style.display = 'block';
+                }
+                buildingLabel.innerText = "단지명(건물명)";
             }
-            // 토지/공장/기타 등은 어느 필드도 표시하지 않음
 
             // 옵션 영역 렌더링 호출
             renderOptions();
@@ -908,51 +961,53 @@
 
         // --- 추가: 옵션 렌더링 로직 ---
         const OPTION_DATA = {
-            '아파트': [
+            '아파트·오피스텔': [
                 { name: '에어컨', icon: '❄️' }, { name: '냉장고', icon: '🧊' }, { name: '세탁기', icon: '🧺' }, 
-                { name: '신발장', icon: '👟' }, { name: '붙박이장', icon: '🚪' }, { name: '싱크대', icon: '🚰' }, 
-                { name: '비데', icon: '🚽' }, { name: '엘리베이터', icon: '🛗' }, { name: '보안시스템', icon: '🛡️' }
+                { name: '붙박이장', icon: '🚪' }, { name: '싱크대', icon: '🚰' }, { name: '비데', icon: '🚽' }, 
+                { name: '엘리베이터', icon: '🛗' }, { name: '보안시스템', icon: '🛡️' },
+                { name: '전자레인지', icon: '🍲' }, { name: '인덕션', icon: '⚡' }, { name: 'TV', icon: '📺' },
+                { name: '급매', icon: '💰' }, { name: '올수리', icon: '🔨' }, { name: '세안고', icon: '🤝' }, { name: '역세권', icon: '🚉' }
             ],
-            '오피스텔': [
+            '빌라·주택': [
+                { name: '에어컨', icon: '❄️' }, { name: '냉장고', icon: '🧊' }, { name: '세탁기', icon: '🧺' },
+                { name: '가스레인지', icon: '🔥' }, { name: '신발장', icon: '👟' }, { name: 'CCTV', icon: '📹' },
+                { name: '주차가능', icon: '🚗' }, { name: '올수리', icon: '🔨' }, { name: '마당', icon: '🏡' }, 
+                { name: '급매', icon: '💰' }, { name: '세안고', icon: '🤝' }
+            ],
+            '원룸·투룸': [
                 { name: '에어컨', icon: '❄️' }, { name: '냉장고', icon: '🧊' }, { name: '세탁기', icon: '🧺' },
                 { name: '전자레인지', icon: '🍲' }, { name: '인덕션', icon: '⚡' }, { name: '책상', icon: '💻' },
                 { name: '침대', icon: '🛏️' }, { name: '옷장', icon: '👔' }, { name: 'TV', icon: '📺' },
-                { name: '엘리베이터', icon: '🛗' }, { name: '무인택배함', icon: '📦' }
+                { name: '전자도어락', icon: '🔢' }, { name: '주차가능', icon: '🚗' }, { name: '역세권', icon: '🚉' }
             ],
-            '원룸': [
-                { name: '에어컨', icon: '❄️' }, { name: '냉장고', icon: '🧊' }, { name: '세탁기', icon: '🧺' },
-                { name: '전자레인지', icon: '🍲' }, { name: '인덕션', icon: '⚡' }, { name: '책상', icon: '💻' },
-                { name: '침대', icon: '🛏️' }, { name: '옷장', icon: '👔' }, { name: 'TV', icon: '📺' },
-                { name: '전자도어락', icon: '🔢' }
-            ],
-            '빌라/주택': [
-                { name: '에어컨', icon: '❄️' }, { name: '냉장고', icon: '🧊' }, { name: '세탁기', icon: '🧺' },
-                { name: '가스레인지', icon: '🔥' }, { name: '붙박이장', icon: '🚪' }, { name: '신발장', icon: '👟' },
-                { name: '주차가능', icon: '🚗' }, { name: 'CCTV', icon: '📹' }
-            ],
-            '사무실/상가': [
+            '상가·업무·공장·토지': [
                 { name: '엘리베이터', icon: '🛗' }, { name: '개별냉난방', icon: '🌡️' }, { name: '중앙냉난방', icon: '❄️' },
-                { name: '내부화장실', icon: '🚻' }, { name: '주차가능', icon: '🚗' }, { name: '창고공간', icon: '📦' },
-                { name: '탕비실', icon: '🍵' }, { name: '전면통유리', icon: '🪟' }
+                { name: '내부화장실', icon: '🚻' }, { name: '창고공간', icon: '📦' }, { name: '탕비실', icon: '🍵' }, 
+                { name: '전면통유리', icon: '🪟' }, { name: '층고높음', icon: '⬆️' }, { name: '대형차진입', icon: '🚛' },
+                { name: '호이스트', icon: '🏗️' },
+                { name: '주차가능', icon: '🚗' }, { name: '급매', icon: '💰' }, { name: '큰길가', icon: '🛣️' }, { name: '역세권', icon: '🚉' }
             ],
-            '빌딩/건물': [
-                { name: '엘리베이터', icon: '🛗' }, { name: '주차공간', icon: '🅿️' }, { name: '화물승강기', icon: '🏗️' },
-                { name: '옥상정원', icon: '🌿' }, { name: '보안시스템', icon: '🛡️' }, { name: '주차타워', icon: '🏢' }
-            ],
-            '토지/공장/기타': [
-                { name: '층고높음', icon: '⬆️' }, { name: '마당있음', icon: '🏡' }, { name: '대형차진입', icon: '🚛' },
-                { name: '호이스트', icon: '🏗️' }, { name: '사무공간있음', icon: '🖥️' }, { name: '크레인설비', icon: '⚙️' }
+            '분양': [
+                // 입주예정
+                { name: '1년이내', icon: '📆' }, { name: '2년이내', icon: '📆' }, { name: '3년이내', icon: '📆' },
+                // 청약통장
+                { name: '주택청약종합저축', icon: '🏦' }, { name: '청약예금', icon: '🏦' }, { name: '청약부금', icon: '🏦' }, { name: '청약저축', icon: '🏦' },
+                // 브랜드
+                { name: '자이', icon: '🏙️' }, { name: '푸르지오', icon: '🏙️' }, { name: '래미안', icon: '🏙️' }, 
+                { name: '힐스테이트', icon: '🏙️' }, { name: '더샵', icon: '🏙️' }, { name: 'e편한세상', icon: '🏙️' }, 
+                { name: '롯데캐슬', icon: '🏙️' }, { name: '아이파크', icon: '🏙️' }, { name: '수자인', icon: '🏙️' }, { name: '호반써밋', icon: '🏙️' }
             ]
         };
 
         let selectedOptionsSet = new Set();
 
         window.renderOptions = function() {
+            const mainType = window.currentMainCategory;
             const propertyType = document.getElementById('propertyType').value;
             const section = document.getElementById('optionSection');
             const container = document.getElementById('optionContainer');
             
-            if (!propertyType || !OPTION_DATA[propertyType]) {
+            if (!mainType || !propertyType || !OPTION_DATA[mainType]) {
                 section.style.display = 'none';
                 return;
             }
@@ -962,7 +1017,7 @@
             selectedOptionsSet.clear();
             updateSelectedOptionsInput();
 
-            OPTION_DATA[propertyType].forEach(opt => {
+            OPTION_DATA[mainType].forEach(opt => {
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'option-btn';
@@ -1184,19 +1239,47 @@
                 // Property Type (매물종류) & Trade Type (거래유형) 매핑 로직 강화
                 const btnGroups = document.querySelectorAll('.trade-btn-group');
                 
-                // 1. 매물종류 (첫 번째 그룹: 아파트, 오피스텔 등)
-                if (btnGroups[0] && data.property_type) {
-                    const btns = Array.from(btnGroups[0].querySelectorAll('.trade-btn'));
+                // 1. 매물종류 1차, 2차 세팅
+                if (data.property_type) {
                     const target = data.property_type.trim();
-                    const matchedBtn = btns.find(b => {
-                        const txt = b.textContent.trim();
-                        return txt === target || 
-                               (txt === '사무실/상가' && target === '상가/사무실') ||
-                               (txt === '상가/사무실' && target === '사무실/상가') ||
-                               (target.includes(txt) && txt.length > 1) ||
-                               (txt.includes(target) && target.length > 1);
-                    });
-                    if (matchedBtn) matchedBtn.click();
+                    let matchedMain = null;
+                    let matchedSub = null;
+                    
+                    if (typeof CATEGORY_MAP !== 'undefined') {
+                        for (const main in CATEGORY_MAP) {
+                            const found = CATEGORY_MAP[main].find(sub => 
+                                sub === target || 
+                                (sub === '상가' && target === '사무실/상가') ||
+                                (sub === '건물' && target === '빌딩/건물')
+                            );
+                            if (found) {
+                                matchedMain = main;
+                                matchedSub = found;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!matchedMain) {
+                        if (['아파트', '오피스텔', '원룸'].includes(target)) { matchedMain = '아파트·오피스텔'; matchedSub = target; }
+                        else if (target === '빌라/주택') { matchedMain = '빌라·주택'; matchedSub = '빌라/연립'; }
+                        else if (target === '사무실/상가') { matchedMain = '상가·업무·공장·토지'; matchedSub = '상가'; }
+                        else if (target === '빌딩/건물') { matchedMain = '상가·업무·공장·토지'; matchedSub = '건물'; }
+                        else if (target === '토지/공장/기타') { matchedMain = '상가·업무·공장·토지'; matchedSub = '토지'; }
+                    }
+
+                    if (matchedMain) {
+                        const mainBtns = Array.from(btnGroups[0].querySelectorAll('.trade-btn'));
+                        const mainBtn = mainBtns.find(b => b.textContent.trim() === matchedMain);
+                        if (mainBtn) mainBtn.click();
+                        
+                        const subGroup = document.getElementById('subCategoryGroup');
+                        if (subGroup) {
+                            const subBtns = Array.from(subGroup.querySelectorAll('.trade-btn'));
+                            const subBtn = subBtns.find(b => b.textContent.trim() === matchedSub);
+                            if (subBtn) subBtn.click();
+                        }
+                    }
                 }
                 
                 // 2. 거래유형 (두 번째 그룹: 매매, 전세 등)
