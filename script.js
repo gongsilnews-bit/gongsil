@@ -764,6 +764,7 @@ async function loadNews(category) {
             let mLng = a.lng || (baseLng + (Math.random() - 0.5) * 0.1);
 
             return {
+                ...a,
                 id: a.id,
                 _source: 'articles',
                 title: a.title,
