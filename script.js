@@ -1263,19 +1263,7 @@ window.showNewsDetail = async function(news) {
                 contentHtml += relatedHtml;
             }
 
-            // 키워드
-            if (news.keywords) {
-                contentHtml += '<div style="margin-top:24px;padding-top:16px;border-top:1px solid #f0f0f0;font-size:13px;color:#888;">🔖 ' + news.keywords + '</div>';
-            }
-
-            // 기자 정보
-            if (news.reporter_name || news.reporter_email) {
-                contentHtml += '<div style="margin-top:20px;padding:14px 16px;background:#f9fafb;border-radius:8px;display:flex;align-items:center;gap:10px;">'
-                    + '<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ff9f1c,#f97316);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0;">뉴</div>'
-                    + '<div><div style="font-size:13px;font-weight:700;">' + (news.reporter_name || '공실뉴스') + '</div>'
-                    + '<div style="font-size:12px;color:#888;">' + (news.reporter_email || '') + '</div></div>'
-                    + '</div>';
-            }
+            // 키워드 및 기자 정보는 하단 공통 푸터로 위임
 
             bodyContainer.innerHTML = contentHtml;
 
@@ -1308,6 +1296,31 @@ window.showNewsDetail = async function(news) {
     `;
 
     bodyContainer.innerHTML = rssContentHtml;
+    
+    // ── 공통 하단 푸터 (태그, 기자명, 댓글) 처리 ──
+    const articleFooter = document.getElementById('articleFooterArea');
+    if (articleFooter) {
+        articleFooter.style.display = 'block';
+        
+        // 키워드
+        const kwBox = document.getElementById('footerKeywords');
+        if (kwBox) {
+            if (news.keywords) {
+                kwBox.innerHTML = news.keywords.split(',').map(function(k) {
+                    return '<span style="background:#f1f3f5; color:#495057; font-size:14px; padding:6px 14px; border-radius:30px; cursor:pointer;" onmouseover="this.style.background=\'#e9ecef\'" onmouseout="this.style.background=\'#f1f3f5\'">#' + k.trim() + '</span>';
+                }).join('');
+                kwBox.style.display = 'flex';
+            } else {
+                kwBox.style.display = 'none';
+            }
+        }
+        
+        // 기자 정보
+        const reporterBox = document.getElementById('footerReporter');
+        if (reporterBox) {
+            reporterBox.innerText = news.reporter_name || '공실뉴스';
+        }
+    }
 };
 
 // 뉴스 상세 보기 닫기 함수
