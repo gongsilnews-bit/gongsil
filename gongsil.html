@@ -395,7 +395,7 @@
                 config.pills.forEach((p, idx) => {
                     const isSpecialPill = p.includes('오피스텔');
                     const pillClass = isSpecialPill ? 'mid-tab-rect' : 'mid-tab';
-                    midHtml += `<button class="${pillClass} ${idx===0?'active':''}" onclick="this.classList.toggle('active')">${p}</button>`;
+                    midHtml += `<button class="${pillClass} ${idx===0?'active':''}" onclick="this.classList.toggle('active'); if(window.filterAndRenderMap) window.filterAndRenderMap();">${p}</button>`;
                 });
                 midHtml += `<div class="v-divider"></div>`;
                 config.basicFilters.forEach(f => {
@@ -416,6 +416,11 @@
                 detailHtml += `<button class="filter-dropdown">${f} <span class="arrow">▼</span></button>`;
             });
             detailRow.innerHTML = detailHtml;
+            
+            // 필터 변경 시 지도 및 리스트 즉시 업데이트
+            if (window.filterAndRenderMap) {
+                window.filterAndRenderMap();
+            }
         }
 
         function toggleDetailRow() {
@@ -1285,11 +1290,61 @@
                 }
             };
 
+            window.filteredPropertyMarkers = null;
+
+            window.filterAndRenderMap = function() {
+                if (!window.mapInstance || !propertyMarkers || !clusterer) return;
+
+                // 1. 선택된 1차 카테고리 확인
+                const activeMainEl = document.querySelector('.top-tab.active');
+                let activeMain = activeMainEl ? activeMainEl.innerText.trim() : '아파트·오피스텔';
+
+                // 2. 2차 카테고리(Pills) 확인
+                const activeSubBtns = document.querySelectorAll('.mid-tab.active, .mid-tab-rect.active');
+                const activeSubs = Array.from(activeSubBtns).map(b => b.innerText.trim());
+
+                window.filteredPropertyMarkers = propertyMarkers.filter(m => {
+                    const p = m.propertyData;
+                    
+                    if (activeMain === 'MY관심') return true;
+
+                    // 1차 필터 매칭 로직 (이전 데이터 호환 포함)
+                    let pMain = p.main_category;
+                    if (!pMain && p.property_type) {
+                        for (const key in CATEGORY_CONFIG) {
+                            if (CATEGORY_CONFIG[key].pills && CATEGORY_CONFIG[key].pills.includes(p.property_type)) {
+                                pMain = CATEGORY_CONFIG[key].name;
+                                break;
+                            }
+                        }
+                    }
+                    pMain = pMain || '아파트·오피스텔';
+
+                    if (pMain !== activeMain) return false;
+                    
+                    // 2차 필터(Pill) 매칭 로직
+                    if (activeSubs.length > 0) {
+                        if (!activeSubs.includes(p.property_type)) return false;
+                    }
+
+                    return true;
+                });
+
+                // 마커 클러스터 초기화 및 필터링된 마커 표시
+                clusterer.clear();
+                clusterer.addMarkers(window.filteredPropertyMarkers);
+                
+                // 리스트 로직 업데이트
+                window.updateListByMapBounds();
+            };
+
             window.updateListByMapBounds = function() {
                 if (!window.mapInstance) return;
                 const bounds = window.mapInstance.getBounds();
                 const visibleProps = [];
-                propertyMarkers.forEach(m => {
+                const markersToSearch = window.filteredPropertyMarkers !== null ? window.filteredPropertyMarkers : propertyMarkers;
+                
+                markersToSearch.forEach(m => {
                     if (bounds.contain(m.getPosition())) {
                         visibleProps.push(m.propertyData);
                     }
@@ -1346,8 +1401,12 @@
 
                         // 모든 지오코딩 작업이 완료되었을 때 클러스터 설정
                         if (completedCount === props.length) {
-                            if (clusterer) clusterer.addMarkers(propertyMarkers);
-                            window.updateListByMapBounds();
+                            if (window.filterAndRenderMap) {
+                                window.filterAndRenderMap(); // 필터 재적용 및 표시
+                            } else {
+                                if (clusterer) clusterer.addMarkers(propertyMarkers);
+                                window.updateListByMapBounds();
+                            }
                         }
                     });
                 });
