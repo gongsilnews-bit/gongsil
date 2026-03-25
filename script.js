@@ -1367,8 +1367,9 @@ window.navigateArticle = async function(direction) {
     
     if (!currentNews) {
         // 배열에 없으면 딥링크 등으로 직접 들어온 경우 -> 서버에서 직접 조회
-        if (window.supabase) {
-            const { data } = await supabase.from('articles').select('*').eq('id', window.currentArticleId).single();
+        const sb = window.gongsiClient || supabaseClient;
+        if (sb) {
+            const { data } = await sb.from('articles').select('*').eq('id', window.currentArticleId).single();
             if (data) currentNews = data;
         }
     }
@@ -1387,7 +1388,8 @@ window.navigateArticle = async function(direction) {
     // 사용자가 > (오른쪽) 클릭 시 -1 넘김 -> "최신" 기사를 뜻함.
     
     try {
-        let query = supabase.from('articles').select('*').eq('status', 'published');
+        const sb = window.gongsiClient || supabaseClient;
+        let query = sb.from('articles').select('*').eq('status', 'published');
         
         if (cat && cat !== '전체기사') {
             query = query.or(`section1.eq.${cat},section2.eq.${cat}`);
@@ -1466,13 +1468,14 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(async () => {
         const urlParams = new URLSearchParams(window.location.search);
         const sharedArticleId = urlParams.get('article_id');
-        if (sharedArticleId && window.supabase) {
+        const sb = window.gongsiClient || supabaseClient;
+        if (sharedArticleId && sb) {
             // 일단 포털 모드로 강제 지정
             if (!document.body.classList.contains('portal-mode')) {
                 document.body.classList.add('portal-mode');
             }
             try {
-                const { data, error } = await supabase.from('articles').select('*').eq('id', sharedArticleId).single();
+                const { data, error } = await sb.from('articles').select('*').eq('id', sharedArticleId).single();
                 if (data && !error) {
                     data._source = 'articles';
                     window.showNewsDetail(data);
