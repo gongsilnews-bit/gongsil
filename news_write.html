@@ -1338,17 +1338,37 @@
         // ==========================================
         // 우측 라이브러리 기능 (사진 / 유튜브 본문 삽입)
         // ==========================================
+
+        // 에디터에 포커스를 유지하기 위해 커서 위치를 기억해두는 변수
+        var savedRange = null;
+        $('#summernote').on('summernote.focus summernote.keyup summernote.mouseup', function() {
+            savedRange = $('#summernote').summernote('editor.getLastRange');
+        });
+
+        // 커서 위치에 HTML 노드를 삽입하는 공통 헬퍼 함수
+        function insertNodeAtCursor(htmlString) {
+            var $editor = $('#summernote');
+            $editor.summernote('focus');
+            if (savedRange) {
+                $editor.summernote('editor.restoreRange', savedRange);
+            }
+            var tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlString;
+            var frag = document.createDocumentFragment();
+            while (tempDiv.firstChild) {
+                frag.appendChild(tempDiv.firstChild);
+            }
+            $editor.summernote('editor.insertNode', frag);
+        }
+
         function insertLibraryImage(inputTarget) {
             if (inputTarget.files && inputTarget.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const imgUrl = e.target.result;
-                    // 이미지 태그를 생성해서 중앙 정렬 스타일과 함께 에디터 삽입
-                    const imgHtml = `<p style="text-align: center;"><img src="${imgUrl}" style="max-width: 100%; border-radius: 8px;"></p>`;
-                    $('#summernote').summernote('pasteHTML', imgHtml);
-                    
-                    inputTarget.value = ''; // 선택 초기화 (같은 파일 또 삽입 가능하도록)
-                }
+                    insertNodeAtCursor(`<img src="${imgUrl}" style="max-width: 100%; border-radius: 8px; display: block; margin: 8px auto;">`);
+                    inputTarget.value = ''; // 같은 파일 재선택 가능하도록 초기화
+                };
                 reader.readAsDataURL(inputTarget.files[0]);
             }
         }
@@ -1360,7 +1380,7 @@
                 alert("YouTube 영상 링크를 입력해주세요 (예: https://youtu.be/...)");
                 return;
             }
-            
+
             // 유튜브 URL에서 Video ID 추출 정규식
             let videoId = "";
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -1373,14 +1393,9 @@
             }
 
             // 반응형 iFrame 래퍼 HTML 생성
-            const iframeHtml = `
-                <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; border-radius: 8px;">
-                    <iframe src="https://www.youtube.com/embed/${videoId}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" frameborder="0" allowfullscreen></iframe>
-                </div>
-                <p><br></p>
-            `;
-            $('#summernote').summernote('pasteHTML', iframeHtml);
-            
+            const iframeHtml = `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;max-width:100%;border-radius:8px;"><iframe src="https://www.youtube.com/embed/${videoId}" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allowfullscreen></iframe></div>`;
+            insertNodeAtCursor(iframeHtml);
+
             ytInput.value = ''; // 입력창 초기화
         }
 
