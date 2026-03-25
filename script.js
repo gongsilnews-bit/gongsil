@@ -354,10 +354,13 @@ function generatePortalListHtml(newsList) {
         const img = news.image_url ? `<img src="${news.image_url}" class="portal-list-img" onerror="this.src='https://picsum.photos/seed/${news.id||Math.random()}/600/400';">` : '<div style="width:100%;height:100%;background:#f0f0f0;"></div>';
         let playOverlay = news.video_id ? '<div style="position:absolute; bottom:8px; left:8px; width:30px; height:30px; background:rgba(0,0,0,0.7); border-radius:4px; display:flex; align-items:center; justify-content:center; padding-left:3px; z-index:5;"><svg viewBox="0 0 24 24" width="18" height="18" fill="white"><path d="M8 5v14l11-7z"/></svg></div>' : '';
         let hoverEvent = news.video_id ? `onmouseenter="window.playYtPreview(this, '${news.video_id}')" onmouseleave="window.stopYtPreview(this)"` : '';
+        const date = news.pub_date ? new Date(news.pub_date).toLocaleDateString('ko-KR') : '-';
         return `
-            <a href="javascript:void(0)" class="portal-list-item" style="padding: 12px 0;" onclick="window.showNewsDetail(${esc})">
-                <div class="portal-list-content" style="justify-content:center;">
-                    <div class="portal-list-title" style="margin-bottom:0;">${news.title}</div>
+            <a href="javascript:void(0)" class="portal-list-item" onclick="window.showNewsDetail(${esc})">
+                <div class="portal-list-content">
+                    <div class="portal-list-title">${news.title}</div>
+                    <div class="portal-list-desc">${news.description ? news.description.substring(0, 100) + '...' : ''}</div>
+                    <div class="portal-list-meta">${news.author || '공실뉴스'} · ${date}</div>
                 </div>
                 <div class="portal-list-img-wrap" style="position:relative; overflow:hidden;" ${hoverEvent}>
                     ${img}
