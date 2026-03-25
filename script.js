@@ -195,7 +195,6 @@ async function loadPortalNews(category, isLoadMore = false) {
                         <div class="portal-hot-img-wrap">${img}</div>
                         <div class="portal-hot-desc">${hot.description || ''}</div>
                     </a>
-                    <hr class="portal-divider">
                 `;
                 listStartIndex = 1;
             }
@@ -238,19 +237,30 @@ async function loadPortalNews(category, isLoadMore = false) {
             // 전체 레이아웃 조합
             container.innerHTML = `
                 <div class="portal-layout">
-                    <!-- 좌측 영역 -->
-                    <div class="portal-main">
+                    <!-- 탑 섹션 좌측 (메인 1개) -->
+                    <div class="portal-main" style="padding-right: 40px; box-sizing: border-box;">
                         ${leftHtml}
+                    </div>
+                    <!-- 탑 섹션 우측 (소형 4개) -->
+                    <div class="portal-side" style="padding-left: 20px; box-sizing: border-box; border-left: 1px solid #eee;">
+                        <div class="portal-side-top" style="margin-bottom: 0;">
+                            ${rightSideTopHtml}
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="portal-divider" style="margin: 0 0 30px 0; border:none; height:1px; background:#444;">
+
+                <div class="portal-layout">
+                    <!-- 하단 리스트 영역 -->
+                    <div class="portal-main" style="padding-right: 40px; box-sizing: border-box;">
                         ${listHtml}
                         ${window.portalState.allLoaded ? '' : '<button id="portalLoadMoreBtn" class="portal-btn-more" onclick="loadPortalNews(\'\', true)">기사 더보기 ↓</button>'}
                     </div>
 
-                    <!-- 우측 사이드바 영역 -->
-                    <div class="portal-side">
-                        <div class="portal-side-top">
-                            ${rightSideTopHtml}
-                        </div>
-                        <div class="portal-banner">
+                    <!-- 하단 사이드바 영역 -->
+                    <div class="portal-side" style="padding-left: 20px; box-sizing: border-box; border-left: 1px solid #eee;">
+                        <div class="portal-banner" style="margin-bottom: 30px;">
                             <!-- 광고 배너 공간 (더미) -->
                             <div style="padding:40px;">YOU HAVE ONLY 2 MOVES<br><span>(광고 영역)</span></div>
                         </div>
