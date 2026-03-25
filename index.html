@@ -428,6 +428,28 @@
         .reg-item-btn { padding:8px 5px; background:#fff; border:1px solid #eee; border-radius:4px; font-size:13px; color:#444; cursor:pointer; transition:all 0.2s; text-align:center; }
         .reg-item-btn:hover { background:var(--primary-color); color:#fff; border-color:var(--primary-color); }
         .region-close-btn:hover { background:#ddd !important; }
+
+        /* 유튜브 반응형 플레이어 (본문 표시용) */
+        .yt-wrap {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 비율 */
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            margin: 20px 0;
+            background: #000;
+        }
+        .yt-wrap iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        .yt-drag-handle {
+            display: none !important; /* 드래그 아이콘/텍스트는 뷰에서는 숨김 */
+        }
     </style>
 </head>
 
