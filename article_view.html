@@ -86,10 +86,9 @@
         .preview-frame.mobile .article-meta-row { flex-direction: column; align-items: flex-start !important; gap: 12px; }
         .preview-frame.mobile .article-meta-left { flex-wrap: wrap; gap: 8px !important; }
         
-        /* ── 메인 레이아웃 ── */
         .page-body {
             padding: 24px;
-            max-width: 860px;
+            max-width: 1280px;
             margin: 0 auto;
         }
 
@@ -360,7 +359,7 @@ function render() {
 
     // ── HTML 조립 ──
     document.getElementById('pageBody').innerHTML =
-    '<div style="display:flex; gap:30px; max-width:1100px; margin:0 auto; align-items:flex-start;">'+
+    '<div style="display:flex; gap:30px; width:100%; margin:0 auto; align-items:flex-start;">'+
       
       // ── 좌측 실제 기사 뷰 영역 ──
       '<div style="flex:1; min-width:0; background:#fff; border-radius:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06); overflow:hidden;">'+
