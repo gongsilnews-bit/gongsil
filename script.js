@@ -96,7 +96,7 @@ window.selectPortalTab = function(category) {
 };
 
 // 포털 뉴스 상태 저장용
-window.portalState = { currentCategory: '전체기사', offset: 0, itemsPerPage: 10, isFetching: false, allLoaded: false };
+window.portalState = { currentCategory: '전체기사', offset: 0, itemsPerPage: 10, isFetching: false, allLoaded: false, articles: [] };
 
 async function loadPortalNews(category, isLoadMore = false) {
     const container = document.getElementById('portalContainer');
@@ -106,6 +106,7 @@ async function loadPortalNews(category, isLoadMore = false) {
         window.portalState.currentCategory = category;
         window.portalState.offset = 0;
         window.portalState.allLoaded = false;
+        window.portalState.articles = [];
         container.innerHTML = '<div style="padding:60px;text-align:center;color:#999;">뉴스를 불러오는 중...</div>';
     } else {
         const btn = document.getElementById('portalLoadMoreBtn');
@@ -196,6 +197,7 @@ async function loadPortalNews(category, isLoadMore = false) {
         
         if (data.length < fetchCount) window.portalState.allLoaded = true;
         window.portalState.offset += data.length;
+        window.portalState.articles.push(...data);
 
         // 유튜브 프리뷰 재생/정지 헬퍼 (글로벌)
         if (!window.playYtPreview) {
@@ -1351,6 +1353,40 @@ window.shareArticleUrl = function() {
         document.body.removeChild(tempInput);
         alert('기사 주소가 복사되었습니다.\n' + url.toString());
     }
+};
+
+// 이전/다음 기사 탐색
+window.navigateArticle = function(direction) {
+    if (!window.portalState || !window.portalState.articles || window.portalState.articles.length === 0) {
+        alert('이전/다음 기사 정보가 없습니다.');
+        return;
+    }
+    const currentId = window.currentArticleId;
+    if (!currentId) return;
+
+    const navArr = window.portalState.articles;
+    const currentIndex = navArr.findIndex(a => (a.id || a.article_id) === currentId);
+    
+    if (currentIndex === -1) {
+        alert('현재 기사가 목록에 없습니다.');
+        return;
+    }
+
+    // 배열상 이전(더 최근) = index - 1
+    // 배열상 다음(더 과거) = index + 1
+    // 직관적으로 사용자가 < 를 누르면 direction -1 => 최신 기사, > 를 누르면 +1 => 과거 기사
+    let targetIndex = currentIndex + direction;
+    
+    if (targetIndex < 0) {
+        alert('첫 번째(가장 최신) 기사입니다.');
+        return;
+    } else if (targetIndex >= navArr.length) {
+        alert('마지막 기사입니다.');
+        return;
+    }
+    
+    const targetNews = navArr[targetIndex];
+    window.showNewsDetail(targetNews);
 };
 
 // 초기화 완료 및 스크롤 인디케이터 로직
