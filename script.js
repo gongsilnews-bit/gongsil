@@ -113,19 +113,31 @@ async function loadPortalNews(category, isLoadMore = false) {
     window.portalState.isFetching = true;
 
     try {
-        let query = supabaseClient.from('news').select('*').order('pub_date', { ascending: false });
-        
-        // 카테고리 필터 (기존처럼 일단 전체기사 유지, 필요시 로직 확장)
+        // articles 테이블에서 published 기사 로드 (실제 작성 기사)
+        let query = supabaseClient.from('articles')
+            .select('id, title, subtitle, content, section1, section2, article_type, reporter_name, reporter_email, keywords, view_count, created_at, rep_media_id')
+            .eq('status', 'published')
+            .order('created_at', { ascending: false });
+
+        // 카테고리 필터
+        if (window.portalState.currentCategory && window.portalState.currentCategory !== '전체기사') {
+            const cat = window.portalState.currentCategory;
+            query = query.or('section1.eq.' + cat + ',section2.eq.' + cat);
+        }
         
         // 페이징 처리
         const from = window.portalState.offset;
-        // 초기 로딩이면 상단 하이라이트(1개) + 우측 작은기사(4개) + 좌측 리스트(itemsPerPage) = 총 5+itemsPerPage 개수 요구
         const fetchCount = isLoadMore ? window.portalState.itemsPerPage : (5 + window.portalState.itemsPerPage);
         const to = from + fetchCount - 1;
         
         query = query.range(from, to);
-        const { data, error } = await query;
+        const { data: rawData, error } = await query;
         if (error) throw error;
+
+        // _source 마킹하여 showNewsDetail에서 articles 테이블로 인식
+        const data = (rawData || []).map(function(a) {
+            return Object.assign({}, a, { _source: 'articles', pub_date: a.created_at });
+        });
 
         // 더 이상 데이터가 없으면
         if (!data || data.length === 0) {
@@ -1026,7 +1038,7 @@ function renderMarkers(newsList) {
 }
 
 // 뉴스 상세 보기 표시 함수
-window.showNewsDetail = function(news) {
+window.showNewsDetail = async function(news) {
     const detailView = document.getElementById('news-detail-view');
     const closeBtn = document.getElementById('btnCloseDetail');
     if (!detailView || !news) return;
@@ -1047,15 +1059,93 @@ window.showNewsDetail = function(news) {
         if (mapWrapper) mapWrapper.appendChild(detailView);
     }
 
-    // 데이터 바인딩
-    document.getElementById('detailCategory').innerText = `뉴스/칼럼 > ${news.category || '전체기사'}`;
-    document.getElementById('detailTitle').innerText = news.title;
-    document.getElementById('detailAuthor').innerText = news.author || '공실뉴스';
-    document.getElementById('detailDate').innerText = `입력 ${new Date(news.pub_date).toLocaleString()}`;
-    document.getElementById('detailViews').innerText = `조회수 ${Math.floor(Math.random() * 500) + 50}`; // 랜덤 조회수 더미
+    // 기본 정보 먼저 표시 (로딩 상태)
+    const pubDate = news.pub_date || news.created_at;
+    const category = news.section1 || news.category || '전체기사';
+    const section2  = news.section2 ? ' > ' + news.section2 : '';
 
-    // 본문 내용 렌더링
+    document.getElementById('detailCategory').innerText = `뉴스/칼럼 > ${category}${section2}`;
+    document.getElementById('detailTitle').innerText = news.title || '(제목 없음)';
+    document.getElementById('detailAuthor').innerText = news.reporter_name || news.author || '공실뉴스';
+    document.getElementById('detailDate').innerText = `입력 ${new Date(pubDate).toLocaleString('ko-KR')}`;
+    document.getElementById('detailViews').innerText = `조회수 ${news.view_count || 0}`;
+
     const bodyContainer = document.getElementById('detailBody');
+    bodyContainer.innerHTML = '<div style="padding:40px;text-align:center;color:#aaa;">본문을 불러오는 중...</div>';
+    detailView.style.display = 'block';
+    detailView.scrollTop = 0;
+
+    // ── articles 테이블 기사 (직접 작성, article_id 또는 _source='articles') ──
+    if (news._source === 'articles' || news.article_type) {
+        try {
+            var sb = window.gongsiClient;
+            if (!sb) { sb = window.supabaseClient; }
+
+            // 미디어 로드
+            var mRes = await sb.from('article_media').select('*').eq('article_id', news.id).order('sort_order');
+            var mediaList = mRes.data || [];
+
+            // 조회수 +1
+            sb.from('articles').update({ view_count: (news.view_count || 0) + 1 }).eq('id', news.id);
+
+            // 본문 조립
+            var contentHtml = '';
+
+            // 이미지/영상 처리
+            var repMedia = mediaList.find(function(m){ return m.is_representative; }) || mediaList[0];
+            if (repMedia && repMedia.media_type === 'image') {
+                contentHtml += '<figure style="margin:0 0 20px;"><img src="' + repMedia.url + '" style="width:100%;border-radius:8px;" alt=""><figcaption style="font-size:12px;color:#888;text-align:center;margin-top:6px;">' + (repMedia.caption || '') + '</figcaption></figure>';
+            }
+
+            // 본문이 있으면 HTML 그대로, 없으면 미디어 전체 표시
+            if (news.content && news.content.trim().length > 10) {
+                contentHtml += news.content;
+            } else if (mediaList.length > 0) {
+                mediaList.forEach(function(m, i) {
+                    if (i === 0 && repMedia === m) return; // 대표이미지 중복 방지
+                    if (m.media_type === 'image') {
+                        contentHtml += '<figure style="margin:16px 0;"><img src="' + m.url + '" style="width:100%;border-radius:8px;" alt=""><figcaption style="font-size:12px;color:#888;text-align:center;margin-top:6px;">' + (m.caption || '') + '</figcaption></figure>';
+                    } else if (m.media_type === 'youtube') {
+                        contentHtml += '<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;margin:16px 0"><iframe src="' + m.url + '" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allowfullscreen></iframe></div>';
+                    }
+                });
+            }
+
+            if (!contentHtml) {
+                contentHtml = '<p style="color:#888;font-style:italic;">본문 내용이 없습니다.</p>';
+            }
+
+            // 카드뉴스 위아래 텍스트
+            if (news.card_text_above) {
+                contentHtml = '<div style="margin-bottom:16px;line-height:1.9;">' + news.card_text_above + '</div>' + contentHtml;
+            }
+            if (news.card_text_below) {
+                contentHtml += '<div style="margin-top:16px;line-height:1.9;">' + news.card_text_below + '</div>';
+            }
+
+            // 키워드
+            if (news.keywords) {
+                contentHtml += '<div style="margin-top:24px;padding-top:16px;border-top:1px solid #f0f0f0;font-size:13px;color:#888;">🔖 ' + news.keywords + '</div>';
+            }
+
+            // 기자 정보
+            if (news.reporter_name || news.reporter_email) {
+                contentHtml += '<div style="margin-top:20px;padding:14px 16px;background:#f9fafb;border-radius:8px;display:flex;align-items:center;gap:10px;">'
+                    + '<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ff9f1c,#f97316);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0;">뉴</div>'
+                    + '<div><div style="font-size:13px;font-weight:700;">' + (news.reporter_name || '공실뉴스') + '</div>'
+                    + '<div style="font-size:12px;color:#888;">' + (news.reporter_email || '') + '</div></div>'
+                    + '</div>';
+            }
+
+            bodyContainer.innerHTML = contentHtml;
+
+        } catch(err) {
+            bodyContainer.innerHTML = '<p style="color:#e11d48;">본문 로드 오류: ' + err.message + '</p>';
+        }
+        return;
+    }
+
+    // ── news 테이블 기사 (RSS / 기존) ──────────────────────────────
     let contentHtml = '';
     
     if (news.image_url) {
@@ -1066,12 +1156,10 @@ window.showNewsDetail = function(news) {
         `;
     }
 
-    // 굵은 강조 텍스트 (설명문 활용)
     if (news.description) {
         contentHtml += `<b>${news.description}</b>`;
     }
 
-    // 실제 뉴스 사이트로의 본문 유도 (현재는 RSS 스니펫만 있으므로)
     contentHtml += `
         <p>본 기사는 공실뉴스의 공식 기사입니다. 전문을 확인하시려면 아래 공식 링크를 통해 확인하실 수 있습니다.</p>
         <p style="margin-top:20px;">
@@ -1080,10 +1168,6 @@ window.showNewsDetail = function(news) {
     `;
 
     bodyContainer.innerHTML = contentHtml;
-    detailView.style.display = 'block';
-    
-    // 상세 보기 열릴 때 스크롤 상단으로
-    detailView.scrollTop = 0;
 };
 
 // 뉴스 상세 보기 닫기 함수
