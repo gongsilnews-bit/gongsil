@@ -491,7 +491,7 @@
 
                 tr.innerHTML = `
                     <td><input type="checkbox" name="prop_chk" value="${p.id}"></td>
-                    <td><div class="cell-num">${p.id.substring(0,8).toUpperCase()}</div></td>
+                    <td><div class="cell-num">${getDisplayId(p.id)}</div></td>
                     <td>
                         <button class="btn-ad-toggle ${stateCls}" onclick="toggleAdStatus('${p.id}', '${p.status}')">${stateText}</button>
                         <div class="ad-date">${dateStr}</div>
@@ -542,6 +542,13 @@
         return val.toLocaleString();
     }
 
+    function getDisplayId(uuid) {
+        if (!uuid) return '';
+        const hex = String(uuid).split('-')[0];
+        // 16진수를 10진수 정수로 변환하여 완전히 숫자 형태로만 출력 (최대 10자리)
+        return parseInt(hex, 16).toString();
+    }
+
     window.toggleAdStatus = async function(id, currentStatus) {
         const nextStatus = (currentStatus === 'active' || currentStatus === 'pending') ? 'hidden' : 'active';
         const msg = nextStatus === 'active' ? "광고를 다시 시작할까요?" : "광고를 종료하시겠습니까?";
@@ -570,7 +577,7 @@
         const keyword = document.getElementById('search-keyword').value.trim().toLowerCase();
 
         const filtered = allProperties.filter(p => {
-            const matchNum = num ? String(p.id).includes(num) : true;
+            const matchNum = num ? getDisplayId(p.id).includes(num) : true;
             const matchType = type ? p.property_type === type : true;
             const matchDeal = deal ? p.trade_type === deal : true;
             const matchKeyword = keyword ? (
