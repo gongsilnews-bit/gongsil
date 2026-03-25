@@ -8,6 +8,9 @@
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable.css" />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase_gongsi_config.js"></script>
     <!-- jQuery & Summernote Lite (WYSIWYG 에디터) 추가 -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
@@ -780,7 +783,7 @@
                 </div>
             </div>
 
-            <button class="btn-save-large">💾 저장</button>
+            <button class="btn-save-large" onclick="saveArticle()">💾 저장</button>
         </main>
 
         <!-- 3. 우측 라이브러리 (스티키) -->
@@ -2259,6 +2262,168 @@
             // onAuthStateChange가 한 박자 늦을 수 있으므로 1초 후 재시도
             setTimeout(fillReporterInfo, 1200);
         });
+
+        // ==========================================
+        // 💾 기사 저장 (Supabase API 연동)
+        // ==========================================
+        async function saveArticle() {
+            var sb = window.gongsiClient;
+            if (!sb) { alert('Supabase 클라이언트 초기화 실패. 페이지를 새로고침해 주세요.'); return; }
+
+            var saveBtn = document.querySelector('.btn-save-large');
+            var origText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '⏳ 저장 중...';
+            saveBtn.disabled = true;
+
+            try {
+                // ── 1. 현재 사용자 확인 ──────────────────────────
+                var { data: { session } } = await sb.auth.getSession();
+                if (!session) { alert('로그인이 필요합니다.'); return; }
+                var authorId = session.user.id;
+
+                // ── 2. 폼 값 수집 ────────────────────────────────
+                var statusRadio = document.querySelector('input[name="status"]:checked');
+                var status = statusRadio ? (statusRadio.nextSibling.textContent.trim() === '승인신청' ? 'pending' : 'published') : 'draft';
+
+                var title    = (document.querySelector('input[placeholder="제목을 입력하세요"]') || {}).value || '';
+                var subtitle = (document.querySelector('textarea[placeholder*="부제목"]') || {}).value || '';
+                var keywords = (document.querySelector('input[placeholder*="입력 (최대"]') || {}).value || '';
+                var section1 = (document.getElementById('sec1') || {}).value || '';
+                var section2 = (document.getElementById('sec2') || {}).value || '';
+                var section3 = (document.getElementById('sec3') || {}).value || '';
+                var reporterName  = (document.getElementById('reporterName') || {}).value || '';
+                var reporterEmail = (document.getElementById('reporterEmail') || {}).value || '';
+
+                // 본문 (형태별)
+                var content = '';
+                var cardTextAbove = '', cardTextBelow = '';
+                if (currentArticleType === 'normal') {
+                    content = $('#summernote').summernote('code') || '';
+                } else if (currentArticleType === 'card') {
+                    cardTextAbove = (document.getElementById('cardTextAbove') || {}).innerHTML || '';
+                    cardTextBelow = (document.getElementById('cardTextBelow') || {}).innerHTML || '';
+                }
+
+                if (!title.trim()) {
+                    alert('제목을 입력해 주세요.');
+                    return;
+                }
+
+                // ── 3. articles 테이블에 기사 INSERT ────────────
+                var articlePayload = {
+                    author_id:      authorId,
+                    status:         status,
+                    article_type:   currentArticleType,
+                    section1, section2, section3,
+                    reporter_name:  reporterName,
+                    reporter_email: reporterEmail,
+                    title,
+                    subtitle,
+                    content,
+                    card_text_above: cardTextAbove,
+                    card_text_below: cardTextBelow,
+                    keywords,
+                    expose_at: new Date().toISOString()
+                };
+
+                var { data: article, error: artErr } = await sb
+                    .from('articles')
+                    .insert(articlePayload)
+                    .select('id')
+                    .single();
+
+                if (artErr) throw artErr;
+                var articleId = article.id;
+
+                // ── 4. 미디어 Storage 업로드 + article_media INSERT ─
+                var mediaRows = [];
+                var repMediaLocalId = globalRepId;
+                var repMediaDbId    = null;
+                var sortOrder = 0;
+
+                // 사진 처리
+                for (var i = 0; i < libPhotos.length; i++) {
+                    var photo = libPhotos[i];
+                    var imageUrl = '';
+
+                    // base64 → Storage 업로드
+                    if (photo.dataUrl && photo.dataUrl.startsWith('data:')) {
+                        try {
+                            var resp = await fetch(photo.dataUrl);
+                            var blob = await resp.blob();
+                            var ext  = blob.type.split('/')[1] || 'jpg';
+                            var path = 'articles/' + articleId + '/' + photo.id + '.' + ext;
+                            var { error: upErr } = await sb.storage
+                                .from('article-images')
+                                .upload(path, blob, { upsert: true, contentType: blob.type });
+                            if (!upErr) {
+                                var { data: urlData } = sb.storage.from('article-images').getPublicUrl(path);
+                                imageUrl = urlData.publicUrl;
+                            }
+                        } catch(e) {
+                            imageUrl = photo.dataUrl; // 실패 시 base64 그대로
+                        }
+                    } else {
+                        imageUrl = photo.dataUrl || '';
+                    }
+
+                    var isRep = (photo.id === repMediaLocalId);
+                    mediaRows.push({
+                        article_id:        articleId,
+                        media_type:        'image',
+                        url:               imageUrl,
+                        caption:           photo.caption || '',
+                        is_representative: isRep,
+                        sort_order:        sortOrder++
+                    });
+                }
+
+                // 유튜브 처리
+                for (var j = 0; j < libVideos.length; j++) {
+                    var vid = libVideos[j];
+                    var isRepVid = (vid.id === repMediaLocalId);
+                    mediaRows.push({
+                        article_id:        articleId,
+                        media_type:        'youtube',
+                        url:               'https://www.youtube.com/embed/' + vid.videoId,
+                        caption:           vid.caption || '',
+                        is_representative: isRepVid,
+                        sort_order:        sortOrder++
+                    });
+                }
+
+                if (mediaRows.length > 0) {
+                    var { data: mediaData, error: medErr } = await sb
+                        .from('article_media')
+                        .insert(mediaRows)
+                        .select('id, is_representative');
+                    if (medErr) throw medErr;
+
+                    // 대표 미디어 ID 찾아서 articles.rep_media_id 업데이트
+                    var repRow = (mediaData || []).find(function(m) { return m.is_representative; });
+                    if (repRow) {
+                        await sb.from('articles').update({ rep_media_id: repRow.id }).eq('id', articleId);
+                    }
+                }
+
+                // ── 5. 저장 완료 ─────────────────────────────────
+                saveBtn.innerHTML = '✅ 저장 완료!';
+                saveBtn.style.background = '#16a34a';
+                setTimeout(function() {
+                    saveBtn.innerHTML = origText;
+                    saveBtn.style.background = '';
+                    saveBtn.disabled = false;
+                }, 2500);
+
+                alert('기사가 저장되었습니다!\n기사 ID: ' + articleId);
+
+            } catch(err) {
+                console.error('저장 오류:', err);
+                alert('저장 중 오류가 발생했습니다:\n' + (err.message || JSON.stringify(err)));
+                saveBtn.innerHTML = origText;
+                saveBtn.disabled = false;
+            }
+        }
 
     </script>
 </body>
