@@ -727,42 +727,54 @@ async function loadNews(category) {
         }
 
         let query = supabaseClient
-            .from('news')
+            .from('articles')
             .select('*')
-            .order('pub_date', { ascending: false });
-
-        // ... 필터 로직 생략 (기존 유지) ...
-        // (실제 코드 수정을 위해 아래 줄에 필터 처리 유지)
+            .eq('status', 'published')
+            .order('created_at', { ascending: false });
 
         // 기간 필터 적용
         if (currentPeriod !== 'all') {
             const now = new Date();
             let targetDate = new Date();
-
-            if (currentPeriod === 'today') {
-                targetDate.setHours(0, 0, 0, 0); // 오늘 0시
-            } else if (currentPeriod === 'week') {
-                targetDate.setDate(now.getDate() - 7);
-            } else if (currentPeriod === 'month') {
-                targetDate.setMonth(now.getMonth() - 1);
-            } else if (currentPeriod === '6month') {
-                targetDate.setMonth(now.getMonth() - 6);
-            }
-
-            // pub_date는 timestamp 형식이거나 YYYY-MM-DDT... 형식이므로 ISOString 사용
-            // 단, 시간대(KST) 고려가 필요할 수 있으나 UTC 기준으로 간단히 처리
-            query = query.gte('pub_date', targetDate.toISOString());
+            if (currentPeriod === 'today') targetDate.setHours(0, 0, 0, 0);
+            else if (currentPeriod === 'week') targetDate.setDate(now.getDate() - 7);
+            else if (currentPeriod === 'month') targetDate.setMonth(now.getMonth() - 1);
+            else if (currentPeriod === '6month') targetDate.setMonth(now.getMonth() - 6);
+            query = query.gte('created_at', targetDate.toISOString());
         }
 
-        query = query.limit(1000); // 1000개 제한은 마지막에
+        query = query.limit(100);
 
         if (dbCategory !== '전체기사') {
-            query = query.eq('category', dbCategory);
+            query = query.or('section1.eq.' + dbCategory + ',section2.eq.' + dbCategory);
         }
 
-        const { data: newsList, error } = await query;
-
+        const { data: rawArticles, error } = await query;
         if (error) throw error;
+
+        // 실제 기사 객체 리스트를 호환 포맷으로 변환 (뉴스 지도 마커용 더미 좌표 추가)
+        const baseLat = 37.5665; // 서울시청 기준
+        const baseLng = 126.9780;
+
+        const newsList = (rawArticles || []).map((a, i) => {
+            // 강남역, 잠실, 지역 임의 산포 (테스트/초기 화면용)
+            let mLat = a.lat || (baseLat + (Math.random() - 0.5) * 0.1);
+            let mLng = a.lng || (baseLng + (Math.random() - 0.5) * 0.1);
+
+            return {
+                id: a.id,
+                _source: 'articles',
+                title: a.title,
+                description: a.subtitle || (a.content ? a.content.replace(/<[^>]+>/g, '').substring(0, 100) : ''),
+                category: a.section1 || '공실뉴스',
+                author: a.reporter_name || '공실뉴스',
+                pub_date: a.created_at,
+                view_count: a.view_count || 0,
+                lat: mLat,
+                lng: mLng,
+                raw: a // 원본 데이터 보존
+            };
+        });
 
         allNewsData = newsList;
 
