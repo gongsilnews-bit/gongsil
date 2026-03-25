@@ -18,6 +18,9 @@
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/lang/summernote-ko-KR.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
+    <!-- 카카오맵 SDK (서비스 라이브러리 포함) -->
+    <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=435d3602201a49ea712e5f5a36fe6efc&libraries=services,clusterer"></script>
     <style>
         :root {
             --bg-body: #f4f5f7;
@@ -794,16 +797,17 @@
             <div class="form-row">
                 <div class="form-label">관련기사</div>
                 <div class="form-content">
-                    <button class="btn-sm">+ 관련기사추가</button>
+                    <button type="button" class="btn-sm" onclick="openRelatedArticleModal()">+ 관련기사추가</button>
+                    <div id="relatedArticlesList" style="margin-top: 15px; display: flex; flex-direction: column; gap: 8px;"></div>
                 </div>
             </div>
 
             <div class="form-row no-border">
                 <div class="form-label">위치등록</div>
                 <div class="form-content" style="gap: 5px;">
-                    <button class="btn-sm">지도검색</button>
-                    <input type="text" class="input-text" style="width:250px; background:#fafafa;" placeholder="위도, 경도를 입력해주세요.">
-                    <button class="btn-sm btn-gray-sm">#위도 경도 넣는법</button>
+                    <button type="button" class="btn-sm" onclick="openKakaoMapModal()">지도검색</button>
+                    <input type="text" id="latlngInput" class="input-text" style="width:250px; background:#fafafa;" placeholder="예: 37.490416, 127.518709">
+                    <button type="button" class="btn-sm btn-gray-sm" onclick="alert('카카오맵 지도검색 버튼을 눌러 위치를 누르면 자동으로 입력됩니다!\n직접 입력 시: 위도, 경도 순으로 입력하세요.')">#위도 경도 넣는법</button>
                 </div>
             </div>
 
@@ -2352,6 +2356,17 @@
                 }
 
                 // ── 3. articles INSERT(신규) 또는 UPDATE(수정) ──
+                var latVal = null, lngVal = null;
+                var latlngStr = (document.getElementById('latlngInput') || {}).value || '';
+                if (latlngStr.includes(',')) {
+                    var parts = latlngStr.split(',');
+                    var pLat = parseFloat(parts[0].trim());
+                    var pLng = parseFloat(parts[1].trim());
+                    if (!isNaN(pLat) && !isNaN(pLng)) {
+                        latVal = pLat; lngVal = pLng;
+                    }
+                }
+
                 var articlePayload = {
                     status:          status,
                     article_type:    currentArticleType,
@@ -2364,6 +2379,9 @@
                     card_text_above: cardTextAbove,
                     card_text_below: cardTextBelow,
                     keywords:        keywords,
+                    lat:             latVal,
+                    lng:             lngVal,
+                    related_articles: selectedRelatedArticles,
                     expose_at:       new Date().toISOString()
                 };
 
@@ -2539,6 +2557,18 @@
             var kwEl = q('input[placeholder*="입력 (최대"]');
             if (kwEl) kwEl.value = a.keywords || '';
 
+            // 관련기사
+            if (a.related_articles && Array.isArray(a.related_articles)) {
+                selectedRelatedArticles = a.related_articles;
+                renderRelatedArticles();
+            }
+
+            // 위도/경도
+            var latlngEl = document.getElementById('latlngInput');
+            if (latlngEl && a.lat && a.lng) {
+                latlngEl.value = a.lat + ", " + a.lng;
+            }
+
             // 본문
             if (a.article_type === 'normal') {
                 setTimeout(function() {
@@ -2573,6 +2603,241 @@
             renderPhotoGrid();
             renderVideoGrid();
         }
+
+        // ==========================================
+        // 카카오맵 위치등록 기능 로직 및 템플릿
+        // ==========================================
+        document.body.insertAdjacentHTML('beforeend', `
+            <div id="kakaoMapModal" class="modal-overlay" style="display:none; z-index:9999;">
+                <div class="modal-content" style="width: 800px; height: 650px; max-width: 95%; max-height: 95%; display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; background: white; padding:0;">
+                    <div style="padding: 15px 20px; background: #ea580c; color: white; display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="font-size:16px;">🗺️ 위치 자동 입력 (카카오맵)</strong>
+                        <button type="button" onclick="document.getElementById('kakaoMapModal').style.display='none'" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">&times;</button>
+                    </div>
+                    <div style="padding: 15px 20px; background: #fff7ed; display: flex; gap: 10px; border-bottom: 1px solid #fed7aa;">
+                        <input type="text" id="kakaoMapSearchKeyword" placeholder="지역명, 아파트명, 건물명 검색 (예: 강남역, 대치동 은마)" style="flex:1; padding: 12px; border: 1px solid #fbd38d; border-radius: 4px; font-size: 14px;" onkeypress="if(event.keyCode==13) searchKakaoMapPlaces()">
+                        <button type="button" onclick="searchKakaoMapPlaces()" style="padding: 10px 24px; background: #c2410c; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight:bold;">지도 검색</button>
+                    </div>
+                    <div style="padding: 10px 20px; font-size:13px; color:#555; background:#f8fafc; text-align:center; border-bottom: 1px solid #e2e8f0;">
+                        지도를 마우스로 <strong>클릭</strong>하시면 해당 위치의 빨간 마커와 함께 좌표가 임시 저장됩니다.
+                    </div>
+                    <div style="flex: 1; position: relative; background:#eee;">
+                        <div id="kakaoMapContainer" style="width: 100%; height: 100%;"></div>
+                        <div id="kakaoMapInfo" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 80%; max-width: 400px; background: rgba(255,255,255,0.95); padding: 15px 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); display: none; z-index: 10; border: 2px solid #ea580c;">
+                            <div style="font-weight: bold; margin-bottom: 8px; font-size: 16px; color: #333;" id="kakaoMapSelectedTitle">선택된 위치</div>
+                            <div style="font-size: 13px; color: #666; margin-bottom: 12px;" id="kakaoMapSelectedLatLng"></div>
+                            <button type="button" onclick="confirmKakaoMapSelection()" style="width: 100%; padding: 12px; background: #ea580c; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px;">✅ 이 위치를 기사 좌표로 등록</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `);
+
+        let mapInstance = null;
+        let mapMarker = null;
+        let places = null;
+        let selectedLatLngStr = '';
+
+        window.openKakaoMapModal = function() {
+            document.getElementById('kakaoMapModal').style.display = 'flex';
+            if (!mapInstance) {
+                setTimeout(() => {
+                    const container = document.getElementById('kakaoMapContainer');
+                    const options = {
+                        center: new kakao.maps.LatLng(37.498095, 127.027610), // 강남역 기본
+                        level: 3
+                    };
+                    mapInstance = new kakao.maps.Map(container, options);
+                    places = new kakao.maps.services.Places();
+                    
+                    kakao.maps.event.addListener(mapInstance, 'click', function(mouseEvent) {
+                        const latlng = mouseEvent.latLng;
+                        setMapMarkerAndInfo(latlng, "클릭된 지정 위치");
+                    });
+                    
+                    let existingVal = document.getElementById('latlngInput').value.trim();
+                    if (existingVal) {
+                        let parts = existingVal.split(',');
+                        if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+                            let initPos = new kakao.maps.LatLng(parseFloat(parts[0]), parseFloat(parts[1]));
+                            mapInstance.setCenter(initPos);
+                            setMapMarkerAndInfo(initPos, "현재 입력된 기사 위치");
+                        }
+                    }
+                }, 200);
+            } else {
+                setTimeout(() => { mapInstance.relayout(); }, 200);
+            }
+        };
+
+        window.searchKakaoMapPlaces = function() {
+            if (!places) return;
+            const keyword = document.getElementById('kakaoMapSearchKeyword').value.trim();
+            if (!keyword) {
+                alert('검색어를 입력해주세요.');
+                return;
+            }
+            places.keywordSearch(keyword, function(result, status) {
+                if (status === kakao.maps.services.Status.OK) {
+                    const firstItem = result[0];
+                    const coords = new kakao.maps.LatLng(firstItem.y, firstItem.x);
+                    mapInstance.setCenter(coords);
+                    setMapMarkerAndInfo(coords, firstItem.place_name || keyword);
+                } else if (status === kakao.maps.services.Status.ZERO_RESULT) {
+                    alert('검색 결과가 없습니다. 지도를 드래그하여 직접 클릭해주세요.');
+                } else {
+                    alert('검색 중 오류가 발생했습니다.');
+                }
+            });
+        };
+
+        window.setMapMarkerAndInfo = function(latlng, title) {
+            if (mapMarker) {
+                mapMarker.setMap(null);
+            }
+            mapMarker = new kakao.maps.Marker({
+                position: latlng,
+                map: mapInstance
+            });
+            const lat = latlng.getLat().toFixed(6);
+            const lng = latlng.getLng().toFixed(6);
+            selectedLatLngStr = lat + ', ' + lng;
+            
+            document.getElementById('kakaoMapSelectedTitle').textContent = title;
+            document.getElementById('kakaoMapSelectedLatLng').textContent = "📍 좌표: " + selectedLatLngStr;
+            document.getElementById('kakaoMapInfo').style.display = 'block';
+        };
+
+        window.confirmKakaoMapSelection = function() {
+            if (selectedLatLngStr) {
+                document.getElementById('latlngInput').value = selectedLatLngStr;
+                document.getElementById('kakaoMapModal').style.display = 'none';
+            }
+        };
+
+        // ==========================================
+        // 관련기사 추가 모달 템플릿 및 함수
+        // ==========================================
+        document.body.insertAdjacentHTML('beforeend', `
+            <div id="relatedArticleModal" class="modal-overlay" style="display:none; z-index:9999;">
+                <div class="modal-content" style="width: 800px; height: 600px; max-width: 95%; max-height: 95%; display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; background: white; padding:0;">
+                    <div style="padding: 15px 20px; background: #3b82f6; color: white; display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="font-size:16px;">관련기사 검색 (내 승인 기사)</strong>
+                        <button type="button" onclick="document.getElementById('relatedArticleModal').style.display='none'" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">&times;</button>
+                    </div>
+                    
+                    <div style="padding: 15px 20px; background: #f8fafc; display: flex; gap: 10px; border-bottom: 1px solid #e2e8f0; justify-content: space-between; align-items: center;">
+                        <div style="font-size:14px; color:#333; font-weight:bold;">
+                            승인완료된 내 기사 목록 (<span id="relatedArticleCount">0</span>건)
+                        </div>
+                        <button type="button" onclick="applyRelatedArticles()" style="padding: 8px 20px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight:bold; font-size:13px;">선택 항목 저장</button>
+                    </div>
+                    <div style="flex: 1; overflow-y: auto; padding: 0;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                            <thead style="background: #f1f5f9; position: sticky; top: 0; z-index: 1;">
+                                <tr style="border-bottom: 1px solid #cbd5e1;">
+                                    <th style="padding: 12px 20px; width:40px;"><input type="checkbox" id="selectAllRelated" onchange="toggleAllRelated(this)"></th>
+                                    <th style="padding: 12px 10px;">기사 제목</th>
+                                    <th style="padding: 12px 10px; width:120px;">작성일</th>
+                                </tr>
+                            </thead>
+                            <tbody id="relatedArticleTableBody">
+                                <!-- JS로 렌더링 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `);
+
+        let selectedRelatedArticles = [];
+
+        window.openRelatedArticleModal = async function() {
+            var sessionData = await window.gongsiClient.auth.getSession();
+            var session = sessionData.data.session;
+            if (!session) { alert('로그인이 필요합니다.'); return; }
+            var authorId = session.user.id;
+            
+            document.getElementById('relatedArticleModal').style.display = 'flex';
+            const tbody = document.getElementById('relatedArticleTableBody');
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:40px; color:#666;">데이터를 불러오는 중입니다...</td></tr>';
+            
+            var { data: articles, error } = await window.gongsiClient
+                .from('articles')
+                .select('id, title, expose_at')
+                .eq('author_id', authorId)
+                .eq('status', 'published') // 승인된 기사만
+                .order('expose_at', { ascending: false });
+                
+            if (error) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px; color:red;">기사를 불러오는 데 실패했습니다.</td></tr>';
+                return;
+            }
+            
+            document.getElementById('relatedArticleCount').textContent = articles.length;
+            if (articles.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:40px; color:#666;">승인된 내 기사가 없습니다.</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            articles.forEach(a => {
+                const isSelected = selectedRelatedArticles.find(r => r.id === a.id);
+                const dateStr = a.expose_at ? a.expose_at.split('T')[0] : '';
+                html += `
+                    <tr style="border-bottom: 1px solid #e2e8f0; transition: background 0.1s; cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                        <td style="padding: 15px 20px;"><input type="checkbox" class="rel-article-chk" value="${a.id}" data-title="${(a.title||'').replace(/"/g, '&quot;')}" ${isSelected ? 'checked' : ''}></td>
+                        <td style="padding: 15px 10px; font-size:14px; color:#333; font-weight:500;">${a.title||'제목 없음'}</td>
+                        <td style="padding: 15px 10px; font-size:13px; color:#888;">${dateStr}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        };
+        
+        window.toggleAllRelated = function(chk) {
+            const chks = document.querySelectorAll('.rel-article-chk');
+            chks.forEach(c => c.checked = chk.checked);
+        };
+        
+        window.applyRelatedArticles = function() {
+            const chks = document.querySelectorAll('.rel-article-chk');
+            selectedRelatedArticles = [];
+            chks.forEach(c => {
+                if (c.checked) {
+                    selectedRelatedArticles.push({
+                        id: c.value,
+                        title: c.getAttribute('data-title')
+                    });
+                }
+            });
+            renderRelatedArticles();
+            document.getElementById('relatedArticleModal').style.display = 'none';
+        };
+        
+        window.removeRelatedArticle = function(id) {
+            selectedRelatedArticles = selectedRelatedArticles.filter(r => r.id !== id);
+            renderRelatedArticles();
+        };
+        
+        window.renderRelatedArticles = function() {
+            const container = document.getElementById('relatedArticlesList');
+            if (selectedRelatedArticles.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            let html = '';
+            selectedRelatedArticles.forEach(r => {
+                html += `
+                    <div style="display:flex; align-items:flex-start; gap:8px; font-size:14px; color:#333; background:#fff; padding:10px 15px; border:1px solid #e2e8f0; border-radius:6px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                        <span style="color:#aaa; display:inline-block; transform: scaleY(-1) scaleX(-1); margin-top: -2px;">&iota;</span>
+                        <span style="flex:1; line-height:1.5; font-weight:500;">${r.title}</span>
+                        <button type="button" onclick="removeRelatedArticle('${r.id}')" style="background:#fef2f2; border:1px solid #fecaca; border-radius:4px; padding:4px 10px; cursor:pointer; color:#ef4444; font-size:12px; font-weight:bold; white-space:nowrap; transition:all 0.2s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">삭제 ✕</button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        };
 
         document.addEventListener('DOMContentLoaded', function() {
             fillReporterInfo();

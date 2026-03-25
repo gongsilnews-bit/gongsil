@@ -1143,6 +1143,22 @@ window.showNewsDetail = async function(news) {
                 contentHtml += '<div style="margin-top:16px;line-height:1.9;">' + news.card_text_below + '</div>';
             }
 
+            // 관련기사
+            if (news.related_articles && Array.isArray(news.related_articles) && news.related_articles.length > 0) {
+                let relatedHtml = '<div style="margin-top:40px; margin-bottom:30px; padding:25px; border:2px solid #ffb966; border-radius:12px; background:#fffcf5;">';
+                relatedHtml += '<div style="font-size:18px; font-weight:800; color:#111; margin-bottom:15px; display:flex; align-items:center; gap:8px;">';
+                relatedHtml += '<span style="color:#ea580c; font-size:16px;">▶</span> 관련기사</div>';
+                relatedHtml += '<ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px;">';
+                news.related_articles.forEach(r => {
+                    relatedHtml += '<li style="display:flex; gap:8px; font-size:15px; cursor:pointer;" onclick="window.location.href=\'index.html?articleId=' + r.id + '\'">'
+                        + '<span style="color:#aaa;">ㄴ</span>'
+                        + '<span style="color:#333; font-weight:600; text-decoration:none;" onmouseover="this.style.textDecoration=\'underline\'; this.style.color=\'#ea580c\';" onmouseout="this.style.textDecoration=\'none\'; this.style.color=\'#333\';">' + (r.title||'제목 없음') + '</span>'
+                        + '</li>';
+                });
+                relatedHtml += '</ul></div>';
+                contentHtml += relatedHtml;
+            }
+
             // 키워드
             if (news.keywords) {
                 contentHtml += '<div style="margin-top:24px;padding-top:16px;border-top:1px solid #f0f0f0;font-size:13px;color:#888;">🔖 ' + news.keywords + '</div>';
