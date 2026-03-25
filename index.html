@@ -429,8 +429,8 @@
         .reg-item-btn:hover { background:var(--primary-color); color:#fff; border-color:var(--primary-color); }
         .region-close-btn:hover { background:#ddd !important; }
 
-        /* 유튜브 반응형 플레이어 (본문 표시용) */
-        .yt-wrap {
+        /* 유튜브 반응형 플레이어 (에디터 내 삽입 클래스 및 일반 iframe 모두 커버) */
+        .yt-wrap, .yt-ratio-box {
             position: relative;
             width: 100%;
             padding-bottom: 56.25%; /* 16:9 비율 */
@@ -440,13 +440,22 @@
             margin: 20px 0;
             background: #000;
         }
-        .yt-wrap iframe {
+        .yt-wrap iframe, .yt-ratio-box iframe {
             position: absolute;
             top: 0;
             left: 0;
             width: 100% !important;
             height: 100% !important;
         }
+        
+        /* 혹시라도 위 클래스 없이 에디터에서 단순 비디오 추가한 경우 대비 */
+        .article-body iframe[src*="youtube"] {
+            width: 100% !important;
+            border-radius: 8px;
+            aspect-ratio: 16/9;
+            height: auto !important;
+        }
+
         .yt-drag-handle {
             display: none !important; /* 드래그 아이콘/텍스트는 뷰에서는 숨김 */
         }
