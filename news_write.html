@@ -421,6 +421,18 @@
             min-height: 34px; background: #fafafa; font-family: inherit;
         }
         .lib-caption::placeholder { color: #bbb; }
+        /* 유튜브 드래그 핵들 */
+        .yt-block { margin: 8px 0; border-radius: 8px; overflow: hidden; }
+        .yt-drag-handle {
+            background: #374151; color: #d1d5db; padding: 5px 12px;
+            font-size: 11px; cursor: grab; -webkit-user-select: none; user-select: none;
+            display: flex; align-items: center; gap: 6px;
+            border-radius: 8px 8px 0 0;
+        }
+        .yt-drag-handle:active { cursor: grabbing; }
+        .yt-drag-handle .drag-icon { font-size: 14px; opacity: 0.7; }
+        .yt-ratio-box { position:relative; padding-bottom:56.25%; height:0; overflow:hidden; }
+        .yt-ratio-box iframe { position:absolute; top:0; left:0; width:100%; height:100%; }
 
     </style>
 </head>
@@ -1574,7 +1586,7 @@
             const margin = align === 'center' ? '8px auto'
                          : align === 'right'  ? '8px 0 8px auto'
                          : '8px auto 8px 0';
-            let html = '<img src="' + photo.dataUrl + '" style="max-width:100%; display:block; margin:' + margin + '; border-radius:8px;">';
+            let html = '<img src="' + photo.dataUrl + '" draggable="true" data-type="lib-img" style="max-width:100%; display:block; margin:' + margin + '; border-radius:8px;">';
             if (photo.caption && photo.caption.trim()) {
                 html += '<p style="text-align:' + align + '; font-size:13px; color:#888; margin:2px 0 12px;">' + photo.caption.trim() + '</p>';
             }
@@ -1652,7 +1664,10 @@
         function insertVideoToEditor(id) {
             const vid = libVideos.find(function(v) { return v.id === id; });
             if (!vid) return;
-            let html = '<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;max-width:100%;border-radius:8px;"><iframe src="https://www.youtube.com/embed/' + vid.videoId + '" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allowfullscreen></iframe></div>';
+            let html = '<div class="yt-block" draggable="true" data-type="lib-video" contenteditable="false">'
+                + '<div class="yt-drag-handle"><span class="drag-icon">&#x2630;</span> 드래그하여 위치 이동</div>'
+                + '<div class="yt-ratio-box"><iframe src="https://www.youtube.com/embed/' + vid.videoId + '" frameborder="0" allowfullscreen></iframe></div>'
+                + '</div>';
             if (vid.caption && vid.caption.trim()) {
                 html += '<p style="text-align:center; font-size:13px; color:#888; margin:2px 0 12px;">' + vid.caption.trim() + '</p>';
             }
@@ -1729,7 +1744,70 @@
                     }
                 }
             });
+
+            // 에디터 내부 드래그앤드드롭 설정
+            $('#summernote').on('summernote.init', function() {
+                setupEditorDragDrop();
+            });
+            // init 이후 바로 실행되지 않는 경우 대비
+            setTimeout(setupEditorDragDrop, 600);
         });
+
+        function setupEditorDragDrop() {
+            var editingArea = document.querySelector('.note-editable');
+            if (!editingArea || editingArea._dndReady) return;
+            editingArea._dndReady = true;
+            var draggedEl = null;
+
+            editingArea.addEventListener('dragstart', function(e) {
+                var target = e.target;
+                // 이미지 또는 yt-block 전체를 드래그 대상으로
+                if (target.tagName === 'IMG' && target.hasAttribute('draggable')) {
+                    draggedEl = target;
+                } else {
+                    var block = target.closest ? target.closest('.yt-block[draggable]') : null;
+                    if (block) draggedEl = block;
+                }
+                if (draggedEl) {
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', '');
+                    setTimeout(function() { draggedEl.style.opacity = '0.35'; }, 0);
+                }
+            }, true);
+
+            editingArea.addEventListener('dragend', function() {
+                if (draggedEl) { draggedEl.style.opacity = ''; draggedEl = null; }
+            }, true);
+
+            editingArea.addEventListener('dragover', function(e) {
+                if (draggedEl) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+            }, true);
+
+            editingArea.addEventListener('drop', function(e) {
+                if (!draggedEl) return;
+                e.preventDefault();
+                var range;
+                if (document.caretRangeFromPoint) {
+                    range = document.caretRangeFromPoint(e.clientX, e.clientY);
+                } else if (document.caretPositionFromPoint) {
+                    var pos = document.caretPositionFromPoint(e.clientX, e.clientY);
+                    if (pos) { range = document.createRange(); range.setStart(pos.offsetNode, pos.offset); }
+                }
+                if (range) {
+                    // 원래 자리에서 제거
+                    draggedEl.parentNode && draggedEl.parentNode.removeChild(draggedEl);
+                    range.insertNode(draggedEl);
+                    draggedEl.style.opacity = '';
+                    // 커서를 이동된 요소 뒤로
+                    range.setStartAfter(draggedEl);
+                    range.collapse(true);
+                    var sel = window.getSelection();
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
+                draggedEl = null;
+            }, true);
+        }
     </script>
 </body>
 </html>
