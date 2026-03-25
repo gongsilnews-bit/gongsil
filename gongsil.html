@@ -1139,8 +1139,9 @@
                 // ================== 옵션 렌더링 ==================
                 const optContainer = document.getElementById('docOptionsContainer');
                 optContainer.innerHTML = '';
-                if (p.options) {
-                    const optArray = p.options.split(',').map(o => o.trim()).filter(Boolean);
+                if (p.options && p.options.length > 0) {
+                    // DB 스키마 v3.0: options는 text[] 배열
+                    const optArray = Array.isArray(p.options) ? p.options.filter(Boolean) : p.options.split(',').map(o => o.trim()).filter(Boolean);
                     const iconMap = {
                         '에어컨': '❄️', '세탁기': '🧺', '냉장고': '🧊', '침대': '🛏️', '옷장': '🚪',
                         '신발장': '👞', '싱크대': '🚰', '가스레인지': '🔥', '인덕션': '🔥', '전자레인지': '♨️', 'CCTV': '📹',
