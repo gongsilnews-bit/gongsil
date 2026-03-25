@@ -558,7 +558,7 @@
             transform: translateY(-50%);
             width: 80px;
             height: 120px;
-            background: rgba(220, 220, 220, 0.4);
+            background: rgba(120, 120, 120, 0.5); /* 더 진하게 수정 */
             color: #fff;
             display: flex;
             justify-content: center;
@@ -569,9 +569,9 @@
             border-radius: 8px;
             z-index: 9999;
             transition: opacity 0.3s ease, background 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-        .big-nav-arrow:hover { background: rgba(200, 200, 200, 0.8); }
+        .big-nav-arrow:hover { background: rgba(80, 80, 80, 0.8); }
         .big-nav-arrow.hidden { opacity: 0; pointer-events: none; }
         .big-prev-arrow { left: 40px; }
         .big-next-arrow { right: 40px; }
@@ -681,14 +681,14 @@
             <div id="news-detail-view">
                 
                 <!-- 대형 사이드 네비게이션 화살표 -->
-                <div class="big-nav-arrow big-prev-arrow" onclick="window.navigateArticle(-1)" title="이전(최신) 기사">❮</div>
-                <div class="big-nav-arrow big-next-arrow" onclick="window.navigateArticle(1)" title="다음(과거) 기사">❯</div>
+                <div class="big-nav-arrow big-prev-arrow" onclick="window.navigateArticle(1)" title="이전(과거) 기사">❮</div>
+                <div class="big-nav-arrow big-next-arrow" onclick="window.navigateArticle(-1)" title="다음(최신) 기사">❯</div>
                 
                 <!-- 스크롤 리더 인디케이터 헤더 -->
                 <div id="stickyReadHeader">
                     <div class="str-container">
                         <div class="str-left">
-                            <button class="str-btn" onclick="window.navigateArticle(-1)" title="이전 기사" style="border:none; font-size: 20px;">❮</button>
+                            <button class="str-btn" onclick="window.navigateArticle(1)" title="이전(과거) 기사" style="border:none; font-size: 20px;">❮</button>
                             <img src="https://gongsilnews.com/image/logo/logo.png" alt="로고" class="str-logo" onerror="this.onerror=null; this.style.display='none';">
                         </div>
                         <div class="str-center">
@@ -697,7 +697,7 @@
                         <div class="str-right">
                             <button class="str-btn" title="스크랩" style="border:none;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"></path></svg></button>
                             <button class="str-btn" title="공유" onclick="window.shareArticleUrl()" style="border:none;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></button>
-                            <button class="str-btn" title="다음 기사" onclick="window.navigateArticle(1)" style="border:none; font-size:20px; font-weight:normal;">❯</button>
+                            <button class="str-btn" title="다음(최신) 기사" onclick="window.navigateArticle(-1)" style="border:none; font-size:20px; font-weight:normal;">❯</button>
                             <button class="str-btn" title="닫기(목록으로)" onclick="closeNewsDetail()" style="border:none; font-size:20px; font-weight:bold; margin-left:5px;">✕</button>
                         </div>
                     </div>
