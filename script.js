@@ -1422,6 +1422,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if(progress > 100) progress = 100;
             if(progress < 0) progress = 0;
             progressInd.style.width = progress + '%';
+            
+            // 빅 네비게이션 화살표 스크롤 중 숨김 처리
+            const bigArrows = document.querySelectorAll('.big-nav-arrow');
+            bigArrows.forEach(a => a.classList.add('hidden'));
+
+            if (window.scrollNavTimeout) clearTimeout(window.scrollNavTimeout);
+            window.scrollNavTimeout = setTimeout(() => {
+                bigArrows.forEach(a => a.classList.remove('hidden'));
+            }, 600); // 스크롤 멈추고 0.6초 후 표시
         });
     }
 

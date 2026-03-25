@@ -550,6 +550,34 @@
         .yt-drag-handle {
             display: none !important; /* 드래그 아이콘/텍스트는 뷰에서는 숨김 */
         }
+        
+        /* 대형 이전/다음 네비게이션 화살표 (스크롤 시 자동 숨김) */
+        .big-nav-arrow {
+            position: fixed;
+            top: 50vh;
+            transform: translateY(-50%);
+            width: 80px;
+            height: 120px;
+            background: rgba(220, 220, 220, 0.4);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 60px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            z-index: 9999;
+            transition: opacity 0.3s ease, background 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .big-nav-arrow:hover { background: rgba(200, 200, 200, 0.8); }
+        .big-nav-arrow.hidden { opacity: 0; pointer-events: none; }
+        .big-prev-arrow { left: 40px; }
+        .big-next-arrow { right: 40px; }
+        @media (max-width: 1400px) {
+            .big-nav-arrow { display: none !important; }
+        }
     </style>
 </head>
 
@@ -651,6 +679,10 @@
         <div class="map-wrapper">
             <!-- 뉴스 상세 페이지 (레이아웃) -->
             <div id="news-detail-view">
+                
+                <!-- 대형 사이드 네비게이션 화살표 -->
+                <div class="big-nav-arrow big-prev-arrow" onclick="window.navigateArticle(-1)" title="이전(최신) 기사">❮</div>
+                <div class="big-nav-arrow big-next-arrow" onclick="window.navigateArticle(1)" title="다음(과거) 기사">❯</div>
                 
                 <!-- 스크롤 리더 인디케이터 헤더 -->
                 <div id="stickyReadHeader">
