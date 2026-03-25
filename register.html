@@ -660,7 +660,7 @@
 
             const user = session.user;
 
-            // 필수값 검증
+            const mainCategory = window.currentMainCategory || '';
             const propertyType = document.getElementById('propertyType').value;
             const tradeType = document.getElementById('tradeType').value;
             const dong = document.getElementById('dong').value;
@@ -668,8 +668,12 @@
             const authorPhone = document.getElementById('authorPhone').value;
             const brokerageFee = document.getElementById('brokerageFee').value;
 
-            if(!propertyType || !tradeType || !dong || !authorName || !authorPhone || !brokerageFee) {
-                alert("중개보수 지급을 포함한 모든 필수 항목을 입력해주세요.");
+            if (!mainCategory || !propertyType) {
+                alert("\uB9E4\uBB3C \uB300\uBD84\uB958\uC640 \uC0C1\uC138 \uC885\uB958\uB97C \uBAA8\uB450 \uC120\uD0DD\uD574\uC8FC\uC138\uC694.");
+                return;
+            }
+            if(!tradeType || !dong || !authorName || !authorPhone || !brokerageFee) {
+                alert("\uC911\uAC1C\uBCF4\uC218 \uC9C0\uAE09\uC744 \uD3EC\uD568\uD55C \uBAA8\uB4E0 \uD544\uC218 \uD56D\uBAA9\uC744 \uC785\uB825\uD574\uC8FC\uC138\uC694.");
                 return;
             }
 
@@ -710,21 +714,26 @@
                     imageUrls.push(publicUrl);
                 }
 
-                // 2. 최종 데이터 객체 생성
+                // 2. 최종 데이터 객체 생성 (새 스키마 v3.0에 맞추)
+                const optionsRaw = document.getElementById('selectedOptions').value;
+                const optionsArray = optionsRaw ? optionsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+
                 const propertyData = {
                     user_id: user.id,
                     user_role: currentUserProfile?.role || 'general',
-                    property_type: propertyType,
+                    main_category: mainCategory,         // 1차 대분류 (신규)
+                    property_type: propertyType,         // 2차 소분류
                     trade_type: tradeType,
                     deposit: parseInt(document.getElementById('deposit').value) || 0,
                     monthly_rent: parseInt(document.getElementById('monthlyRent').value) || 0,
                     maintenance_fee: parseInt(document.getElementById('maintenanceFee').value) || 0,
-                    room_count: document.getElementById('roomCount').value,
-                    bathroom_count: document.getElementById('bathroomCount').value,
-
+                    room_count: document.getElementById('roomCount').value || null,
+                    bathroom_count: document.getElementById('bathroomCount').value || null,
+                    current_floor: parseInt(document.getElementById('currentFloor').value) || null,  // 신규
+                    total_floor: parseInt(document.getElementById('totalFloor').value) || null,      // 신규
                     supply_area: parseFloat(document.getElementById('supplyArea').value) || 0,
-                    area: parseFloat(document.getElementById('dedicatedArea').value) || 0,
-                    options: document.getElementById('selectedOptions').value,
+                    dedicated_area: parseFloat(document.getElementById('dedicatedArea').value) || 0, // area → dedicated_area
+                    options: optionsArray,               // 문자열 → 배열
                     sido: document.getElementById('sido').value,
                     sigungu: document.getElementById('sigungu').value,
                     dong: dong,
@@ -732,7 +741,7 @@
                     building_name: document.getElementById('buildingName').value,
                     dong_number: document.getElementById('dongNumber').value,
                     room_number: document.getElementById('roomNumber').value,
-                    is_room_private: document.getElementById('isRoomPrivate').checked, 
+                    is_room_private: document.getElementById('isRoomPrivate').checked,
                     description: document.getElementById('description').value,
                     author_name: authorName,
                     author_phone: authorPhone,
@@ -740,8 +749,7 @@
                     brokerage_fee: brokerageFee,
                     images: imageUrls,
                     status: 'active',
-                    agree_promo: document.getElementById('agreePromo').checked,
-                    created_at: new Date()
+                    agree_promo: document.getElementById('agreePromo').checked
                 };
 
                 // 3. DB Insert 또는 Update
@@ -1263,49 +1271,44 @@
                 return;
             }
             if (data) {
-                // Property Type (매물종류) & Trade Type (거래유형) 매핑 로직 강화
+                // 1. 매물종류 1차, 2차 세팅 (신규: main_category ꓸ럼 우선 사용)
                 const btnGroups = document.querySelectorAll('.trade-btn-group');
-                
-                // 1. 매물종류 1차, 2차 세팅
-                if (data.property_type) {
-                    const target = data.property_type.trim();
-                    let matchedMain = null;
-                    let matchedSub = null;
-                    
-                    if (typeof CATEGORY_MAP !== 'undefined') {
-                        for (const main in CATEGORY_MAP) {
-                            const found = CATEGORY_MAP[main].find(sub => 
-                                sub === target || 
-                                (sub === '상가' && target === '사무실/상가') ||
-                                (sub === '건물' && target === '빌딩/건물')
-                            );
-                            if (found) {
-                                matchedMain = main;
-                                matchedSub = found;
-                                break;
-                            }
+                const savedMain = data.main_category || null;
+                const savedSub  = data.property_type || null;
+
+                if (savedMain && savedSub) {
+                    // 1차 버튼 클릭
+                    const mainBtns = Array.from(btnGroups[0].querySelectorAll('.trade-btn'));
+                    const mainBtn = mainBtns.find(b => b.textContent.trim() === savedMain);
+                    if (mainBtn) mainBtn.click();
+
+                    // 2차 버튼 클릭 (렌더링 후 클릭해야 하므로 setTimeout)
+                    setTimeout(() => {
+                        const subGroup = document.getElementById('subCategoryGroup');
+                        if (subGroup) {
+                            const subBtns = Array.from(subGroup.querySelectorAll('.trade-btn'));
+                            const subBtn = subBtns.find(b => b.textContent.trim() === savedSub);
+                            if (subBtn) subBtn.click();
                         }
+                    }, 100);
+                } else if (savedSub) {
+                    // 구 데이터 호환: property_type만 있는 경우 ꓸ럼맅
+                    let matchedMain = null, matchedSub = savedSub;
+                    for (const main in CATEGORY_MAP) {
+                        if (CATEGORY_MAP[main].includes(savedSub)) { matchedMain = main; break; }
                     }
-
-                    if (!matchedMain) {
-                        if (['아파트', '오피스텔', '원룸'].includes(target)) { matchedMain = '아파트·오피스텔'; matchedSub = target; }
-                        else if (target === '빌라/주택') { matchedMain = '빌라·주택'; matchedSub = '빌라/연립'; }
-                        else if (target === '사무실/상가') { matchedMain = '상가·업무·공장·토지'; matchedSub = '상가'; }
-                        else if (target === '빌딩/건물') { matchedMain = '상가·업무·공장·토지'; matchedSub = '건물'; }
-                        else if (target === '토지/공장/기타') { matchedMain = '상가·업무·공장·토지'; matchedSub = '토지'; }
-                    }
-
                     if (matchedMain) {
                         const mainBtns = Array.from(btnGroups[0].querySelectorAll('.trade-btn'));
                         const mainBtn = mainBtns.find(b => b.textContent.trim() === matchedMain);
                         if (mainBtn) mainBtn.click();
-                        
-                        const subGroup = document.getElementById('subCategoryGroup');
-                        if (subGroup) {
-                            const subBtns = Array.from(subGroup.querySelectorAll('.trade-btn'));
-                            const subBtn = subBtns.find(b => b.textContent.trim() === matchedSub);
-                            if (subBtn) subBtn.click();
-                        }
+                        setTimeout(() => {
+                            const subGroup = document.getElementById('subCategoryGroup');
+                            if (subGroup) {
+                                const subBtns = Array.from(subGroup.querySelectorAll('.trade-btn'));
+                                const subBtn = subBtns.find(b => b.textContent.trim() === matchedSub);
+                                if (subBtn) subBtn.click();
+                            }
+                        }, 100);
                     }
                 }
                 
@@ -1328,11 +1331,12 @@
                 // Rooms / Floors
                 if(data.room_count) document.getElementById('roomCount').value = data.room_count;
                 if(data.bathroom_count) document.getElementById('bathroomCount').value = data.bathroom_count;
-
+                if(data.current_floor) document.getElementById('currentFloor').value = data.current_floor;
+                if(data.total_floor) document.getElementById('totalFloor').value = data.total_floor;
                 
                 // Areas
                 if(data.supply_area) document.getElementById('supplyArea').value = data.supply_area;
-                if(data.area) document.getElementById('dedicatedArea').value = data.area;
+                if(data.dedicated_area) document.getElementById('dedicatedArea').value = data.dedicated_area;  // area → dedicated_area
                 convertArea('m2', 'supply');
                 convertArea('m2', 'dedicated');
                 
@@ -1347,13 +1351,14 @@
                 if(data.is_room_private) document.getElementById('isRoomPrivate').checked = data.is_room_private;
                 if(data.description) document.getElementById('description').value = data.description;
                 
-                // Options
-                if (data.options) {
-                    const savedOptions = data.options.split(',');
-                    savedOptions.forEach(optName => {
-                        const optBtn = Array.from(document.querySelectorAll('.option-btn')).find(b => b.innerText.includes(optName));
-                        if(optBtn && !optBtn.classList.contains('active')) optBtn.click();
-                    });
+                // Options (배열 방식으로 변경)
+                if (data.options && Array.isArray(data.options) && data.options.length > 0) {
+                    setTimeout(() => {
+                        data.options.forEach(optName => {
+                            const optBtn = Array.from(document.querySelectorAll('.option-btn')).find(b => b.innerText.includes(optName));
+                            if(optBtn && !optBtn.classList.contains('active')) optBtn.click();
+                        });
+                    }, 200);
                 }
                 
                 // Auth Info
