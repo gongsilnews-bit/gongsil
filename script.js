@@ -154,6 +154,11 @@ async function loadPortalNews(category, isLoadMore = false) {
                 }
             }
 
+            // 기존 시드 데이터의 Unsplash 404(카메라 아이콘) 이미지 방어 코드 (동영상 플레이어로 오해 방지)
+            if (imgUrl && imgUrl.includes('source.unsplash.com')) {
+                imgUrl = null;
+            }
+
             if (!imgUrl) {
                 // 더미 이미지 제공으로 리스트 화면을 예쁘게 구성
                 imgUrl = `https://picsum.photos/seed/${a.id || Math.random()}/600/400`;
