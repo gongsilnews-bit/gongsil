@@ -61,11 +61,11 @@
             display: grid;
             grid-template-columns: 1fr 300px; /* 우측 광고/배너 영역 300px */
             gap: 40px; 
-            padding: 40px; 
+            padding: 20px 40px 40px; /* 상단 여백을 20px로 줄여 좌측 사이드바와 비슷하게 정렬 */
             position: relative;
         }
 
-        .detail-content { min-width: 0; }
+        .detail-content { min-width: 0; padding-top: 0; }
         .detail-breadcrumb { font-size: 14px; color: #ff9f1c; margin-bottom: 24px; font-weight: 700; letter-spacing: -0.5px; }
         .detail-title { font-size: 32px; font-weight: 800; color: #111; line-height: 1.35; margin-bottom: 25px; word-break: keep-all; letter-spacing: -1px; }
         .detail-meta { 
