@@ -550,7 +550,7 @@
     }
 
     window.toggleAdStatus = async function(id, currentStatus) {
-        const nextStatus = (currentStatus === 'active' || currentStatus === 'pending') ? 'hidden' : 'active';
+        const nextStatus = (currentStatus === 'active' || currentStatus === 'pending') ? 'inactive' : 'active';
         const msg = nextStatus === 'active' ? "광고를 다시 시작할까요?" : "광고를 종료하시겠습니까?";
         if (!confirm(msg)) return;
 
