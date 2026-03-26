@@ -480,12 +480,12 @@
         
         <div class="mid-row" id="midFilterRow">
             <!-- JS dynamic render -->
-            <button class="mid-tab active">아파트</button>
-            <button class="mid-tab">아파트분양권</button>
-            <button class="mid-tab">재건축</button>
-            <button class="mid-tab">오피스텔</button>
-            <button class="mid-tab">오피스텔분양권</button>
-            <button class="mid-tab">재개발</button>
+            <button class="mid-tab active" onclick="this.classList.toggle('active'); if(window.filterAndRenderMap) window.filterAndRenderMap();">아파트</button>
+            <button class="mid-tab" onclick="this.classList.toggle('active'); if(window.filterAndRenderMap) window.filterAndRenderMap();">아파트분양권</button>
+            <button class="mid-tab" onclick="this.classList.toggle('active'); if(window.filterAndRenderMap) window.filterAndRenderMap();">재건축</button>
+            <button class="mid-tab-rect" onclick="this.classList.toggle('active'); if(window.filterAndRenderMap) window.filterAndRenderMap();">오피스텔</button>
+            <button class="mid-tab-rect" onclick="this.classList.toggle('active'); if(window.filterAndRenderMap) window.filterAndRenderMap();">오피스텔분양권</button>
+            <button class="mid-tab" onclick="this.classList.toggle('active'); if(window.filterAndRenderMap) window.filterAndRenderMap();">재개발</button>
             <div class="v-divider"></div>
             <button class="filter-dropdown">거래방식 <span class="arrow">▼</span></button>
             <button class="filter-dropdown">가격대 <span class="arrow">▼</span></button>
