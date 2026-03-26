@@ -841,7 +841,13 @@ async function loadNews(category) {
         query = query.limit(100);
 
         if (dbCategory !== '전체기사') {
-            query = query.or('section1.eq.' + dbCategory + ',section2.eq.' + dbCategory);
+            // 여러 카테고리 동시 선택(다중 필터)된 경우 지원
+            const categories = dbCategory.split(',').map(s => s.trim()).filter(Boolean);
+            if (categories.length > 0) {
+                // 각 카테고리를 따옴표로 감싸서 안전하게 IN 쿼리에 넣음
+                const escaped = categories.map(c => `"${c}"`).join(',');
+                query = query.or(`section1.in.(${escaped}),section2.in.(${escaped})`);
+            }
         }
 
         const { data: rawArticles, error } = await query;
