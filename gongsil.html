@@ -367,6 +367,8 @@
             }
         };
 
+        window.savedCategoryPills = {};
+
         function selectCategory(catKey) {
             const config = CATEGORY_CONFIG[catKey];
             if (!config) return;
@@ -392,10 +394,16 @@
             } else {
                 midRow.style.display = 'flex';
                 let midHtml = '';
-                config.pills.forEach((p, idx) => {
+                
+                if (!window.savedCategoryPills[catKey]) {
+                    window.savedCategoryPills[catKey] = [...config.pills]; // 첫 방문 시 모든 매물(알약)이 선택되도록 초기화
+                }
+
+                config.pills.forEach((p) => {
                     const isSpecialPill = p.includes('오피스텔');
                     const pillClass = isSpecialPill ? 'mid-tab-rect' : 'mid-tab';
-                    midHtml += `<button class="${pillClass} ${idx===0?'active':''}" onclick="this.classList.toggle('active'); if(window.filterAndRenderMap) window.filterAndRenderMap();">${p}</button>`;
+                    const isActive = window.savedCategoryPills[catKey].includes(p) ? 'active' : '';
+                    midHtml += `<button class="${pillClass} ${isActive}" onclick="window.togglePill('${catKey}', '${p}', this)">${p}</button>`;
                 });
                 midHtml += `<div class="v-divider"></div>`;
                 config.basicFilters.forEach(f => {
@@ -424,6 +432,18 @@
                 window.filterAndRenderMap();
             }
         }
+
+        window.togglePill = function(catKey, pillName, btn) {
+            btn.classList.toggle('active');
+            if (btn.classList.contains('active')) {
+                if (!window.savedCategoryPills[catKey].includes(pillName)) {
+                    window.savedCategoryPills[catKey].push(pillName);
+                }
+            } else {
+                window.savedCategoryPills[catKey] = window.savedCategoryPills[catKey].filter(x => x !== pillName);
+            }
+            if(window.filterAndRenderMap) window.filterAndRenderMap();
+        };
 
         function toggleDetailRow() {
             const row = document.getElementById('detailFilterRow');
