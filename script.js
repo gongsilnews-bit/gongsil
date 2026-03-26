@@ -117,10 +117,11 @@ async function loadPortalNews(category, isLoadMore = false) {
     window.portalState.isFetching = true;
 
     try {
-        // articles 테이블에서 published 기사 로드 (실제 작성 기사)
+        // articles 테이블에서 published 기사 로드 (대표 미디어 JOIN 포함)
         let sb = window.gongsiClient || supabaseClient;
         let query = sb.from('articles')
-            .select('id, title, subtitle, content, section1, section2, article_type, reporter_name, reporter_email, keywords, view_count, created_at, rep_media_id')
+            .select(`id, title, subtitle, content, section1, section2, article_type, reporter_name, reporter_email, keywords, view_count, created_at, rep_media_id, image_url,
+                article_media!article_media_article_id_fkey(url, media_type, is_representative)`)
             .eq('status', 'published')
             .order('created_at', { ascending: false });
 
@@ -141,19 +142,55 @@ async function loadPortalNews(category, isLoadMore = false) {
 
         // _source 마킹하여 showNewsDetail에서 articles 테이블로 인식 및 콘텐츠 파싱
         const data = (rawData || []).map(function(a) {
-            let imgUrl = a.image_url;
+            // 1순위: article_media에서 대표(is_representative=true) 미디어 URL 사용
+            let imgUrl = null;
             let videoId = null;
 
+            const mediaList = a.article_media || [];
+            const repMedia = mediaList.find(m => m.is_representative) || mediaList[0];
+            if (repMedia) {
+                if (repMedia.media_type === 'youtube') {
+                    // 유튜브 embed URL에서 videoId 추출
+                    const ytM = repMedia.url.match(/embed\/([A-Za-z0-9_-]{11})/);
+                    if (ytM) {
+                        videoId = ytM[1];
+                        imgUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+                    }
+                } else if (repMedia.url) {
+                    imgUrl = repMedia.url;
+                }
+            }
+
+            // 2순위: articles.image_url 컬럼
+            if (!imgUrl && a.image_url && !a.image_url.includes('source.unsplash.com')) {
+                imgUrl = a.image_url;
+            }
+
+            let imgUrlFromContent = imgUrl;
+            let videoId2 = videoId;
+
             if (a.content) {
-                // 유튜브 아이디 추출 로직 (shorts 포함)
-                const ytMatch = a.content.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
-                if (ytMatch) {
-                    videoId = ytMatch[1];
-                    imgUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+                // 3순위: content에서 유튜브 embed iframe URL 파싱 (videoId 없는 경우에만)
+                if (!videoId) {
+                    const ytPatterns = [
+                        /(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/,
+                        /youtube\.com\/embed\/([A-Za-z0-9_-]{11})/
+                    ];
+                    for (const pattern of ytPatterns) {
+                        const match = a.content.match(pattern);
+                        if (match && match[1]) {
+                            videoId = match[1];
+                            // 이미지가 없는 경우에만 유튜브 썸네일 사용
+                            if (!imgUrl || imgUrl.includes('source.unsplash.com')) {
+                                imgUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+                            }
+                            break;
+                        }
+                    }
                 }
 
+                // 4순위: content 내 일반 이미지 추출 (videoId도 image도 없을 때)
                 if (!videoId && !imgUrl) {
-                    // 써머노트 기본 동영상 플레이스홀더 이미지(note-video-clip) 제외
                     const div = document.createElement('div');
                     div.innerHTML = a.content;
                     const imgNode = div.querySelector('img:not(.note-video-clip)');
@@ -163,13 +200,12 @@ async function loadPortalNews(category, isLoadMore = false) {
                 }
             }
 
-            // 기존 시드 데이터의 Unsplash 404(카메라 아이콘) 이미지 방어 코드 (동영상 플레이어로 오해 방지)
+            // Unsplash 방어 코드
             if (imgUrl && imgUrl.includes('source.unsplash.com')) {
                 imgUrl = null;
             }
 
             if (!imgUrl) {
-                // 더미 이미지 제공 시 자연풍경 대신 깔끔한 무지/로고 배경 제공
                 imgUrl = `https://via.placeholder.com/600x400/eeeeee/cccccc?text=Gongsil+News`;
             }
 
