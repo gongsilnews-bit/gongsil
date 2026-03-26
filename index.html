@@ -929,6 +929,65 @@
 
     <!-- Supabase 인증 모듈 추가 -->
     <script type="module" src="supabase_auth.js"></script>
+    <!-- ═══ 사이드바 매물 상세 패널 ═══ -->
+    <div id="propDetailPanel" style="display:none; position:fixed; top:0; right:0; width:420px; height:100vh; background:#fff; box-shadow:-4px 0 24px rgba(0,0,0,0.15); z-index:9990; overflow-y:auto; transition:transform 0.3s ease; flex-direction:column;">
+        <!-- 헤더 -->
+        <div style="position:sticky; top:0; background:#fff; border-bottom:1px solid #eee; padding:16px 20px; display:flex; justify-content:space-between; align-items:center; z-index:10;">
+            <span id="propPanelTitle" style="font-size:16px; font-weight:800; color:#111;">매물 상세정보</span>
+            <button onclick="window.closePropPanel()" style="border:none; background:none; font-size:22px; cursor:pointer; color:#666; padding:4px 8px; border-radius:4px; transition:background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='none'">✕</button>
+        </div>
+
+        <!-- 이미지 갤러리 -->
+        <div id="propPanelGallery" style="position:relative; width:100%; height:260px; background:#eee; overflow:hidden; flex-shrink:0;">
+            <img id="propPanelImg" src="" alt="매물사진" style="width:100%; height:100%; object-fit:cover;">
+            <div id="propPanelNoImg" style="display:none; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#bbb; font-size:14px;">사진 없음</div>
+            <button id="propPanelImgPrev" onclick="window.propPanelPrevImg()" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.4); color:#fff; border:none; border-radius:50%; width:36px; height:36px; font-size:18px; cursor:pointer; display:none;">‹</button>
+            <button id="propPanelImgNext" onclick="window.propPanelNextImg()" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.4); color:#fff; border:none; border-radius:50%; width:36px; height:36px; font-size:18px; cursor:pointer; display:none;">›</button>
+            <span id="propPanelImgCount" style="position:absolute; bottom:10px; right:12px; background:rgba(0,0,0,0.5); color:#fff; font-size:12px; padding:2px 8px; border-radius:10px; display:none;"></span>
+        </div>
+
+        <!-- 본문 -->
+        <div style="padding:20px;">
+            <!-- 가격 + 거래유형 -->
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                <span id="propPanelTrade" style="background:#ff9f1c; color:#fff; font-size:12px; font-weight:700; padding:2px 8px; border-radius:4px;"></span>
+                <span id="propPanelPrice" style="font-size:22px; font-weight:900; color:#111;"></span>
+            </div>
+            <!-- 매물종류 + 면적 -->
+            <div id="propPanelMeta" style="font-size:13px; color:#666; margin-bottom:6px;"></div>
+            <!-- 주소 -->
+            <div id="propPanelAddr" style="font-size:14px; color:#333; margin-bottom:16px; display:flex; align-items:center; gap:6px;"><span>📍</span><span id="propPanelAddrText"></span></div>
+
+            <hr style="border:none; border-top:1px solid #f0f0f0; margin:0 0 16px;">
+
+            <!-- 상세 항목 -->
+            <table style="width:100%; font-size:13px; border-collapse:collapse; margin-bottom:16px;">
+                <tr><td style="color:#888; padding:7px 0; width:90px;">거래유형</td><td id="propInfoTrade" style="font-weight:600;"></td></tr>
+                <tr><td style="color:#888; padding:7px 0;">매물종류</td><td id="propInfoType" style="font-weight:600;"></td></tr>
+                <tr><td style="color:#888; padding:7px 0;">전용면적</td><td id="propInfoArea" style="font-weight:600;"></td></tr>
+                <tr><td style="color:#888; padding:7px 0;">방/욕실</td><td id="propInfoRooms" style="font-weight:600;"></td></tr>
+                <tr><td style="color:#888; padding:7px 0;">관리비</td><td id="propInfoMaint" style="font-weight:600;"></td></tr>
+                <tr><td style="color:#888; padding:7px 0;">등록일</td><td id="propInfoDate" style="font-weight:600;"></td></tr>
+            </table>
+
+            <hr style="border:none; border-top:1px solid #f0f0f0; margin:0 0 16px;">
+
+            <!-- 전달사항 -->
+            <div style="font-size:13px; font-weight:700; color:#333; margin-bottom:8px;">📋 전달사항</div>
+            <div id="propInfoDesc" style="font-size:13px; color:#555; line-height:1.7; background:#fafafa; border-radius:8px; padding:12px; min-height:60px;"></div>
+
+            <hr style="border:none; border-top:1px solid #f0f0f0; margin:16px 0;">
+
+            <!-- 등록자 연락처 -->
+            <div style="font-size:13px; font-weight:700; color:#333; margin-bottom:10px;">📞 등록자 정보</div>
+            <div id="propInfoContact" style="font-size:14px; color:#444; line-height:1.8;"></div>
+
+            <!-- 공실열람에서 더보기 버튼 -->
+            <a href="gongsil.html" target="_blank" style="display:block; text-align:center; margin-top:20px; padding:14px; background:#ff9f1c; color:#fff; font-weight:800; font-size:15px; border-radius:8px; text-decoration:none; transition:background 0.2s;" onmouseover="this.style.background='#e8900a'" onmouseout="this.style.background='#ff9f1c'">공실열람에서 전체 매물보기 →</a>
+        </div>
+    </div>
+    <!-- 딤 배경 -->
+    <div id="propDetailDim" onclick="window.closePropPanel()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.3); z-index:9980;"></div>
 </body>
 
 </html>

@@ -1669,7 +1669,7 @@ window.loadSidebarProperties = async function() {
         return `
         <div style="display:flex; gap:10px; margin-bottom:12px; cursor:pointer; border:1px solid #f0f0f0; border-radius:8px; padding:10px; transition:box-shadow 0.2s;"
              onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'"
-             onclick="window.open('gongsil.html','_blank')">
+             onclick="window.openPropPanel('${p.id}')">
             <div style="width:72px; height:72px; ${imgStyle}; border-radius:4px; flex-shrink:0; background-color:#eee;"></div>
             <div style="display:flex; flex-direction:column; justify-content:center; min-width:0; flex:1;">
                 ${badge}
@@ -1679,6 +1679,114 @@ window.loadSidebarProperties = async function() {
             </div>
         </div>`;
     }).join('');
+};
+
+// ─── 매물 상세 패널 (슬라이드 인) ───
+window.openPropPanel = async function(propertyId) {
+    const panel = document.getElementById('propDetailPanel');
+    const dim   = document.getElementById('propDetailDim');
+    if (!panel) return;
+
+    // 로딩 상태 먼저 표시
+    panel.style.display = 'flex';
+    dim.style.display   = 'block';
+    document.getElementById('propPanelPrice').textContent = '불러오는 중...';
+    document.getElementById('propPanelTrade').textContent = '';
+
+    const sb = window.gongsiClient;
+    if (!sb) return;
+
+    const { data: p, error } = await sb.from('properties').select('*').eq('id', propertyId).maybeSingle();
+    if (error || !p) {
+        document.getElementById('propPanelPrice').textContent = '데이터를 불러오지 못했습니다.';
+        return;
+    }
+
+    // 가격 포맷
+    function wand(v) {
+        v = Number(v) || 0;
+        if (v >= 10000) {
+            const uk = Math.floor(v / 10000);
+            const man = v % 10000;
+            return `${uk}억${man > 0 ? ' ' + man + '만' : ''}`;
+        }
+        return v.toLocaleString() + '만';
+    }
+    let priceStr = '';
+    const t = p.trade_type || '';
+    if (t === '매매' || t === '전세') priceStr = wand(p.deposit);
+    else priceStr = wand(p.deposit) + ' / ' + (p.monthly_rent || 0).toLocaleString() + '만';
+
+    // 이미지
+    const imgs = p.images && p.images.length > 0 ? p.images : [];
+    window._propPanelPhotos = imgs;
+    window._propPanelPhotoIdx = 0;
+    const imgEl = document.getElementById('propPanelImg');
+    const noImgEl = document.getElementById('propPanelNoImg');
+    const prevBtn = document.getElementById('propPanelImgPrev');
+    const nextBtn = document.getElementById('propPanelImgNext');
+    const cntEl   = document.getElementById('propPanelImgCount');
+    if (imgs.length > 0) {
+        imgEl.src = imgs[0];
+        imgEl.style.display = 'block';
+        noImgEl.style.display = 'none';
+        if (imgs.length > 1) {
+            prevBtn.style.display = nextBtn.style.display = 'block';
+            cntEl.style.display = 'inline-block';
+            cntEl.textContent = `1/${imgs.length}`;
+        } else {
+            prevBtn.style.display = nextBtn.style.display = cntEl.style.display = 'none';
+        }
+    } else {
+        imgEl.style.display = 'none';
+        noImgEl.style.display = 'flex';
+        prevBtn.style.display = nextBtn.style.display = cntEl.style.display = 'none';
+    }
+
+    // 기본 정보 채우기
+    document.getElementById('propPanelTrade').textContent = t;
+    document.getElementById('propPanelPrice').textContent = priceStr;
+    document.getElementById('propPanelMeta').textContent = [p.property_type, p.dedicated_area ? `전용 ${p.dedicated_area}㎡` : ''].filter(Boolean).join(' · ');
+    document.getElementById('propPanelAddrText').textContent = [p.sido, p.sigungu, p.dong].filter(Boolean).join(' ');
+
+    document.getElementById('propInfoTrade').textContent = t || '-';
+    document.getElementById('propInfoType').textContent  = p.property_type || '-';
+    document.getElementById('propInfoArea').textContent  = p.dedicated_area ? `${p.dedicated_area}㎡` : '-';
+    document.getElementById('propInfoRooms').textContent = `${p.room_count || '-'}개 / ${p.bathroom_count || '-'}개`;
+    document.getElementById('propInfoMaint').textContent = p.maintenance_fee ? `${p.maintenance_fee}만원` : '-';
+    document.getElementById('propInfoDate').textContent  = p.created_at ? new Date(p.created_at).toLocaleDateString('ko-KR') : '-';
+    document.getElementById('propInfoDesc').textContent  = p.description || '상세 설명이 없습니다.';
+
+    // 등록자 정보
+    let contactHtml = `<div>${p.author_name || '-'}</div><div>📞 ${p.author_phone || '비공개'}</div>`;
+    document.getElementById('propInfoContact').innerHTML = contactHtml;
+
+    // 공실열람 링크에 ID 파라미터 추가
+    const moreLink = panel.querySelector('a[href^="gongsil.html"]');
+    if (moreLink) moreLink.href = `gongsil.html?property_id=${p.id}`;
+    
+    panel.scrollTop = 0;
+};
+
+window.closePropPanel = function() {
+    const panel = document.getElementById('propDetailPanel');
+    const dim   = document.getElementById('propDetailDim');
+    if (panel) panel.style.display = 'none';
+    if (dim)   dim.style.display   = 'none';
+};
+
+window.propPanelPrevImg = function() {
+    if (!window._propPanelPhotos || window._propPanelPhotos.length <= 1) return;
+    window._propPanelPhotoIdx = (window._propPanelPhotoIdx - 1 + window._propPanelPhotos.length) % window._propPanelPhotos.length;
+    document.getElementById('propPanelImg').src = window._propPanelPhotos[window._propPanelPhotoIdx];
+    document.getElementById('propPanelImgCount').textContent = `${window._propPanelPhotoIdx + 1}/${window._propPanelPhotos.length}`;
+};
+
+window.propPanelNextImg = function() {
+    if (!window._propPanelPhotos || window._propPanelPhotos.length <= 1) return;
+    window._propPanelPhotoIdx = (window._propPanelPhotoIdx + 1) % window._propPanelPhotos.length;
+    document.getElementById('propPanelImg').src = window._propPanelPhotos[window._propPanelPhotoIdx];
+    document.getElementById('propPanelImgCount').textContent = `${window._propPanelPhotoIdx + 1}/${window._propPanelPhotos.length}`;
 };
 
 // ── 포털 댓글 로드 및 등록 함수 ──
