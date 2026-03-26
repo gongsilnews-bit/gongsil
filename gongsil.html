@@ -734,13 +734,13 @@
                         <div style="font-size: 15px; font-weight: bold; color: #1f5edb; margin-bottom: 15px; margin-top: 8px;"><span style="color:#1f5edb; margin-right: 4px;">☎</span> <span id="docRealtorPhone">02-564-7600 / 010-8456-2730</span></div>
                         
                         <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; font-size: 13px; color: #333; display: flex; gap: 15px; justify-content: center;">
-                            <span>매매 <strong style="color:#111">8</strong></span>
+                            <span>매매 <strong style="color:#111" id="docRealtorCountSale">0</strong></span>
                             <span style="color:#ddd">|</span>
-                            <span>전세 <strong style="color:#111">4</strong></span>
+                            <span>전세 <strong style="color:#111" id="docRealtorCountJeonse">0</strong></span>
                             <span style="color:#ddd">|</span>
-                            <span>월세 <strong style="color:#111">10</strong></span>
+                            <span>월세 <strong style="color:#111" id="docRealtorCountWolse">0</strong></span>
                             <span style="color:#ddd">|</span>
-                            <span>단기 <strong style="color:#111">0</strong></span>
+                            <span>단기 <strong style="color:#111" id="docRealtorCountShort">0</strong></span>
                         </div>
                     </div>
 
@@ -755,66 +755,19 @@
 
                     <!-- 공실등록현황 내용 (기본 표시) -->
                     <div id="subTabProps" class="realtor-sub-content" style="display:block;">
-                        <!-- 샘플 1 -->
-                        <div style="border-bottom: 1px solid #f0f0f0; padding-bottom: 15px; margin-bottom: 15px;">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                                <div style="font-size:12px; color:#888;">주상복합/아파트 <span style="background:#f9f9f9; padding:2px 4px; border-radius:2px; font-size:11px; margin-left:4px;">확인 2024.03.26</span></div>
-                            </div>
-                            <div style="font-size:16px; font-weight:bold; color:#111; margin-bottom:5px;">래미안대치하이스턴</div>
-                            <div style="font-size:18px; font-weight:bold; color:#111; margin-bottom:5px;">매매 36억</div>
-                            <div style="font-size:13px; color:#666;">143.6m² / 110.39m² (33.4평)</div>
-                        </div>
-                        <!-- 샘플 2 -->
-                        <div style="border-bottom: 1px solid #f0f0f0; padding-bottom: 15px; margin-bottom: 15px;">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                                <div style="font-size:12px; color:#888;">주상복합/아파트 <span style="background:#f9f9f9; padding:2px 4px; border-radius:2px; font-size:11px; margin-left:4px;">확인 2024.03.26</span></div>
-                            </div>
-                            <div style="font-size:16px; font-weight:bold; color:#111; margin-bottom:5px;">대치푸르지오써밋</div>
-                            <div style="font-size:18px; font-weight:bold; color:#111; margin-bottom:5px;">전세 21억</div>
-                            <div style="font-size:13px; color:#666;">130.4m² / 101.99m² (30평)</div>
-                        </div>
+                        <div style="text-align:center; padding:30px; color:#888; font-size:13px;">등록된 공실 정보가 없습니다.</div>
                     </div>
 
                     <!-- 문의하기 내용 -->
                     <div id="subTabInquiry" class="realtor-sub-content" style="display:none;">
                         <div style="margin-bottom: 25px;">
-                            <textarea placeholder="비공개 문의 내용을 입력해 주세요. (중개사와 작성자만 확인 가능)" style="width:100%; height:90px; padding:15px; border:1px solid #ddd; border-radius:8px; font-size:14px; resize:none; outline:none; margin-bottom:10px; background:#fbfbfb; box-sizing:border-box;"></textarea>
-                            <button style="width:100%; background:#1f5edb; color:#fff; border:none; padding:14px; border-radius:8px; font-weight:bold; font-size:15px; cursor:pointer;">문의 등록하기 🔒</button>
+                            <textarea id="inpInquiryContent" placeholder="비공개 문의 내용을 입력해 주세요. (중개사와 작성자만 확인 가능)" style="width:100%; height:90px; padding:15px; border:1px solid #ddd; border-radius:8px; font-size:14px; resize:none; outline:none; margin-bottom:10px; background:#fbfbfb; box-sizing:border-box;"></textarea>
+                            <button onclick="window.submitPropertyInquiry()" style="width:100%; background:#1f5edb; color:#fff; border:none; padding:14px; border-radius:8px; font-weight:bold; font-size:15px; cursor:pointer;">문의 등록하기 🔒</button>
                         </div>
                         
                         <!-- 댓글 리스트 -->
-                        <div style="display:flex; flex-direction:column; gap:15px;">
-                            
-                            <!-- 본인 댓글 + 답변 완료 샘플 -->
-                            <div style="background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 20px;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 12px; align-items: center;">
-                                    <div style="font-size: 14px; font-weight: bold; color: #111;"><span style="color:#f39c12">나의 문의</span> 🔒</div>
-                                    <div style="font-size: 12px; color: #999;">2024.03.25</div>
-                                </div>
-                                <div style="font-size: 14px; color: #333; line-height: 1.5; margin-bottom: 18px;">
-                                    보증금을 조금 낮추고 월세를 올리는 것도 가능한가요? 가능하다면 어느 선까지 가능할까요?
-                                </div>
-                                
-                                <!-- 중개사 답변 칸 -->
-                                <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; border-left: 3px solid #1f5edb;">
-                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                                        <div style="width: 20px; height: 20px; background: #1f5edb; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold;">A</div>
-                                        <span style="font-size: 13px; font-weight: bold; color: #111;">중개사 답변</span>
-                                        <span style="font-size: 11px; color: #888; margin-left: auto;">2024.03.25</span>
-                                    </div>
-                                    <div style="font-size: 13px; color: #444; line-height: 1.5;">
-                                        네 고객님! 임대인분과 협의하여 보증금 1천 / 월세 +10만 원 선으로 조정이 가능할 것으로 보입니다. 편하게 전화주시면 자세히 상담해 드릴게요! 😊
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 다른 사람 글 (블라인드) -->
-                            <div style="background: #fafafa; border: 1px dashed #ddd; border-radius: 8px; padding: 25px; text-align: center;">
-                                <div style="font-size: 24px; color: #ccc; margin-bottom: 8px;">🔒</div>
-                                <div style="font-size: 13px; color: #999; line-height: 1.4;">
-                                    비공개 문의입니다.
-                                </div>
-                            </div>
+                        <div id="docInquiryList" style="display:flex; flex-direction:column; gap:15px;">
+                            <!-- 문의 내역이 여기에 렌더링됩니다 -->
                         </div>
                     </div>
                 </div>
@@ -1285,6 +1238,18 @@
                 if(repEl) repEl.textContent = '';
                 
                 if (p.user_id && window.gongsiClient) {
+                    window.currentPropertyId = p.id;
+                    window.currentRealtorId = p.user_id;
+
+                    // Fetch realtor's listings
+                    if (typeof window.loadRealtorProperties === 'function') {
+                        window.loadRealtorProperties(p.user_id);
+                    }
+                    // Fetch inquiries
+                    if (typeof window.loadPropertyInquiries === 'function') {
+                        window.loadPropertyInquiries(p.id, p.user_id);
+                    }
+
                     window.gongsiClient.from('members').select('*').eq('id', p.user_id).maybeSingle()
                     .then(({data: profile, error}) => {
                         if (error) {
@@ -1886,6 +1851,235 @@
                 }
             } catch (err) {}
         });
+    </script>
+        // ==========================================
+        // 비공개 문의 및 공실등록현황 연동 JS 로직
+        // ==========================================
+        window.loadRealtorProperties = async function(realtorId) {
+            if (!realtorId || !window.gongsiClient) return;
+            try {
+                const { data: props, error } = await window.gongsiClient
+                    .from('properties')
+                    .select('*')
+                    .eq('user_id', realtorId)
+                    .eq('status', 'active')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                // 1. 매물 수 카운트 업데이트
+                let cSale = 0, cJeonse = 0, cWolse = 0, cShort = 0;
+                props.forEach(p => {
+                    if (p.trade_type === '매매') cSale++;
+                    else if (p.trade_type === '전세') cJeonse++;
+                    else if (p.trade_type === '월세') cWolse++;
+                    else if (p.trade_type === '단기') cShort++;
+                });
+                
+                const cSaleEl = document.getElementById('docRealtorCountSale');
+                const cJeonseEl = document.getElementById('docRealtorCountJeonse');
+                const cWolseEl = document.getElementById('docRealtorCountWolse');
+                const cShortEl = document.getElementById('docRealtorCountShort');
+                if(cSaleEl) cSaleEl.textContent = cSale;
+                if(cJeonseEl) cJeonseEl.textContent = cJeonse;
+                if(cWolseEl) cWolseEl.textContent = cWolse;
+                if(cShortEl) cShortEl.textContent = cShort;
+                
+                // 2. 리스트 렌더링
+                const listEl = document.getElementById('subTabProps');
+                if (!listEl) return;
+                
+                listEl.innerHTML = '';
+                if (props.length === 0) {
+                    listEl.innerHTML = '<div style="text-align:center; padding:30px; color:#888; font-size:13px;">등록된 공실 정보가 없습니다.</div>';
+                    return;
+                }
+                
+                props.forEach(p => {
+                    const priceStr = window.formatPriceDisplay ? window.formatPriceDisplay(p) : '-';
+                    const confirmDate = new Date(p.updated_at || p.created_at).toISOString().slice(0,10).replace(/-/g, '.');
+                    const areaStr = (p.supply_area && p.area) ? `${p.supply_area}m² / ${p.area}m²` : (p.area || p.supply_area || '-');
+                    const typeStr = p.property_type || '부동산 매물';
+                    const title = p.building_name || p.detail_address || '상세주소 비공개';
+                    
+                    const itemHTML = `
+                        <div style="border-bottom: 1px solid #f0f0f0; padding-bottom: 15px; margin-bottom: 15px; cursor: pointer;" onclick="event.stopPropagation(); window.showPropertyDetail(JSON.parse(decodeURIComponent('${encodeURIComponent(JSON.stringify(p))}')))">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                                <div style="font-size:12px; color:#888;">${typeStr} <span style="background:#f9f9f9; padding:2px 4px; border-radius:2px; font-size:11px; margin-left:4px;">확인 ${confirmDate}</span></div>
+                            </div>
+                            <div style="font-size:15px; font-weight:bold; color:#111; margin-bottom:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${title}</div>
+                            <div style="font-size:17px; font-weight:bold; color:#111; margin-bottom:5px;">${p.trade_type} ${priceStr}</div>
+                            <div style="font-size:13px; color:#666;">${areaStr}</div>
+                        </div>
+                    `;
+                    listEl.insertAdjacentHTML('beforeend', itemHTML);
+                });
+                
+            } catch (err) {
+                console.error("Error loading realtor properties:", err);
+            }
+        };
+
+        window.loadPropertyInquiries = async function(propertyId, realtorId) {
+            const listEl = document.getElementById('docInquiryList');
+            if (!listEl) return;
+            listEl.innerHTML = '<div style="text-align:center; padding:20px; color:#888; font-size:13px;">문의 내역을 불러오는 중...</div>';
+            
+            try {
+                const { data: { session } } = await window.gongsiClient.auth.getSession();
+                const user = session ? session.user : null;
+                
+                const { data: inquiries, error } = await window.gongsiClient
+                    .from('property_inquiries')
+                    .select('*')
+                    .eq('property_id', propertyId)
+                    .order('created_at', { ascending: false });
+                    
+                if (error) {
+                    if (error.code === '42P01') {
+                        listEl.innerHTML = '<div style="text-align:center; padding:30px; color:#888; font-size:13px; line-height:1.5;">DB 테이블이 준비되지 않았습니다.<br>(프로젝트 폴더의 SQL 스크립트를 실행해 주세요)</div>';
+                        return;
+                    }
+                    throw error;
+                }
+                
+                listEl.innerHTML = '';
+                
+                if (!inquiries || inquiries.length === 0) {
+                    listEl.innerHTML = '<div style="text-align:center; padding:30px; color:#888; font-size:13px;">아직 등록된 비공개 문의가 없습니다.</div>';
+                    return;
+                }
+                
+                inquiries.forEach(inq => {
+                    const isMyInquiry = user && user.id === inq.author_id;
+                    const isRealtor = user && user.id === realtorId;
+                    const dateStr = new Date(inq.created_at).toISOString().slice(0,10).replace(/-/g, '.');
+                    
+                    if (!isMyInquiry && !isRealtor) {
+                        listEl.insertAdjacentHTML('beforeend', `
+                            <div style="background: #fafafa; border: 1px dashed #ddd; border-radius: 8px; padding: 25px; text-align: center;">
+                                <div style="font-size: 24px; color: #ccc; margin-bottom: 8px;">🔒</div>
+                                <div style="font-size: 13px; color: #999; line-height: 1.4;">비공개 문의입니다.</div>
+                            </div>
+                        `);
+                        return;
+                    }
+
+                    let answerHtml = '';
+                    if (inq.answer) {
+                        const ansDate = inq.answered_at ? new Date(inq.answered_at).toISOString().slice(0,10).replace(/-/g, '.') : '';
+                        answerHtml = `
+                            <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; border-left: 3px solid #1f5edb; margin-top:12px;">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                    <div style="width: 20px; height: 20px; background: #1f5edb; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold;">A</div>
+                                    <span style="font-size: 13px; font-weight: bold; color: #111;">중개사 답변</span>
+                                    <span style="font-size: 11px; color: #888; margin-left: auto;">${ansDate}</span>
+                                </div>
+                                <div style="font-size: 13px; color: #444; line-height: 1.5; white-space: pre-wrap; margin-left:28px;">${inq.answer}</div>
+                            </div>
+                        `;
+                    } else if (isRealtor) {
+                        answerHtml = `
+                            <div style="margin-top: 12px; margin-left: 5px; border-left: 2px solid #ddd; padding-left: 10px;">
+                                <textarea id="ans_${inq.id}" placeholder="여기에 답변을 작성해 주세요." style="width:100%; height:60px; padding:10px; border:1px solid #1f5edb; border-radius:6px; font-size:13px; resize:none; outline:none; margin-bottom:5px; box-sizing:border-box;"></textarea>
+                                <button onclick="window.submitInquiryAnswer('${inq.id}')" style="background:#111; color:white; border:none; padding:8px 15px; border-radius:4px; font-size:12px; font-weight:bold; cursor:pointer;">답변 등록</button>
+                            </div>
+                        `;
+                    } else {
+                        answerHtml = `
+                            <div style="margin-top:12px;">
+                                <span style="display:inline-block; font-size:11px; background:#eee; padding:4px 8px; border-radius:4px; color:#666; font-weight:bold;">답변 대기중</span>
+                            </div>
+                        `;
+                    }
+                    
+                    const headerText = isMyInquiry ? '<span style="color:#f39c12">나의 문의</span> 🔒' : '<span style="color:#1f5edb">고객 문의</span> 🔒';
+                    
+                    const itemHtml = `
+                        <div style="background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 20px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; align-items: center;">
+                                <div style="font-size: 14px; font-weight: bold; color: #111;">${headerText}</div>
+                                <div style="font-size: 12px; color: #999;">${dateStr}</div>
+                            </div>
+                            <div style="font-size: 14px; color: #333; line-height: 1.5; white-space: pre-wrap;">${inq.content}</div>
+                            ${answerHtml}
+                        </div>
+                    `;
+                    listEl.insertAdjacentHTML('beforeend', itemHtml);
+                });
+                
+            } catch (err) {
+                console.error("Error loading inquiries:", err);
+                listEl.innerHTML = '<div style="text-align:center; padding:30px; color:#c0392b; font-size:13px;">문의 내역을 불러오는데 실패했습니다.</div>';
+            }
+        };
+
+        window.submitPropertyInquiry = async function() {
+            if (!window.currentPropertyId || !window.currentRealtorId) return;
+            const contentEl = document.getElementById('inpInquiryContent');
+            const content = contentEl ? contentEl.value.trim() : '';
+            if (!content) {
+                alert('문의 내용을 입력해주세요.');
+                return;
+            }
+            
+            try {
+                const { data: { session } } = await window.gongsiClient.auth.getSession();
+                if (!session || !session.user) {
+                    alert('로그인이 필요한 기능입니다.');
+                    return;
+                }
+                
+                const { error } = await window.gongsiClient
+                    .from('property_inquiries')
+                    .insert([{
+                        property_id: window.currentPropertyId,
+                        author_id: session.user.id,
+                        realtor_id: window.currentRealtorId,
+                        content: content
+                    }]);
+                    
+                if (error) {
+                    if (error.code === '42P01') alert("DB 테이블(property_inquiries)이 생성되지 않았습니다.");
+                    else throw error;
+                    return;
+                }
+                
+                contentEl.value = '';
+                alert('문의가 등록되었습니다.');
+                window.loadPropertyInquiries(window.currentPropertyId, window.currentRealtorId);
+            } catch (err) {
+                console.error("Error submitting inquiry:", err);
+                alert('문의 등록 중 오류가 발생했습니다.');
+            }
+        };
+
+        window.submitInquiryAnswer = async function(inquiryId) {
+            const ansEl = document.getElementById('ans_' + inquiryId);
+            const answer = ansEl ? ansEl.value.trim() : '';
+            if (!answer) {
+                alert('답변을 입력해주세요.');
+                return;
+            }
+            
+            try {
+                const { error } = await window.gongsiClient
+                    .from('property_inquiries')
+                    .update({
+                        answer: answer,
+                        answered_at: new Date().toISOString()
+                    })
+                    .eq('id', inquiryId);
+                    
+                if (error) throw error;
+                
+                alert('답변이 등록되었습니다.');
+                window.loadPropertyInquiries(window.currentPropertyId, window.currentRealtorId);
+            } catch (err) {
+                console.error("Error submitting answer:", err);
+                alert('답변 등록 중 오류가 발생했습니다.');
+            }
+        };
     </script>
 </body>
 
