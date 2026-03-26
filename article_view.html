@@ -438,7 +438,10 @@ function render() {
                     '<span style="display:inline-block; width:1px; height:12px; background:#ddd; margin:0 4px;"></span>'+
                     '<span>조회수 '+(a.view_count||0)+'</span>'+
                '</div>'+
-               '<div style="display: flex; gap: 8px; align-items: center;">'+
+               '<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">'+
+                    '<button class="btn-toolbar" style="padding:4px 12px; border-radius:4px; font-size:13px; background:#fff; border:1px solid #ddd; color:#555; cursor:pointer;" onclick="goBack()">⬅️ 목록</button>'+
+                    '<button class="btn-toolbar" style="padding:4px 12px; border-radius:4px; font-size:13px; background:#fff; border:1px solid #ddd; color:#3b82f6; cursor:pointer;" onclick="goEdit()">✏️ 수정</button>'+
+                    '<button class="btn-toolbar" style="padding:4px 12px; border-radius:4px; font-size:13px; background:#fff; border:1px solid #ddd; color:#ef4444; cursor:pointer;" onclick="deleteArticle()">🗑️ 삭제</button>'+
                     '<button class="btn-toolbar" style="padding:4px 12px; border-radius:4px; font-size:13px; background:#fff; border:1px solid #ddd; color:#555; cursor:pointer;" onclick="shareArticle()">🔗 주소복사</button>'+
                     '<button class="btn-toolbar" style="padding:4px 12px; border-radius:4px; font-size:13px; background:#fff; border:1px solid #ddd; color:#555; cursor:pointer;" onclick="window.open(\'index.html?article_id=\'+articleId, \'_blank\')">💻 미리보기</button>'+
                     statusBtnHtml +
@@ -456,17 +459,6 @@ function render() {
       
       // ── 우측 사이드바 영역 ──
       '<div class="article-sidebar" style="width:280px; flex-shrink:0;">'+
-        '<div class="sidebar-card" style="margin-bottom:16px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:20px; background:#fff; border-radius:10px;">'+
-          '<div class="sidebar-card-title" style="margin-bottom:12px; font-size:14px; font-weight:bold;">⚙️ 기사 관리</div>'+
-          '<div class="admin-actions">'+
-            '<div style="display:flex; gap:6px; margin-top:8px;">'+
-              '<button class="btn-full btn-edit" onclick="goEdit()" style="flex:1; background:#eff6ff; color:#3b82f6; border:1px solid #bfdbfe; padding:8px 0; border-radius:4px; cursor:pointer;">기사 수정</button>'+
-              '<button class="btn-full btn-delete" onclick="deleteArticle()" style="flex:1; background:#fef2f2; color:#ef4444; border:1px solid #fecaca; padding:8px 0; border-radius:4px; cursor:pointer;">기사 삭제</button>'+
-            '</div>'+
-            '<button class="btn-full" onclick="goBack()" style="margin-top:8px; width:100%; background:#fff; border:1px solid #ddd; color:#555; padding:8px 0; border-radius:4px; cursor:pointer;">← 목록으로 돌아가기</button>'+
-          '</div>'+
-        '</div>'+
-        
         '<div class="sidebar-card" style="margin-bottom:16px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:20px; background:#fff; border-radius:10px;">'+
           '<div class="sidebar-card-title" style="margin-bottom:12px; font-size:14px; font-weight:bold;">📋 기사 서비스 로그</div>'+
           '<div class="sidebar-memo">'+
