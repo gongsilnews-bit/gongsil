@@ -399,13 +399,19 @@
                 });
                 midHtml += `<div class="v-divider"></div>`;
                 config.basicFilters.forEach(f => {
-                    midHtml += `<button class="filter-dropdown">${f} <span class="arrow">▼</span></button>`;
+                    if (f === '거래방식') {
+                        midHtml += `<button class="filter-dropdown" id="btnTradeType" onclick="window.toggleTradeTypeDropdown(event)">${f} <span class="arrow">▼</span></button>`;
+                    } else {
+                        midHtml += `<button class="filter-dropdown">${f} <span class="arrow">▼</span></button>`;
+                    }
                 });
                 if (config.showToggle) {
                     midHtml += `<button class="btn-detail-toggle" onclick="toggleDetailRow()">상세조건검색 +</button>`;
                 }
                 midHtml += `<button class="btn-refresh" style="margin-left: auto;">↻ 초기화</button>`;
                 midRow.innerHTML = midHtml;
+                
+                if (window.updateTradeTypeButton) window.updateTradeTypeButton();
             }
 
             // 4. Detail Row 렌더링
@@ -431,6 +437,71 @@
                 btn.innerHTML = row.classList.contains('active') ? '상세조건검색 닫기 ✕' : '상세조건검색 +';
             }
         }
+
+        window.toggleTradeTypeDropdown = function(e) {
+            const layer = document.getElementById('tradeTypeDropdownLayer');
+            const btn = e.currentTarget;
+            if (layer.style.display === 'block') {
+                layer.style.display = 'none';
+                return;
+            }
+            const rect = btn.getBoundingClientRect();
+            layer.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+            layer.style.left = (rect.left + window.scrollX) + 'px';
+            layer.style.display = 'block';
+        };
+
+        window.toggleAllTradeTypes = function(chkAll) {
+            const chks = document.querySelectorAll('.chk-trade-type');
+            chks.forEach(chk => chk.checked = chkAll.checked);
+            window.updateTradeTypeButton();
+            if (window.filterAndRenderMap) window.filterAndRenderMap();
+        };
+
+        window.onTradeTypeChange = function() {
+            const chks = document.querySelectorAll('.chk-trade-type');
+            const chkAll = document.getElementById('chkTradeTypeAll');
+            let allChecked = true;
+            chks.forEach(c => { if (!c.checked) allChecked = false; });
+            chkAll.checked = allChecked;
+            window.updateTradeTypeButton();
+            if (window.filterAndRenderMap) window.filterAndRenderMap();
+        };
+
+        window.updateTradeTypeButton = function() {
+            const btn = document.getElementById('btnTradeType');
+            if (!btn) return;
+            const chkAll = document.getElementById('chkTradeTypeAll');
+            if (chkAll && chkAll.checked) {
+                btn.innerHTML = '거래방식 <span class="arrow">▼</span>';
+                btn.classList.remove('active');
+                btn.style.color = '';
+                btn.style.fontWeight = '';
+            } else {
+                const checked = Array.from(document.querySelectorAll('.chk-trade-type:checked')).map(c => c.value);
+                if (checked.length === 0) {
+                    btn.innerHTML = '거래방식 <span class="arrow">▼</span>';
+                    btn.classList.remove('active');
+                    btn.style.color = '';
+                    btn.style.fontWeight = '';
+                } else {
+                    const text = checked.length === 1 ? checked[0] : `${checked[0]} 외 ${checked.length - 1}`;
+                    btn.innerHTML = `${text} <span class="arrow">▼</span>`;
+                    btn.classList.add('active');
+                    btn.style.color = 'var(--primary-color)';
+                    btn.style.fontWeight = 'bold';
+                }
+            }
+        };
+
+        document.addEventListener('click', function(e) {
+            const layer = document.getElementById('tradeTypeDropdownLayer');
+            if (layer && layer.style.display === 'block') {
+                if (!e.target.closest('#tradeTypeDropdownLayer') && !e.target.closest('#btnTradeType')) {
+                    layer.style.display = 'none';
+                }
+            }
+        });
     </script>
 </head>
 
@@ -487,7 +558,7 @@
             <button class="mid-tab-rect" onclick="this.classList.toggle('active'); if(window.filterAndRenderMap) window.filterAndRenderMap();">오피스텔분양권</button>
             <button class="mid-tab" onclick="this.classList.toggle('active'); if(window.filterAndRenderMap) window.filterAndRenderMap();">재개발</button>
             <div class="v-divider"></div>
-            <button class="filter-dropdown">거래방식 <span class="arrow">▼</span></button>
+            <button class="filter-dropdown" id="btnTradeType" onclick="window.toggleTradeTypeDropdown(event)">거래방식 <span class="arrow">▼</span></button>
             <button class="filter-dropdown">가격대 <span class="arrow">▼</span></button>
             <button class="filter-dropdown">면적 <span class="arrow">▼</span></button>
             <button class="filter-dropdown">사용승인일 <span class="arrow">▼</span></button>
@@ -1327,6 +1398,16 @@
                         if (!activeSubs.includes(p.property_type)) return false;
                     }
 
+                    // 3차 거래방식 필터 매칭 로직
+                    if (activeMain !== 'MY관심') {
+                        const checkedTradeTypes = Array.from(document.querySelectorAll('.chk-trade-type:checked')).map(c => c.value);
+                        if (checkedTradeTypes.length === 0) return false;
+                        const isAllChecked = document.getElementById('chkTradeTypeAll') && document.getElementById('chkTradeTypeAll').checked;
+                        if (!isAllChecked) {
+                            if (!p.trade_type || !checkedTradeTypes.includes(p.trade_type)) return false;
+                        }
+                    }
+
                     return true;
                 });
 
@@ -1431,6 +1512,33 @@
             checkViewIdAndShowPreview();
         })();
     </script>
+    <!-- 드롭다운 필터 레이어들 -->
+    <div id="tradeTypeDropdownLayer" class="filter-dropdown-layer" style="display:none; position:absolute; z-index:100; background:#fff; border:1px solid #111; border-radius:4px; padding:15px; box-shadow:0 4px 12px rgba(0,0,0,0.15); width:180px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:bold; font-size:15px; color:#111;">
+            <span>거래방식</span>
+            <button onclick="document.getElementById('tradeTypeDropdownLayer').style.display='none'" style="background:none; border:none; font-size:16px; cursor:pointer; color:#666;">✕</button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px; font-size:14px; color:#333;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" id="chkTradeTypeAll" checked onchange="window.toggleAllTradeTypes(this)" style="margin:0; width:16px; height:16px;"> 전체
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" value="매매" class="chk-trade-type" checked onchange="window.onTradeTypeChange()" style="margin:0; width:16px; height:16px;"> 매매
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" value="전세" class="chk-trade-type" checked onchange="window.onTradeTypeChange()" style="margin:0; width:16px; height:16px;"> 전세
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" value="월세" class="chk-trade-type" checked onchange="window.onTradeTypeChange()" style="margin:0; width:16px; height:16px;"> 월세
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" value="단기임대" class="chk-trade-type" checked onchange="window.onTradeTypeChange()" style="margin:0; width:16px; height:16px;"> 단기임대
+            </label>
+        </div>
+        <div style="margin-top:15px; padding-top:10px; border-top:1px solid #eee; font-size:11px; color:#888;">
+            ⓘ 중복선택이 가능합니다.
+        </div>
+    </div>
 </body>
 
 </html>
