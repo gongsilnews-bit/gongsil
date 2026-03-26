@@ -125,12 +125,12 @@
 
         #news-detail-view:not(.map-floating-mode) .detail-container {
             background-color: #ffffff;
-            max-width: 1100px; /* 우리동네부동산 상세폭(1100px)과 정확히 맞춤 */
-            margin: 20px auto 40px; /* 상단 여백 축소하여 위아래 과도한 갭 줄임 */
+            max-width: 1100px; 
+            margin: 20px auto 40px; /* 기존과 완벽히 오차없는 20px 갭 유지 */
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.03);
             border: 1px solid #e1e4e8;
-            padding: 30px 40px; /* 내부 좌우 패딩을 기존 40px로 복구, 위아래 30px */
+            padding: 30px 40px; 
         }
 
         /* 우리동네부동산 맵 위 플로팅 모드 (뉴스/칼럼과 동일한 레이아웃 + 지도 노출) */
@@ -181,6 +181,7 @@
             flex-direction: column;
             opacity: 0;
             pointer-events: none;
+            margin-bottom: -62px; /* ★ 핵심: 문서 흐름에서 높이를 제거하여 아래쪽 공백 0으로 만듦 */
         }
         #stickyReadHeader.visible {
             transform: translateY(0);
