@@ -2089,11 +2089,33 @@
                         const isRealtor = user && user.id === realtorId;
                         const dateStr = new Date(inq.created_at).toISOString().slice(0,10).replace(/-/g, '.');
                         
-                        if (!isMyInquiry && !isRealtor) {
-                            return; 
-                        }
-                        
                         visibleCount++;
+
+                        // 권한 없는 사용자: 비공개 플레이스홀더 구리표시
+                        if (!isMyInquiry && !isRealtor) {
+                            const lockedHtml = `
+                                <div style="background:#fff; border-bottom:1px solid #f0f0f0; padding:15px 0;">
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items:center;">
+                                        <div style="display:flex; align-items:center; gap:6px;">
+                                            <span style="color:#1a73e8; font-weight:bold;">문의</span>
+                                            <span style="font-size:12px; color:#888;">🔒 비공개</span>
+                                        </div>
+                                        <div style="font-size:12px; color:#aaa;">${dateStr}</div>
+                                    </div>
+                                    <div style="background:#f7f8fa; border:1px dashed #ddd; border-radius:6px; padding:14px 16px; display:flex; align-items:center; gap:10px; color:#aaa; font-size:13px;">
+                                        <span style="font-size:18px;">🔒</span>
+                                        <span>비공개 댓글입니다. 작성자와 중개사만 확인 가능합니다.</span>
+                                    </div>
+                                    ${inq.answer ? `
+                                    <div style="background:#f7f8fa; border:1px dashed #c5d9f7; border-radius:6px; padding:14px 16px; margin-top:10px; display:flex; align-items:center; gap:10px; color:#aaa; font-size:13px; border-left:3px solid #1a73e8;">
+                                        <span style="font-size:18px;">🔒</span>
+                                        <span>비공개 답글입니다. 중개사와 문의자만 확인 가능합니다.</span>
+                                    </div>` : ''}
+                                </div>
+                            `;
+                            listEl.insertAdjacentHTML('beforeend', lockedHtml);
+                            return;
+                        }
 
                         const authorInfo = memberMap[inq.author_id] || { name: '알수없음', email: '' };
                         const maskName = (name) => {
@@ -2160,7 +2182,7 @@
                     });
                     
                     if (visibleCount === 0) {
-                         listEl.innerHTML = '<div style="text-align:center; padding:30px; color:#888; font-size:13px;">본인이 작성한 문의만 확인할 수 있습니다.</div>';
+                        listEl.innerHTML = '<div style="text-align:center; padding:30px; color:#888; font-size:13px;">아직 등록된 문의가 없습니다.</div>';
                     }
                 });
                 
