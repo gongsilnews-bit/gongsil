@@ -1028,7 +1028,7 @@ function renderSidebar(newsList) {
                 <p class="news-desc">${news.description ? news.description.substring(0, 80) + '...' : ''}</p>
                 <div class="news-meta">
                     <span>${date} · ${news.author || '공실뉴스'}</span>
-                    <a href="javascript:void(0)" onclick="event.stopPropagation(); window.showNewsDetail(${escNews});" class="news-link">자세히 보기 &rarr;</a>
+                    <a href="javascript:void(0)" data-article-id="${news.id || news.article_id}" onclick="event.stopPropagation(); window.toggleNewsDetail(event, ${escNews});" class="news-link">기사상세보기 &rarr;</a>
                 </div>
             </div>
         `;
@@ -1149,15 +1149,39 @@ function renderMarkers(newsList) {
     const validMarkers = allMarkers.filter(m => m !== null && m !== undefined);
     clusterer.addMarkers(validMarkers);
 }
-
 // 뉴스 상세 보기 표시 함수
+window.toggleNewsDetail = function(event, news) {
+    const detailView = document.getElementById('news-detail-view');
+    const targetId = news.id || news.article_id;
+    // 이미 현재 클릭한 기사가 열려있다면 닫기 실행
+    if (window.currentArticleId === targetId && detailView && detailView.style.display === 'block') {
+        window.closeNewsDetail(); // 기존 닫기 함수를 호출 (텍스트 원복 포함)
+    } else {
+        window.showNewsDetail(news);
+    }
+};
+
 window.showNewsDetail = async function(news) {
     const detailView = document.getElementById('news-detail-view');
     const closeBtn = document.getElementById('btnCloseDetail');
     if (!detailView || !news) return;
 
-    // 현재 열린 기사 식별자 저장 및 URL 기록 추가 (딥링킹)
     window.currentArticleId = news.id || news.article_id;
+
+    // 모든 링크 텍스트를 기본값으로 초기화
+    document.querySelectorAll('.news-link').forEach(link => {
+        link.innerHTML = '기사상세보기 &rarr;';
+        link.style.color = '';
+        link.style.fontWeight = '';
+    });
+    
+    // 현재 열린 기사 링크 텍스트를 '기사닫기 ✕'로 변경 및 오렌지색 강조
+    const activeLink = document.querySelector(`.news-link[data-article-id="${window.currentArticleId}"]`);
+    if (activeLink) {
+        activeLink.innerHTML = '기사닫기 ✕';
+        activeLink.style.color = '#ff9f1c';
+        activeLink.style.fontWeight = 'bold';
+    }
     if (window.currentArticleId) {
         const url = new URL(window.location);
         url.searchParams.set('article_id', window.currentArticleId);
@@ -1409,7 +1433,18 @@ window.loadPortalComments = async function(articleId) {
         else dateStr = cd.getFullYear() + '.' + (cd.getMonth()+1).toString().padStart(2,'0') + '.' + cd.getDate().toString().padStart(2,'0');
 
         const isMine = currentUserId && (currentUserId === c.user_id);
-        const escContent = JSON.stringify(c.content).replace(/"/g, '&quot;');
+        
+        let displayContent = c.content;
+        let isSecretLabel = '';
+        if (c.is_secret) {
+            isSecretLabel = '<span style="color:#ef4444; font-size:13px; font-weight:bold; margin-right:6px;">[비밀댓글]</span>';
+            if (!isMine) {
+                displayContent = '<span style="color:#aaa;">방문자와 작성자만 볼 수 있는 비밀댓글입니다. 🔒</span>';
+                // 비밀댓글일 경우 내용 파싱(다운표 이스케이프) 시 텍스트만 처리
+            }
+        }
+        
+        const escContent = JSON.stringify(c.content).replace(/"/g, '&quot;'); // 본래 내용만 에디터에 전달
         
         let actionHtml = '';
         if (isMine) {
@@ -1438,7 +1473,7 @@ window.loadPortalComments = async function(articleId) {
                             ${actionHtml}
                         </div>
                     </div>
-                    <div id="comment-content-${c.id}" style="font-size:15px; color:#222; line-height:1.6; margin-bottom:12px; white-space:pre-wrap; word-break:break-all;">${replyTag}${c.content}</div>
+                    <div id="comment-content-${c.id}" style="font-size:15px; color:#222; line-height:1.6; margin-bottom:12px; white-space:pre-wrap; word-break:break-all;">${isSecretLabel}${replyTag}${displayContent}</div>
                     
                     <div style="display:flex; gap:15px; align-items:center; font-size:13px; color:#888;">
                         ${!isReply && currentUserId ? `<span style="cursor:pointer;" onmouseover="this.style.color='#111'" onmouseout="this.style.color='#888'" onclick="window.toggleReplyInput('${c.id}')">답글 작성</span>` : ''}
@@ -1451,9 +1486,14 @@ window.loadPortalComments = async function(articleId) {
                     <!-- 답글/수정 입력 영역 (JS 동적 렌더) -->
                     <div id="reply-container-${c.id}" data-comment='${escContent}' style="display:none; margin-top:15px; padding-left:15px; border-left:2px solid #ddd;">
                         <textarea id="reply-input-${c.id}" style="width:100%; height:70px; padding:10px; border:1px solid #ddd; border-radius:6px; resize:none; font-family:inherit; font-size:14px; margin-bottom:10px;"></textarea>
-                        <div style="text-align:right;">
-                            <button onclick="document.getElementById('reply-container-${c.id}').style.display='none'" style="background:#eee; color:#555; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; margin-right:5px;">취소</button>
-                            <button id="reply-submit-btn-${c.id}" style="background:#ff9f1c; color:#fff; border:none; padding:6px 16px; border-radius:4px; font-weight:bold; cursor:pointer;">등록</button>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <label style="cursor:pointer; display:flex; align-items:center; gap:4px; font-size:13px; color:#555;">
+                                <input type="checkbox" id="reply-secret-${c.id}" style="accent-color:#ff9f1c;"> 비밀답글
+                            </label>
+                            <div>
+                                <button onclick="document.getElementById('reply-container-${c.id}').style.display='none'" style="background:#eee; color:#555; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; margin-right:5px;">취소</button>
+                                <button id="reply-submit-btn-${c.id}" style="background:#ff9f1c; color:#fff; border:none; padding:6px 16px; border-radius:4px; font-weight:bold; cursor:pointer;">등록</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1495,12 +1535,16 @@ window.submitPortalComment = async function() {
         return;
     }
     
+    const secretChk = document.getElementById('isSecretComment');
+    const isSecret = secretChk ? secretChk.checked : false;
+    
     // DB 삽입
     const { error } = await sb.from('comments').insert([{
         article_id: window.currentArticleId,
         user_id: session.user.id,
         user_name: userName,
-        content: content
+        content: content,
+        is_secret: isSecret
     }]);
     
     if (error) {
@@ -1560,6 +1604,10 @@ window.submitPortalReply = async function(parentId) {
     const content = inputEl ? inputEl.value.trim() : '';
     if (!content) { alert('댓글 내용을 입력하세요.'); return; }
     
+    // 비밀답글 여부 확인
+    const secretChk = document.getElementById('reply-secret-' + parentId);
+    const isSecret = secretChk ? secretChk.checked : false;
+
     const { data: { session } } = await sb.auth.getSession();
     if (!session || !session.user) { alert('로그인이 필요합니다.'); return; }
     
@@ -1572,12 +1620,15 @@ window.submitPortalReply = async function(parentId) {
         user_id: session.user.id,
         user_name: userName,
         content: content,
-        parent_id: parentId
+        parent_id: parentId,
+        is_secret: isSecret
     }]);
     
     if (error) {
         if (error.code === '42703' || (error.message && error.message.includes('parent_id'))) {
             alert('DB에 parent_id 등 답글을 위한 컬럼이 없습니다. (우측 또는 아래 SQL 실행 필요)');
+        } else if (error.code === '42703' && error.message.includes('is_secret')) {
+             alert('DB에 is_secret 컬럼이 없습니다. SQL을 실행해 추가해주세요.');
         } else { alert('답글 등록 오류: ' + error.message); }
         return;
     }
@@ -1639,6 +1690,13 @@ window.closeNewsDetail = function() {
     const detailView = document.getElementById('news-detail-view');
     if (detailView) {
         detailView.style.display = 'none';
+
+        // 모든 링크 텍스트 기사 닫기에서 원상복구
+        document.querySelectorAll('.news-link').forEach(link => {
+            link.innerHTML = '기사상세보기 &rarr;';
+            link.style.color = '';
+            link.style.fontWeight = '';
+        });
         
         // 포털 모드인 경우 숨겼던 목록 컨테이너 복구
         if (document.body.classList.contains('portal-mode')) {
