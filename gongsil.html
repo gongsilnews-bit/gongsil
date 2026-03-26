@@ -641,7 +641,7 @@
                 <!-- 탭 -->
                 <div class="detail-tabs">
                     <div class="tab-item active" id="tabBtnInfo" onclick="window.switchDetailTab('info')">매물정보</div>
-                    <div class="tab-item" id="tabBtnPhotos" onclick="window.switchDetailTab('photos')">사진</div>
+                    <div class="tab-item" id="tabBtnRealtor" onclick="window.switchDetailTab('realtor')">등록자정보</div>
                 </div>
 
                 <!-- 탭 내용 영역 (매물정보) -->
@@ -702,24 +702,21 @@
                     </div>
                 </div>
                 
-                <!-- 중개사 정보 영역 -->
-                <div class="realtor-info-box">
-                    <div class="realtor-title">등록자정보</div>
-                    <div class="realtor-details" style="display: flex; gap: 15px; align-items: center;">
-                        <div id="docRealtorProfileImg" style="width: 70px; height: 70px; background: #eee; border-radius: 4px; flex-shrink: 0; background-position: center; background-size: cover; background-image: url('https://via.placeholder.com/70/dddddd/999999?text=사진'); display: none;"></div>
-                        <div style="flex-grow: 1;">
-                            <div class="realtor-name" id="docRealtorName" style="font-size: 16px; font-weight: bold; color: #111; margin-bottom: 5px;">공실뉴스 파트너 중개사</div>
-                            <div class="realtor-rep" id="docRealtorRep" style="font-size: 13px; color: #555; margin-bottom: 3px;">대표 정보없음</div>
-                            <div class="realtor-address" id="docRealtorAddr" style="font-size: 13px; color: #666; margin-bottom: 3px;">위치 정보 준비중</div>
-                            <div class="realtor-phone" id="docRealtorPhone" style="font-size: 13px; font-weight: bold; color: #1f5edb;">전화 010-0000-0000</div>
-                        </div>
-                    </div>
-                </div>
                 </div> <!-- tabInfoSection End -->
 
-                <!-- 탭 내용 영역 (사진 리스트) -->
-                <div id="tabPhotosSection" style="display: none; padding: 20px;">
-                    <!-- Photos will be added here -->
+                <!-- 탭 내용 영역 (등록자 정보) -->
+                <div id="tabRealtorSection" style="display: none; padding: 20px;">
+                    <div class="realtor-info-box" style="margin: 0; padding: 0; box-shadow: none; border: none;">
+                        <div class="realtor-details" style="display: flex; gap: 15px; align-items: center;">
+                            <div id="docRealtorProfileImg" style="width: 70px; height: 70px; background: #eee; border-radius: 4px; flex-shrink: 0; background-position: center; background-size: cover; background-image: url('https://via.placeholder.com/70/dddddd/999999?text=사진'); display: none;"></div>
+                            <div style="flex-grow: 1;">
+                                <div class="realtor-name" id="docRealtorName" style="font-size: 16px; font-weight: bold; color: #111; margin-bottom: 5px;">공실뉴스 파트너 중개사</div>
+                                <div class="realtor-rep" id="docRealtorRep" style="font-size: 13px; color: #555; margin-bottom: 3px;">대표 정보없음</div>
+                                <div class="realtor-address" id="docRealtorAddr" style="font-size: 13px; color: #666; margin-bottom: 3px;">위치 정보 준비중</div>
+                                <div class="realtor-phone" id="docRealtorPhone" style="font-size: 13px; font-weight: bold; color: #1f5edb;">전화 010-0000-0000</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div style="height: 100px;"></div>
@@ -1291,15 +1288,9 @@
                 window.updateGalleryImage();
                 if(!window.currentPropertyPhotos || window.currentPropertyPhotos.length === 0) {
                     if(document.getElementById('detailGalleryWrapper')) document.getElementById('detailGalleryWrapper').style.display = 'none';
-                    if(document.getElementById('tabBtnPhotos')) document.getElementById('tabBtnPhotos').style.display = 'none';
                 } else {
                     if(document.getElementById('detailGalleryWrapper')) document.getElementById('detailGalleryWrapper').style.display = 'block';
-                    if(document.getElementById('tabBtnPhotos')) document.getElementById('tabBtnPhotos').style.display = 'block';
                 }
-
-                // 탭 리셋 상태
-                const photosSec = document.getElementById('tabPhotosSection');
-                if (photosSec) photosSec.innerHTML = '';
                 if (typeof window.switchDetailTab === 'function') {
                     window.switchDetailTab('info');
                 }
@@ -1314,30 +1305,20 @@
 
             window.switchDetailTab = function(tab) {
                 const btnInfo = document.getElementById('tabBtnInfo');
-                const btnPhotos = document.getElementById('tabBtnPhotos');
+                const btnRealtor = document.getElementById('tabBtnRealtor');
                 const secInfo = document.getElementById('tabInfoSection');
-                const secPhotos = document.getElementById('tabPhotosSection');
+                const secRealtor = document.getElementById('tabRealtorSection');
 
                 if (tab === 'info') {
                     if(btnInfo) btnInfo.classList.add('active');
-                    if(btnPhotos) btnPhotos.classList.remove('active');
+                    if(btnRealtor) btnRealtor.classList.remove('active');
                     if(secInfo) secInfo.style.display = 'block';
-                    if(secPhotos) secPhotos.style.display = 'none';
-                } else if (tab === 'photos') {
-                    if(btnPhotos) btnPhotos.classList.add('active');
+                    if(secRealtor) secRealtor.style.display = 'none';
+                } else if (tab === 'realtor') {
+                    if(btnRealtor) btnRealtor.classList.add('active');
                     if(btnInfo) btnInfo.classList.remove('active');
-                    if(secPhotos) secPhotos.style.display = 'block';
+                    if(secRealtor) secRealtor.style.display = 'block';
                     if(secInfo) secInfo.style.display = 'none';
-                    
-                    if (secPhotos && secPhotos.innerHTML.trim() === '') {
-                        if (window.currentPropertyPhotos && window.currentPropertyPhotos.length > 0) {
-                            secPhotos.innerHTML = window.currentPropertyPhotos.map((img, idx) => 
-                                `<img src="${img}" style="width:100%; border-radius:8px; margin-bottom:15px; object-fit:cover; cursor:pointer;" alt="매물사진" onclick="window.openImageViewer(${idx})">`
-                            ).join('');
-                        } else {
-                            secPhotos.innerHTML = '<div style="text-align:center; padding:30px; color:#999;">등록된 사진이 없습니다.</div>';
-                        }
-                    }
                 }
             };
 
