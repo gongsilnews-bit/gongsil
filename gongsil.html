@@ -721,6 +721,26 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 문의하기 (댓글 형식) -->
+                <div class="extra-section" id="inquiryCommentSection" style="margin-top:30px; border-top: 1px solid #eee; padding-top:20px;">
+                    <div class="extra-title" style="margin-bottom: 20px; display:flex; align-items:center; gap:8px;">
+                        댓글상담 <span id="inquiryCount" style="color: #f06b13; font-size: 15px;"></span>
+                    </div>
+                    
+                    <div style="margin-bottom: 25px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
+                        <textarea id="inpInquiryContent" placeholder="가격을 제안하거나, 궁금한 점을 남겨보세요. 작성자와 중개사만 읽고 답할 수 있는 1:1 비공개 공간입니다." style="width:100%; height:90px; padding:15px; border:none; font-size:14px; resize:none; outline:none; background:#fff; box-sizing:border-box;"></textarea>
+                        <div style="background: #fafafa; padding: 10px 15px; display: flex; justify-content: space-between; align-items:center; border-top: 1px solid #eee;">
+                            <span style="font-size: 12px; color: #888;">🔒 비밀댓글 (자동적용)</span>
+                            <button onclick="window.submitPropertyInquiry()" style="background:#f06b13; color:#fff; border:none; padding:8px 24px; border-radius:20px; font-weight:bold; font-size:13px; cursor:pointer;">등록</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 댓글 리스트 -->
+                    <div id="docInquiryList" style="display:flex; flex-direction:column; gap:15px;">
+                        <!-- 문의 내역이 여기에 렌더링됩니다 -->
+                    </div>
+                </div>
                 
                 </div> <!-- tabInfoSection End -->
 
@@ -744,31 +764,11 @@
                         </div>
                     </div>
 
-                    <!-- 중앙 서브 탭 -->
-                    <div style="display: flex; border-bottom: 1px solid #ddd; margin-bottom: 20px;">
-                        <div class="realtor-sub-tab active" onclick="document.querySelectorAll('.realtor-sub-tab').forEach(e=>e.classList.remove('active')); this.classList.add('active'); document.querySelectorAll('.realtor-sub-content').forEach(e=>e.style.display='none'); document.getElementById('subTabProps').style.display='block';" style="flex:1; padding:12px; text-align:center; cursor:pointer; font-weight:bold; font-size:15px; color:#888;">공실등록현황</div>
-                        <div class="realtor-sub-tab" onclick="document.querySelectorAll('.realtor-sub-tab').forEach(e=>e.classList.remove('active')); this.classList.add('active'); document.querySelectorAll('.realtor-sub-content').forEach(e=>e.style.display='none'); document.getElementById('subTabInquiry').style.display='block';" style="flex:1; padding:12px; text-align:center; cursor:pointer; font-weight:bold; font-size:15px; color:#888;">문의하기</div>
-                    </div>
-                    <style>
-                        .realtor-sub-tab.active { color:#111 !important; border-bottom: 2px solid #111; }
-                    </style>
+                    <div style="font-weight:bold; font-size:16px; margin-bottom:15px; border-bottom:2px solid #111; padding-bottom:10px;">공실등록현황</div>
 
                     <!-- 공실등록현황 내용 (기본 표시) -->
-                    <div id="subTabProps" class="realtor-sub-content" style="display:block;">
+                    <div id="subTabProps" style="display:block;">
                         <div style="text-align:center; padding:30px; color:#888; font-size:13px;">등록된 공실 정보가 없습니다.</div>
-                    </div>
-
-                    <!-- 문의하기 내용 -->
-                    <div id="subTabInquiry" class="realtor-sub-content" style="display:none;">
-                        <div style="margin-bottom: 25px;">
-                            <textarea id="inpInquiryContent" placeholder="비공개 문의 내용을 입력해 주세요. (중개사와 작성자만 확인 가능)" style="width:100%; height:90px; padding:15px; border:1px solid #ddd; border-radius:8px; font-size:14px; resize:none; outline:none; margin-bottom:10px; background:#fbfbfb; box-sizing:border-box;"></textarea>
-                            <button onclick="window.submitPropertyInquiry()" style="width:100%; background:#1f5edb; color:#fff; border:none; padding:14px; border-radius:8px; font-weight:bold; font-size:15px; cursor:pointer;">문의 등록하기 🔒</button>
-                        </div>
-                        
-                        <!-- 댓글 리스트 -->
-                        <div id="docInquiryList" style="display:flex; flex-direction:column; gap:15px;">
-                            <!-- 문의 내역이 여기에 렌더링됩니다 -->
-                        </div>
                     </div>
                 </div>
 
@@ -2022,9 +2022,13 @@
                 listEl.innerHTML = '';
                 
                 if (!inquiries || inquiries.length === 0) {
-                    listEl.innerHTML = '<div style="text-align:center; padding:30px; color:#888; font-size:13px;">아직 등록된 비공개 문의가 없습니다.</div>';
+                    listEl.innerHTML = '<div style="text-align:center; padding:30px; color:#888; font-size:13px;">아직 등록된 문의가 없습니다.</div>';
+                    const cntSpan = document.getElementById('inquiryCount');
+                    if (cntSpan) cntSpan.textContent = '0개';
                     return;
                 }
+                
+                let visibleCount = 0;
                 
                 inquiries.forEach(inq => {
                     const isMyInquiry = user && user.id === inq.author_id;
@@ -2032,22 +2036,18 @@
                     const dateStr = new Date(inq.created_at).toISOString().slice(0,10).replace(/-/g, '.');
                     
                     if (!isMyInquiry && !isRealtor) {
-                        listEl.insertAdjacentHTML('beforeend', `
-                            <div style="background: #fafafa; border: 1px dashed #ddd; border-radius: 8px; padding: 25px; text-align: center;">
-                                <div style="font-size: 24px; color: #ccc; margin-bottom: 8px;">🔒</div>
-                                <div style="font-size: 13px; color: #999; line-height: 1.4;">비공개 문의입니다.</div>
-                            </div>
-                        `);
-                        return;
+                        return; // 본인글이나 중개사가 아니면 아예 건너뛰어서 화면에 표시안함
                     }
+                    
+                    visibleCount++;
 
                     let answerHtml = '';
                     if (inq.answer) {
                         const ansDate = inq.answered_at ? new Date(inq.answered_at).toISOString().slice(0,10).replace(/-/g, '.') : '';
                         answerHtml = `
-                            <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; border-left: 3px solid #1f5edb; margin-top:12px;">
+                            <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; border-left: 3px solid #f06b13; margin-top:12px;">
                                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                                    <div style="width: 20px; height: 20px; background: #1f5edb; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold;">A</div>
+                                    <div style="width: 20px; height: 20px; background: #f06b13; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold;">A</div>
                                     <span style="font-size: 13px; font-weight: bold; color: #111;">중개사 답변</span>
                                     <span style="font-size: 11px; color: #888; margin-left: auto;">${ansDate}</span>
                                 </div>
@@ -2057,8 +2057,8 @@
                     } else if (isRealtor) {
                         answerHtml = `
                             <div style="margin-top: 12px; margin-left: 5px; border-left: 2px solid #ddd; padding-left: 10px;">
-                                <textarea id="ans_${inq.id}" placeholder="여기에 답변을 작성해 주세요." style="width:100%; height:60px; padding:10px; border:1px solid #1f5edb; border-radius:6px; font-size:13px; resize:none; outline:none; margin-bottom:5px; box-sizing:border-box;"></textarea>
-                                <button onclick="window.submitInquiryAnswer('${inq.id}')" style="background:#111; color:white; border:none; padding:8px 15px; border-radius:4px; font-size:12px; font-weight:bold; cursor:pointer;">답변 등록</button>
+                                <textarea id="ans_${inq.id}" placeholder="여기에 답변을 작성해 주세요." style="width:100%; height:60px; padding:10px; border:1px solid #ccc; border-radius:6px; font-size:13px; resize:none; outline:none; margin-bottom:5px; box-sizing:border-box;"></textarea>
+                                <button onclick="window.submitInquiryAnswer('${inq.id}')" style="background:#555; color:white; border:none; padding:8px 15px; border-radius:4px; font-size:12px; font-weight:bold; cursor:pointer;">답변 등록</button>
                             </div>
                         `;
                     } else {
@@ -2069,12 +2069,12 @@
                         `;
                     }
                     
-                    const headerText = isMyInquiry ? '<span style="color:#f39c12">나의 문의</span> 🔒' : '<span style="color:#1f5edb">고객 문의</span> 🔒';
+                    const headerText = isMyInquiry ? '<span style="color:#f06b13; font-weight:bold;">나의 문의</span> <span style="font-size:12px;">🔒 비밀</span>' : '<span style="color:#f06b13; font-weight:bold;">고객 문의</span> <span style="font-size:12px;">🔒 비밀</span>';
                     
                     const itemHtml = `
-                        <div style="background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 20px;">
+                        <div style="background: #fff; border-bottom: 1px solid #f0f0f0; padding: 20px 0;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 12px; align-items: center;">
-                                <div style="font-size: 14px; font-weight: bold; color: #111;">${headerText}</div>
+                                <div style="font-size: 13px; color: #111;">${headerText}</div>
                                 <div style="font-size: 12px; color: #999;">${dateStr}</div>
                             </div>
                             <div style="font-size: 14px; color: #333; line-height: 1.5; white-space: pre-wrap;">${inq.content}</div>
@@ -2083,6 +2083,13 @@
                     `;
                     listEl.insertAdjacentHTML('beforeend', itemHtml);
                 });
+                
+                if (visibleCount === 0) {
+                     listEl.innerHTML = '<div style="text-align:center; padding:30px; color:#888; font-size:13px;">본인이 작성한 문의만 확인할 수 있습니다.</div>';
+                }
+                
+                const cntSpan = document.getElementById('inquiryCount');
+                if (cntSpan) cntSpan.textContent = inquiries.length + '개';
                 
             } catch (err) {
                 console.error("Error loading inquiries:", err);
