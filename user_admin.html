@@ -250,7 +250,12 @@
         <main class="main-content">
             <!-- 화면 위쪽 제목바 -->
             <header class="main-header">
-                <div class="main-title" id="contentTitle">매물관리</div>
+                <!-- 사용자 프로필 영역 (클릭 시 정보설정으로 이동) -->
+                <div class="user-info-header" onclick="loadPage(event, '정보설정', 'profile_edit.html')" style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:6px 12px; border-radius:6px; transition:background 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='transparent'" title="정보설정으로 이동">
+                    <span style="font-weight:800; font-size:17px; color:#111;" id="headerName">공실뉴스</span>
+                    <span style="font-size:14px; color:#666;" id="headerEmail"></span>
+                    <span id="headerRoleBadge" style="font-size:12px; font-weight:700; padding:2px 8px; border-radius:4px; margin-left:4px;"></span>
+                </div>
                 <div class="header-right">
                     <button class="btn-logout" onclick="handleLogout()">
                         로그아웃
@@ -305,6 +310,12 @@
                     const links = document.querySelectorAll('.menu-link');
                     if (links.length > 1) links[1].click();
                 }, 100);
+            } else {
+                // 기본 '공실관리' 로드 (브라우저 탭 타이틀 일치를 위해 클릭 이벤트 트리거)
+                setTimeout(() => {
+                    const links = document.querySelectorAll('.menu-link');
+                    if (links.length > 0) links[0].click();
+                }, 100);
             }
 
             // 유저 정보 로드 및 UI 업데이트
@@ -313,15 +324,17 @@
                 const profile = ud.profile || {};
                 
                 if(ud.email) {
-                    const elName = document.getElementById('sidebarName');
+                    const elName = document.getElementById('headerName');
                     if(elName) elName.textContent = profile.name || ud.email.split('@')[0];
-                    const elEmail = document.getElementById('sidebarEmail');
+                    const elEmail = document.getElementById('headerEmail');
                     if(elEmail) elEmail.textContent = ud.email;
                     
-                    const roleBadge = document.getElementById('sidebarRole');
+                    const roleBadge = document.getElementById('headerRoleBadge');
                     if(roleBadge) {
                         if(profile.role === 'realtor') {
-                            roleBadge.textContent = '부동산회원';
+                            const exp = profile.membership_expires_at ? profile.membership_expires_at.substring(0,10).replace(/-/g, '.') : '';
+                            const expStr = exp ? (' ~' + exp) : '';
+                            roleBadge.textContent = '부동산회원(유료)' + expStr;
                             roleBadge.style.background = '#ebf5ff';
                             roleBadge.style.color = '#3b82f6';
                         } else {
@@ -343,7 +356,10 @@
                 }
             }
 
-            document.getElementById('contentTitle').textContent = title;
+            // 브라우저 탭 타이틀 변경
+            if (title) {
+                document.title = title + " - 공실뉴스";
+            }
 
             const frame = document.getElementById('mainFrame');
             // 캐시 방지를 위해 랜덤 쿼리 추가
