@@ -1751,6 +1751,54 @@
 
         // Note: document click listener for auto-hide was already added in the previous step
     </script>
+    <!-- 사진 확대 뷰어 오버레이 -->
+    <div id="imageViewerModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.9); z-index:9999; flex-direction:column; justify-content:center; align-items:center;">
+        <button onclick="document.getElementById('imageViewerModal').style.display='none'" style="position:absolute; top:20px; right:30px; background:none; border:none; color:white; font-size:40px; cursor:pointer; font-weight:100;">✕</button>
+        <img id="modalMainImage" src="" style="max-width:90%; max-height:85vh; object-fit:contain; border-radius:4px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+        
+        <button onclick="window.prevModalImage(event)" style="position:absolute; left:30px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); border:none; color:white; font-size:40px; cursor:pointer; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center;">〈</button>
+        
+        <button onclick="window.nextModalImage(event)" style="position:absolute; right:30px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); border:none; color:white; font-size:40px; cursor:pointer; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center;">〉</button>
+        
+        <div id="modalPageIndicator" style="position:absolute; bottom:30px; color:rgba(255,255,255,0.8); font-size:16px; background:rgba(0,0,0,0.6); padding:6px 20px; border-radius:20px;">1 / 1</div>
+    </div>
+
+    <script>
+        window.openImageViewer = function(index) {
+            if(!window.currentPropertyPhotos || window.currentPropertyPhotos.length === 0) return;
+            window.currentModalPhotoIndex = (typeof index === 'number') ? index : window.currentPhotoIndex;
+            window.updateModalImage();
+            document.getElementById('imageViewerModal').style.display = 'flex';
+        };
+
+        window.prevModalImage = function(e) {
+            if(e) e.stopPropagation();
+            window.currentModalPhotoIndex = (window.currentModalPhotoIndex - 1 + window.currentPropertyPhotos.length) % window.currentPropertyPhotos.length;
+            window.updateModalImage();
+        };
+
+        window.nextModalImage = function(e) {
+            if(e) e.stopPropagation();
+            window.currentModalPhotoIndex = (window.currentModalPhotoIndex + 1) % window.currentPropertyPhotos.length;
+            window.updateModalImage();
+        };
+
+        window.updateModalImage = function() {
+            document.getElementById('modalMainImage').src = window.currentPropertyPhotos[window.currentModalPhotoIndex];
+            document.getElementById('modalPageIndicator').textContent = `${window.currentModalPhotoIndex + 1} / ${window.currentPropertyPhotos.length}`;
+        };
+        
+        // Modal 키보드 이벤트 네비게이션
+        document.addEventListener('keydown', function(e) {
+            try {
+                if (document.getElementById('imageViewerModal') && document.getElementById('imageViewerModal').style.display === 'flex') {
+                    if (e.key === 'ArrowLeft') window.prevModalImage();
+                    if (e.key === 'ArrowRight') window.nextModalImage();
+                    if (e.key === 'Escape') document.getElementById('imageViewerModal').style.display = 'none';
+                }
+            } catch (err) {}
+        });
+    </script>
 </body>
 
 </html>
