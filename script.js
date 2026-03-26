@@ -1614,9 +1614,9 @@ window.loadPopularNews = async function(category) {
     }
 
     listEl.innerHTML = topArticles.map((a, i) => `
-        <li style="cursor:pointer; display:flex; align-items:flex-start; margin-bottom:12px; transition:all 0.2s;" onmouseover="this.querySelector('.portal-popular-text').style.color='#ff9f1c'; this.querySelector('.portal-popular-text').style.textDecoration='underline';" onmouseout="this.querySelector('.portal-popular-text').style.color='#333'; this.querySelector('.portal-popular-text').style.textDecoration='none';" onclick="window.showNewsDetail({id: ${a.id}, article_id: ${a.id}, _source:'articles'})">
+        <li style="cursor:pointer; display:flex; align-items:flex-start; margin-bottom:12px; transition:all 0.2s;" onmouseover="this.querySelector('.portal-popular-text').style.color='#111'; this.querySelector('.portal-popular-text').style.textDecoration='underline';" onmouseout="this.querySelector('.portal-popular-text').style.color='#555'; this.querySelector('.portal-popular-text').style.textDecoration='none';" onclick="window.showNewsDetail({id: ${a.id}, article_id: ${a.id}, _source:'articles'})">
             <span class="portal-popular-num" style="color:${i < 3 ? '#ff9f1c' : '#999'}; font-weight:bold; font-size:14px; margin-right:8px; display:inline-block; text-align:center;">${i+1}</span>
-            <span class="portal-popular-text" style="color:#333; font-size:14px; font-weight:600; line-height:1.4; word-break:keep-all; flex:1;">${a.title}</span>
+            <span class="portal-popular-text" style="color:#555; font-size:14px; font-weight:600; line-height:1.4; word-break:keep-all; flex:1; transition: color 0.1s;">${a.title}</span>
         </li>
     `).join('');
 };
