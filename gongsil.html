@@ -1217,12 +1217,20 @@
                     }
                     card.id = `property-card-${p.id}`;
                     card.onclick = () => {
-                        if (card.classList.contains('active')) {
-                            window.currentlySelectedPropertyId = null;
-                            card.classList.remove('active');
-                            const detailView = document.getElementById('propertyDetailView');
-                            if (detailView) detailView.style.display = 'none';
+                        const detailView = document.getElementById('propertyDetailView');
+                        const isPanelOpen = detailView && detailView.style.display === 'flex';
+                        
+                        if (window.currentlySelectedPropertyId === p.id && isPanelOpen) {
+                            // 완전히 닫기
+                            if (typeof window.hidePropertyDetail === 'function') {
+                                window.hidePropertyDetail();
+                            } else {
+                                window.currentlySelectedPropertyId = null;
+                                card.classList.remove('active');
+                                if (detailView) detailView.style.display = 'none';
+                            }
                         } else {
+                            // 열기 
                             window.currentlySelectedPropertyId = p.id;
                             document.querySelectorAll('.property-card').forEach(c => c.classList.remove('active'));
                             card.classList.add('active');
@@ -1553,6 +1561,9 @@
             window.hidePropertyDetail = function() {
                 const detailView = document.getElementById('propertyDetailView');
                 if (detailView) detailView.style.display = 'none';
+                
+                window.currentlySelectedPropertyId = null;
+                document.querySelectorAll('.property-card').forEach(c => c.classList.remove('active'));
             };
 
             window.switchDetailTab = function(tab) {

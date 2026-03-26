@@ -102,18 +102,32 @@ function renderPropertyCards(props) {
     props.forEach(p => {
         try {
             const card = document.createElement('div');
-            card.className = 'property-card';
+            // 매물 아이디 일치 여부에 따라 active 상태 유지
+            if (p.id === window.currentlySelectedPropertyId) {
+                card.className = 'property-card active';
+            } else {
+                card.className = 'property-card';
+            }
             card.id = `property-card-${p.id}`;
             card.onclick = () => {
-                if (card.classList.contains('active')) {
-                    card.classList.remove('active');
+                const detailView = document.getElementById('propertyDetailView');
+                const isPanelOpen = detailView && detailView.style.display === 'flex';
+                
+                if (window.currentlySelectedPropertyId === p.id && isPanelOpen) {
                     if (typeof window.hidePropertyDetail === 'function') {
                         window.hidePropertyDetail();
+                    } else {
+                        card.classList.remove('active');
+                        window.currentlySelectedPropertyId = null;
+                        if (detailView) detailView.style.display = 'none';
                     }
                 } else {
                     document.querySelectorAll('.property-card').forEach(c => c.classList.remove('active'));
                     card.classList.add('active');
-                    showPropertyDetail(p);
+                    window.currentlySelectedPropertyId = p.id;
+                    if (typeof window.showPropertyDetail === 'function') {
+                        window.showPropertyDetail(p);
+                    }
                 }
             };
             
