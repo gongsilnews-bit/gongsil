@@ -66,6 +66,7 @@ async function loadActiveProperties() {
             const { data: profile } = await supabase.from('members').select('role').eq('id', session.user.id).maybeSingle();
             if (profile) userRole = profile.role;
         }
+        window.currentUserRole = userRole;
 
         const { data, error } = await supabase
             .from('properties')
@@ -75,12 +76,7 @@ async function loadActiveProperties() {
 
         if (error) throw error;
 
-        let filteredData = data || [];
-        if (userRole !== 'realtor' && userRole !== 'admin') {
-            filteredData = filteredData.filter(p => !p.exposure_target || p.exposure_target === 'all');
-        }
-
-        allActiveProperties = filteredData;
+        allActiveProperties = data || [];
         console.log("Loaded properties:", allActiveProperties.length);
         
         if (countHeader) countHeader.textContent = `지역 목록 ${allActiveProperties.length}개`;
@@ -159,6 +155,28 @@ window.showPropertyDetail = function(p) {
     if (!detailView) return;
 
     try {
+        // --- 노출 영역 블라인드 처리 추가 ---
+        let detailOverlay = document.getElementById('exposureBlindOverlay_render');
+        if (!detailOverlay) {
+            detailOverlay = document.createElement('div');
+            detailOverlay.id = 'exposureBlindOverlay_render';
+            detailOverlay.innerHTML = `
+                <div style="text-align:center; padding: 40px; margin-top: 150px;">
+                    <h2 style="font-size: 26px; color: #1a73e8; margin-bottom: 25px;">공동중개물건입니다</h2>
+                    <h2 style="font-size: 32px; color: #1a73e8; margin-bottom: 35px; line-height: 1.4;">부동산회원만<br>열람할 수 있습니다</h2>
+                    <a href="https://smartstore.naver.com/mygongsil/products/10361563253" target="_blank" style="font-size: 22px; color: #1a73e8; font-weight: bold; text-decoration: none;">회원가입바로가기 >></a>
+                </div>
+            `;
+            detailOverlay.style.cssText = "position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.92); z-index: 50; display: flex; align-items: flex-start; justify-content: center; backdrop-filter: blur(2px);";
+            detailView.appendChild(detailOverlay);
+        }
+
+        if (p.exposure_target === 'realtor_only' && window.currentUserRole !== 'realtor' && window.currentUserRole !== 'admin') {
+            detailOverlay.style.display = 'flex';
+        } else {
+            detailOverlay.style.display = 'none';
+        }
+
         const priceStr = formatPriceDisplay(p);
         
         detailView.querySelector('.detail-price-title').textContent = priceStr;
