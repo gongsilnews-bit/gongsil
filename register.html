@@ -496,7 +496,7 @@
                 <div class="col form-group">
                     <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
                         호수 
-                        <span style="font-weight: normal; font-size: 11px; color: #666; display: flex; align-items: center; gap: 3px;">
+                        <span id="roomPrivateSpan" style="font-weight: normal; font-size: 11px; color: #666; display: none; align-items: center; gap: 3px;">
                             <input type="checkbox" id="isRoomPrivate" style="width: auto;" onchange="updateFullAddress()"> 비공개
                         </span>
                     </label>
@@ -1476,6 +1476,9 @@
                     document.getElementById('realtorSection').style.display = 'block';
                     const expGroup = document.getElementById('exposureGroup');
                     if (expGroup) expGroup.style.display = 'block';
+                    
+                    const privateSpan = document.getElementById('roomPrivateSpan');
+                    if (privateSpan) privateSpan.style.display = 'flex';
                     
                     document.getElementById('companyName').value = profile.company_name || '';
                     document.getElementById('companyRegNo').value = profile.company_reg_no || '';

@@ -1213,7 +1213,7 @@
                         <div style="text-align:center; padding: 40px; margin-top: 150px;">
                             <h2 style="font-size: 26px; color: #1a73e8; margin-bottom: 25px;">공동중개물건입니다</h2>
                             <h2 style="font-size: 32px; color: #1a73e8; margin-bottom: 35px; line-height: 1.4;">부동산회원만<br>열람할 수 있습니다</h2>
-                            <a href="https://smartstore.naver.com/mygongsil/products/10361563253" target="_blank" style="font-size: 22px; color: #1a73e8; font-weight: bold; text-decoration: none;">회원가입바로가기 >></a>
+                            <a href="#" onclick="if(document.getElementById('headerLoginBtn')) document.getElementById('headerLoginBtn').click(); return false;" style="font-size: 22px; color: #1a73e8; font-weight: bold; text-decoration: none;">구글 로그인으로 회원가입/로그인 >></a>
                         </div>
                     `;
                     detailOverlay.style.cssText = "position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.92); z-index: 50; display: flex; align-items: flex-start; justify-content: center; backdrop-filter: blur(2px);";
@@ -1242,10 +1242,25 @@
                 const areaDisplay = (supArea && excArea) ? `${supArea} / ${excArea}` : (excArea || supArea || '정보없음');
                 document.getElementById('docSummaryArea').textContent = areaDisplay ? `면적 ${areaDisplay}` : '-';
 
+                const isGeneralBuilding = p.main_category === '상가·업무·공장·토지' || p.main_category === '빌라·주택';
+
                 // Table Info
-                const addr = `${p.sido || ''} ${p.sigungu || ''} ${p.dong || ''} ${p.detail_address || ''}`.trim();
+                let addr = `${p.sido || ''} ${p.sigungu || ''} ${p.dong || ''} ${p.detail_address || ''}`.trim();
+                let docFeaturesStr = p.building_name || p.property_type || '-';
+                
+                if (p.is_room_private) {
+                    if (isGeneralBuilding) {
+                        addr = `${p.sido || ''} ${p.sigungu || ''} ${p.dong || ''}`.trim();
+                        docFeaturesStr = p.property_type || '-';
+                    } else {
+                        // 아파트, 오피스텔 등 집합건물: 상세주소는 표시되나, 동 호수 문자열을 제거
+                        // (단, 기본적으로 ui 상 dong_number와 room_number는 addr 요소에 추가되지 않았음. 
+                        // 만약 detail_address 안에 사용자가 직접 입력했다면, 그대로 둠. 로드뷰/상세뷰는 허용)
+                    }
+                }
+
                 document.getElementById('docLocation').textContent = addr || '주소 정보 없음';
-                document.getElementById('docFeatures').textContent = p.building_name || p.property_type || '-';
+                document.getElementById('docFeatures').textContent = docFeaturesStr;
                 document.getElementById('docAreaValue').textContent = areaDisplay || '-';
                 document.getElementById('docFloor').textContent = '정보없음';
                 document.getElementById('docRoomsDetail').textContent = `${p.room_count || '0'} / ${p.bathroom_count || '0'}개`;
@@ -1348,33 +1363,54 @@
                 const lat = parseFloat(p.lat);
                 const lng = parseFloat(p.lng);
                 
-                if (lat && lng && !p.is_room_private) {
+                if (lat && lng) {
                     mapSec.style.display = 'block';
-                    rvSec.style.display = 'block';
-                    const coords = new kakao.maps.LatLng(lat, lng);
                     
-                    // 미니맵 로딩
-                    miniMapContainer.innerHTML = '';
-                    setTimeout(() => { 
-                        const miniMap = new kakao.maps.StaticMap(miniMapContainer, {
-                            center: coords,
-                            level: 4,
-                            marker: { position: coords }
-                        });
+                    if (p.is_room_private && isGeneralBuilding) {
+                        rvSec.style.display = 'none'; // 로드뷰 완전히 숨김
                         
-                        // 로드뷰 로딩
-                        roadviewContainer.innerHTML = '';
-                        const rv = new kakao.maps.Roadview(roadviewContainer);
-                        const rvClient = new kakao.maps.RoadviewClient();
-                        rvClient.getNearestPanoId(coords, 50, function(panoId) {
-                            if (panoId) {
-                                rvSec.style.display = 'block';
-                                rv.setPanoId(panoId, coords);
-                            } else {
-                                rvSec.style.display = 'none'; // 해당 위치 로드뷰 없음
-                            }
-                        });
-                    }, 50);
+                        const coords = new kakao.maps.LatLng(lat, lng);
+                        miniMapContainer.innerHTML = '';
+                        setTimeout(() => { 
+                            const miniMap = new kakao.maps.StaticMap(miniMapContainer, {
+                                center: coords,
+                                level: 6,
+                                marker: false // 마커 없이 렌더링
+                            });
+                            // StaticMap은 원을 그릴 수 없지만 기본 지도를 생성할 수 있음.
+                            // 그냥 정적인 지도로 렌더링하고, 가운데 동그라미를 CSS로 씌울 수 있습니다.
+                            const circleOverlay = document.createElement('div');
+                            circleOverlay.style.cssText = "position:absolute; top:50%; left:50%; width:100px; height:100px; margin-top:-50px; margin-left:-50px; background:rgba(59,130,246,0.3); border-radius:50%; border:2px solid rgba(59,130,246,0.5); z-index:10; filter:blur(2px);";
+                            miniMapContainer.appendChild(circleOverlay);
+                        }, 50);
+
+                    } else {
+                        rvSec.style.display = 'block';
+                        const coords = new kakao.maps.LatLng(lat, lng);
+                        
+                        // 미니맵 로딩
+                        miniMapContainer.innerHTML = '';
+                        setTimeout(() => { 
+                            const miniMap = new kakao.maps.StaticMap(miniMapContainer, {
+                                center: coords,
+                                level: 4,
+                                marker: { position: coords }
+                            });
+                            
+                            // 로드뷰 로딩
+                            roadviewContainer.innerHTML = '';
+                            const rv = new kakao.maps.Roadview(roadviewContainer);
+                            const rvClient = new kakao.maps.RoadviewClient();
+                            rvClient.getNearestPanoId(coords, 50, function(panoId) {
+                                if (panoId) {
+                                    rvSec.style.display = 'block';
+                                    rv.setPanoId(panoId, coords);
+                                } else {
+                                    rvSec.style.display = 'none'; // 해당 위치 로드뷰 없음
+                                }
+                            });
+                        }, 50);
+                    }
                 } else {
                     mapSec.style.display = 'none';
                     rvSec.style.display = 'none';
@@ -1597,16 +1633,26 @@
                 }
 
                 props.forEach(p => {
-                    const fullAddr = `${p.sido || ''} ${p.sigungu || ''} ${p.dong || ''} ${p.detail_address || ''}`;
-                    geocoder.addressSearch(fullAddr, (result, status) => {
+                    const isGeneralBuilding = p.main_category === '상가·업무·공장·토지' || p.main_category === '빌라·주택';
+                    let searchAddr = `${p.sido || ''} ${p.sigungu || ''} ${p.dong || ''} ${p.detail_address || ''}`;
+                    if (p.is_room_private && isGeneralBuilding) {
+                        searchAddr = `${p.sido || ''} ${p.sigungu || ''} ${p.dong || ''}`;
+                    }
+
+                    geocoder.addressSearch(searchAddr, (result, status) => {
                         completedCount++;
                         if (status === kakao.maps.services.Status.OK) {
                             p.lat = parseFloat(result[0].y);
                             p.lng = parseFloat(result[0].x);
                             const coords = new kakao.maps.LatLng(p.lat, p.lng);
-                            const marker = new kakao.maps.Marker({
-                                position: coords
-                            });
+                            
+                            let markerConfig = { position: coords };
+                            if (p.is_room_private && isGeneralBuilding) {
+                                const svgObj = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><circle cx="40" cy="40" r="30" fill="%233b82f6" fill-opacity="0.4"/></svg>`;
+                                markerConfig.image = new kakao.maps.MarkerImage(`data:image/svg+xml;utf8,${svgObj}`, new kakao.maps.Size(80, 80), { offset: new kakao.maps.Point(40, 40) });
+                            }
+                            
+                            const marker = new kakao.maps.Marker(markerConfig);
                             marker.propertyData = p; // 속성 데이터를 마커에 저장
                             propertyMarkers.push(marker);
 

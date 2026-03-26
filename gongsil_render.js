@@ -164,7 +164,7 @@ window.showPropertyDetail = function(p) {
                 <div style="text-align:center; padding: 40px; margin-top: 150px;">
                     <h2 style="font-size: 26px; color: #1a73e8; margin-bottom: 25px;">공동중개물건입니다</h2>
                     <h2 style="font-size: 32px; color: #1a73e8; margin-bottom: 35px; line-height: 1.4;">부동산회원만<br>열람할 수 있습니다</h2>
-                    <a href="https://smartstore.naver.com/mygongsil/products/10361563253" target="_blank" style="font-size: 22px; color: #1a73e8; font-weight: bold; text-decoration: none;">회원가입바로가기 >></a>
+                    <a href="#" onclick="if(document.getElementById('headerLoginBtn')) document.getElementById('headerLoginBtn').click(); return false;" style="font-size: 22px; color: #1a73e8; font-weight: bold; text-decoration: none;">구글 로그인으로 회원가입/로그인 >></a>
                 </div>
             `;
             detailOverlay.style.cssText = "position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.92); z-index: 50; display: flex; align-items: flex-start; justify-content: center; backdrop-filter: blur(2px);";
@@ -216,18 +216,37 @@ function addMarkersToMap(props) {
         return;
     }
     
+    // Clear existing markers
+    if (propertyMarkers) {
+        propertyMarkers.forEach(marker => marker.setMap(null));
+    }
+    propertyMarkers = []; // Reset the array
+
     const geocoder = new kakao.maps.services.Geocoder();
 
     props.forEach(p => {
-        const fullAddr = `${p.sido || ''} ${p.sigungu || ''} ${p.dong || ''} ${p.detail_address || ''}`;
-        
-        geocoder.addressSearch(fullAddr, (result, status) => {
+        const isGeneralBuilding = p.main_category === '상가·업무·공장·토지' || p.main_category === '빌라·주택';
+        let searchAddr = `${p.sido || ''} ${p.sigungu || ''} ${p.dong || ''} ${p.detail_address || ''}`;
+        if (p.is_room_private && isGeneralBuilding) {
+            searchAddr = `${p.sido || ''} ${p.sigungu || ''} ${p.dong || ''}`;
+        }
+
+        geocoder.addressSearch(searchAddr, (result, status) => {
             if (status === kakao.maps.services.Status.OK) {
                 const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-                const marker = new kakao.maps.Marker({
+                
+                let markerConfig = {
                     map: window.mapInstance,
                     position: coords
-                });
+                };
+                if (p.is_room_private && isGeneralBuilding) {
+                    const svgObj = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><circle cx="40" cy="40" r="30" fill="%233b82f6" fill-opacity="0.4"/></svg>`;
+                    markerConfig.image = new kakao.maps.MarkerImage(`data:image/svg+xml;utf8,${svgObj}`, new kakao.maps.Size(80, 80), { offset: new kakao.maps.Point(40, 40) });
+                }
+                
+                const marker = new kakao.maps.Marker(markerConfig);
+                marker.propertyData = p; // Store property data in marker
+                propertyMarkers.push(marker);
 
                 const infowindow = new kakao.maps.InfoWindow({
                     content: `<div style="padding:5px;font-size:12px;">${formatPriceDisplay(p)}</div>`
