@@ -1562,6 +1562,58 @@ window.showNewsDetail = async function(news) {
         
         window.loadPortalComments(news.id || news.article_id);
     }
+    
+    // 많이 본 뉴스 연동
+    if (typeof window.loadPopularNews === 'function') {
+        window.loadPopularNews(category);
+    }
+};
+
+window.popularNewsCache = window.popularNewsCache || {};
+window.loadPopularNews = async function(category) {
+    const listEl = document.getElementById('detailPopularNewsList');
+    const titleEl = document.getElementById('detailPopularNewsTitle');
+    if (!listEl) return;
+
+    if (titleEl) {
+        titleEl.innerHTML = category === '전체기사' ? `많이 본 뉴스` : `<span style="color:#ff9f1c">${category}</span> 많이 본 뉴스`;
+    }
+
+    // 캐시 확인 (5분)
+    const now = Date.now();
+    const cache = window.popularNewsCache[category];
+    let topArticles = [];
+
+    if (cache && now - cache.time < 5 * 60 * 1000) {
+        topArticles = cache.data;
+    } else {
+        const sb = window.gongsiClient || window.supabaseClient;
+        if (!sb) return;
+
+        let query = sb.from('articles').select('id, title, view_count').eq('status', 'published');
+        if (category !== '전체기사') {
+            query = query.or(`section1.eq."${category}",section2.eq."${category}"`);
+        }
+        query = query.order('view_count', { ascending: false }).limit(5);
+
+        const { data, error } = await query;
+        if (!error && data) {
+            topArticles = data;
+            window.popularNewsCache[category] = { time: now, data: topArticles };
+        }
+    }
+
+    if (topArticles.length === 0) {
+        listEl.innerHTML = '<li style="padding:10px; color:#999; font-size:13px; text-align:center;">조회된 뉴스가 없습니다.</li>';
+        return;
+    }
+
+    listEl.innerHTML = topArticles.map((a, i) => `
+        <li style="cursor:pointer; display:flex; align-items:flex-start; margin-bottom:12px; transition:all 0.2s;" onmouseover="this.querySelector('.portal-popular-text').style.color='#ff9f1c'; this.querySelector('.portal-popular-text').style.textDecoration='underline';" onmouseout="this.querySelector('.portal-popular-text').style.color='#333'; this.querySelector('.portal-popular-text').style.textDecoration='none';" onclick="window.showNewsDetail({id: ${a.id}, article_id: ${a.id}, _source:'articles'})">
+            <span class="portal-popular-num" style="color:${i < 3 ? '#ff9f1c' : '#999'}; font-weight:bold; font-size:14px; margin-right:8px; display:inline-block; text-align:center;">${i+1}</span>
+            <span class="portal-popular-text" style="color:#333; font-size:14px; font-weight:600; line-height:1.4; word-break:keep-all; flex:1;">${a.title}</span>
+        </li>
+    `).join('');
 };
 
 // ── 포털 댓글 로드 및 등록 함수 ──

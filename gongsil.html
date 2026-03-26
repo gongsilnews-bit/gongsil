@@ -619,9 +619,8 @@
             <div class="sidebar-header" style="padding: 0; border-bottom: none;">
                 <!-- MY관심 전용 탭 -->
                 <div class="interest-tabs" id="interestTabs">
-                    <div class="interest-tab active">관심단지</div>
-                    <div class="interest-tab">관심매물</div>
-                    <div class="interest-tab">관심분양</div>
+                    <div class="interest-tab active" onclick="if(window.selectGongsilWishTab) window.selectGongsilWishTab(this, 'scraps')">찜한물건</div>
+                    <div class="interest-tab" onclick="if(window.selectGongsilWishTab) window.selectGongsilWishTab(this, 'recent')">최근본물건</div>
                 </div>
 
                 <!-- MY관심 정렬 바 -->
@@ -818,7 +817,10 @@
             <!-- 고정 하단바 -->
             <div class="detail-bottom-bar">
                 <div class="bottom-price" id="docBottomPrice">-</div>
-                <button class="btn-inquiry" onclick="window.switchDetailTab('realtor'); const sa = document.querySelector('.detail-scroll-area'); if(sa) sa.scrollTop = 0;">연락처 보기</button>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button class="btn-scrap" title="찜하기" onclick="if(window.scrapProperty) window.scrapProperty()" style="background:none; border:none; cursor:pointer; font-size: 24px; transition: color 0.2s;" onmouseover="this.style.color='#ff9f1c'" onmouseout="this.style.color='inherit'">🤍</button>
+                    <button class="btn-inquiry" onclick="window.switchDetailTab('realtor'); const sa = document.querySelector('.detail-scroll-area'); if(sa) sa.scrollTop = 0;">연락처 보기</button>
+                </div>
             </div>
         </div>
         <!-- 우측 지도 영역 -->
@@ -1244,6 +1246,17 @@
                 const scrollArea = detailView.querySelector('.detail-scroll-area');
                 if (scrollArea) scrollArea.scrollTop = 0;
 
+                // --- 최근 본 매물 저장 로직 ---
+                if (p && p.id) {
+                    const ud = JSON.parse(localStorage.getItem('gongsil_user') || '{}');
+                    const recentKey = ud.id ? 'gongsil_property_recent_' + ud.id : 'gongsil_property_recent_guest';
+                    let recents = JSON.parse(localStorage.getItem(recentKey) || '[]');
+                    recents = recents.filter(id => id !== p.id);
+                    recents.unshift(p.id);
+                    if (recents.length > 50) recents.pop();
+                    localStorage.setItem(recentKey, JSON.stringify(recents));
+                }
+
                 // --- 노출 영역 블라인드 처리 추가 ---
                 let detailOverlay = document.getElementById('exposureBlindOverlay');
                 if (!detailOverlay) {
@@ -1537,7 +1550,15 @@
                 window.filteredPropertyMarkers = propertyMarkers.filter(m => {
                     const p = m.propertyData;
                     
-                    if (activeMain === 'MY관심') return true;
+                    if (activeMain === 'MY관심') {
+                        const activeWishTab = document.querySelector('.interest-tab.active');
+                        const isScrap = activeWishTab && activeWishTab.innerText.includes('찜한물건');
+                        const ud = JSON.parse(localStorage.getItem('gongsil_user') || '{}');
+                        const prefix = isScrap ? 'gongsil_property_scraps_' : 'gongsil_property_recent_';
+                        const storageKey = ud.id ? prefix + ud.id : prefix + 'guest';
+                        const ids = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                        return ids.includes(p.id);
+                    }
 
                     // 1차 필터 매칭 로직 (이전 데이터 호환 포함)
                     let pMain = p.main_category;
@@ -1640,6 +1661,51 @@
                 
                 // 리스트 로직 업데이트
                 window.updateListByMapBounds();
+            };
+
+            window.selectGongsilWishTab = function(el, type) {
+                document.querySelectorAll('.interest-tab').forEach(t => t.classList.remove('active'));
+                el.classList.add('active');
+                if (window.filterAndRenderMap) window.filterAndRenderMap();
+            };
+
+            window.scrapProperty = function() {
+                const ud = JSON.parse(localStorage.getItem('gongsil_user') || '{}');
+                if (!ud.id) {
+                    alert('로그인 후 이용 가능합니다.');
+                    return;
+                }
+                const pId = window.currentlySelectedPropertyId;
+                if (!pId) return;
+
+                const storageKey = 'gongsil_property_scraps_' + ud.id;
+                let scraps = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                if (!scraps.includes(pId)) {
+                    scraps.unshift(pId);
+                    localStorage.setItem(storageKey, JSON.stringify(scraps));
+                    
+                    let toast = document.getElementById('gongsil-toast');
+                    if (!toast) {
+                        toast = document.createElement('div');
+                        toast.id = 'gongsil-toast';
+                        toast.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); color:#fff; padding:12px 24px; border-radius:30px; font-size:14px; font-weight:600; z-index:9999; opacity:0; transition:opacity 0.3s; pointer-events:none; box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+                        document.body.appendChild(toast);
+                    }
+                    toast.innerText = '🤍 찜한물건에 추가되었습니다.';
+                    toast.style.opacity = '1';
+                    setTimeout(() => { toast.style.opacity = '0'; }, 3000);
+                } else {
+                    let toast = document.getElementById('gongsil-toast');
+                    if (!toast) {
+                        toast = document.createElement('div');
+                        toast.id = 'gongsil-toast';
+                        toast.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); color:#fff; padding:12px 24px; border-radius:30px; font-size:14px; font-weight:600; z-index:9999; opacity:0; transition:opacity 0.3s; pointer-events:none; box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+                        document.body.appendChild(toast);
+                    }
+                    toast.innerText = '이미 찜한물건에 있습니다.';
+                    toast.style.opacity = '1';
+                    setTimeout(() => { toast.style.opacity = '0'; }, 3000);
+                }
             };
 
             window.updateListByMapBounds = function() {
