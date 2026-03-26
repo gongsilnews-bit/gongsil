@@ -350,9 +350,9 @@ async function loadPortalNews(category, isLoadMore = false) {
 
             // 4. 많이 본 뉴스 더미 (일단 랜덤이나 최신 5개로 구성)
             const popularItems = data.slice(0, 5).map((n, i) => `
-                <li onclick="window.showNewsDetail(${JSON.stringify(n).replace(/"/g, '&quot;')})">
+                <li style="cursor:pointer; transition:all 0.2s;" onmouseover="this.querySelector('.portal-popular-text').style.color='#111'; this.querySelector('.portal-popular-text').style.textDecoration='underline';" onmouseout="this.querySelector('.portal-popular-text').style.color='#555'; this.querySelector('.portal-popular-text').style.textDecoration='none';" onclick="window.showNewsDetail(${JSON.stringify(n).replace(/"/g, '&quot;')})">
                     <span class="portal-popular-num">${i+1}</span>
-                    <span class="portal-popular-text">${n.title}</span>
+                    <span class="portal-popular-text" style="transition: color 0.1s;">${n.title}</span>
                 </li>
             `).join('');
 
