@@ -446,6 +446,12 @@ function initNewsNavigation() {
             const configKey = Object.keys(NEWS_NAV_CONFIG).find(key => NEWS_NAV_CONFIG[key].name === catName);
             
             if (configKey) {
+                if (configKey === 'manage') {
+                    // 기사관리 탭 클릭 시 관리자 페이지로 직접 이동 (서브메뉴 렌더링 생략)
+                    window.location.href = 'user_admin.html?tab=news';
+                    return;
+                }
+
                 // Tier 1 활성화 상태 변경
                 tier1Items.forEach(el => el.classList.remove('active'));
                 item.classList.add('active');

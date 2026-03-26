@@ -299,6 +299,14 @@
                 document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
             }
 
+            // 외부에서 ?tab=news 로 진입 시 기사관리 탭 자동 열기
+            if (urlParams.get('tab') === 'news') {
+                setTimeout(() => {
+                    const links = document.querySelectorAll('.menu-link');
+                    if (links.length > 1) links[1].click();
+                }, 100);
+            }
+
             // 유저 정보 로드 및 UI 업데이트
             setTimeout(() => {
                 const ud = JSON.parse(localStorage.getItem('gongsil_user') || '{}');
