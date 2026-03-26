@@ -156,11 +156,30 @@
 
 
 
+        .article-x-btn {
+            position: absolute;
+            top: -10px; /* 약간 위로 조정하여 시각적 밸런스 맞춤 */
+            right: 0;
+            background: none;
+            border: none;
+            font-size: 32px;
+            color: #999;
+            cursor: pointer;
+            transition: color 0.15s ease;
+            padding: 10px; /* 클릭 영역 확보 */
+            line-height: 1;
+            z-index: 10;
+        }
+        .article-x-btn:hover {
+            color: #ff9f1c; /* 오렌지색상 반영 */
+        }
+
         #news-detail-view.map-floating-mode .btn-close-detail {
             top: 20px;
             right: 20px;
             padding: 8px 16px;
             font-size: 13px;
+            display: none; /* 플로팅 중앙 x버튼 추가됨으로 인해 기존 투박한 검은버튼 숨김 */
         }
 
         /* ========================================
@@ -720,7 +739,10 @@
 
                 <div class="detail-container">
                     <!-- 상단 헤더 영역 (그리드 전체 폭 차지) -->
-                    <div class="detail-header-full" style="grid-column: 1 / -1; margin-bottom: 0;">
+                    <div class="detail-header-full" style="grid-column: 1 / -1; margin-bottom: 0; position: relative;">
+                        <!-- 기사 닫기 x버튼 (우측 상단) -->
+                        <button class="article-x-btn" onclick="closeNewsDetail()" title="닫기 ✕">✕</button>
+                        
                         <div class="detail-breadcrumb" id="detailCategory" style="font-size: 14px; color: #666; margin-bottom: 8px; font-weight: 600;">뉴스/칼럼 > 부동산·주식·재테크</div>
                         <h1 class="detail-title" id="detailTitle" style="font-size: 36px; font-weight: 800; color: #111; line-height: 1.3; margin-bottom: 16px; letter-spacing:-1.5px; word-break:keep-all;">로딩 중...</h1>
                         <div class="detail-meta" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 16px; margin-bottom: 0;">
