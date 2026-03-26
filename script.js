@@ -1567,6 +1567,11 @@ window.showNewsDetail = async function(news) {
     if (typeof window.loadPopularNews === 'function') {
         window.loadPopularNews(category);
     }
+
+    // 등록 부동산 매물 연동
+    if (typeof window.loadSidebarProperties === 'function') {
+        window.loadSidebarProperties();
+    }
 };
 
 window.popularNewsCache = window.popularNewsCache || {};
@@ -1614,6 +1619,66 @@ window.loadPopularNews = async function(category) {
             <span class="portal-popular-text" style="color:#333; font-size:14px; font-weight:600; line-height:1.4; word-break:keep-all; flex:1;">${a.title}</span>
         </li>
     `).join('');
+};
+
+// ── 사이드바 등록 부동산 매물 로드 ──
+window.loadSidebarProperties = async function() {
+    const container = document.getElementById('sidebarPropertyList');
+    if (!container) return;
+
+    const sb = window.gongsiClient;
+    if (!sb) {
+        container.innerHTML = '<div style="padding:10px; color:#bbb; font-size:12px; text-align:center;">부동산 데이터 연결 중...</div>';
+        return;
+    }
+
+    const { data: props, error } = await sb
+        .from('properties')
+        .select('id, trade_type, deposit, monthly_rent, dedicated_area, property_type, sido, sigungu, dong, options, images')
+        .eq('status', 'active')
+        .order('ad_rank', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+    if (error || !props || props.length === 0) {
+        container.innerHTML = '<div style="padding:10px; color:#bbb; font-size:12px; text-align:center;">등록된 매물이 없습니다.</div>';
+        return;
+    }
+
+    function formatPrice(trade, deposit, monthly) {
+        const wand = v => v >= 10000 ? Math.floor(v/10000) + '억' + (v%10000 > 0 ? ' ' + (v%10000).toLocaleString() : '') : v.toLocaleString() + '만';
+        if (trade === '매매') return '매매 ' + wand(deposit);
+        if (trade === '전세') return '전세 ' + wand(deposit);
+        if (trade === '월세') return '월세 ' + wand(deposit) + '/' + monthly.toLocaleString() + '만';
+        if (trade === '단기') return '단기 ' + wand(deposit) + '/' + monthly.toLocaleString() + '만';
+        return trade;
+    }
+
+    container.innerHTML = props.map(p => {
+        const imgUrl = (p.images && p.images.length > 0) ? p.images[0] : '';
+        const imgStyle = imgUrl ? `background:#eee url('${imgUrl}') center/cover` : 'background:#eee';
+        const priceStr = formatPrice(p.trade_type, p.deposit, p.monthly_rent);
+        const areaStr = p.dedicated_area ? `전용 ${p.dedicated_area}㎡` : '';
+        const typeStr = p.property_type || '';
+        const loc = [p.sigungu, p.dong].filter(Boolean).join(' ');
+        const isAd = p.options && p.options.includes('급매');
+        const badge = isAd
+            ? `<span style="font-size:11px; font-weight:bold; color:#ff9f1c; border:1px solid #ff9f1c; border-radius:3px; padding:1px 4px; align-self:flex-start; margin-bottom:4px;">급매</span>`
+            : '';
+
+        return `
+        <div style="display:flex; gap:10px; margin-bottom:12px; cursor:pointer; border:1px solid #f0f0f0; border-radius:8px; padding:10px; transition:box-shadow 0.2s;"
+             onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'"
+             onclick="window.open('gongsil.html','_blank')">
+            <div style="width:72px; height:72px; ${imgStyle}; border-radius:4px; flex-shrink:0; background-color:#eee;"></div>
+            <div style="display:flex; flex-direction:column; justify-content:center; min-width:0; flex:1;">
+                ${badge}
+                <div style="font-size:14px; font-weight:800; color:#111; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${priceStr}</div>
+                <div style="font-size:12px; color:#666; margin-top:2px;">${[areaStr, typeStr].filter(Boolean).join(' · ')}</div>
+                <div style="font-size:11px; color:#999; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${loc}</div>
+            </div>
+        </div>`;
+    }).join('');
 };
 
 // ── 포털 댓글 로드 및 등록 함수 ──

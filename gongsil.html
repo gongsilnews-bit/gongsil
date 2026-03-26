@@ -388,6 +388,11 @@
             const config = CATEGORY_CONFIG[catKey];
             if (!config) return;
 
+            // 카테고리 변경 시 열려있는 매물 상세 패널 자동 닫기
+            if (typeof window.hidePropertyDetail === 'function') {
+                window.hidePropertyDetail();
+            }
+
             // 1. 모드 토글 (MY관심 모드)
             const sidebar = document.querySelector('.sidebar');
             if (catKey === 'wish') {

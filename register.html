@@ -1312,8 +1312,8 @@
         window.addEventListener('DOMContentLoaded', async () => {
             window.updatePriceFields();
             window.updatePropertyFields();
-            await loadUserProfile();
-            checkEditMode(); // 수정 모드 판별 및 데이터 로드
+            await loadUserProfile();  // 프로필 로드 완료 후
+            await checkEditMode();    // 수정 모드 판별 및 데이터 로드 (순서 보장)
         });
 
         async function checkEditMode() {
@@ -1357,9 +1357,9 @@
                             const subBtn = subBtns.find(b => b.textContent.trim() === savedSub);
                             if (subBtn) subBtn.click();
                         }
-                    }, 100);
+                    }, 200);
                 } else if (savedSub) {
-                    // 구 데이터 호환: property_type만 있는 경우 ꓸ럼맅
+                    // 구 데이터 호환: property_type만 있는 경우
                     let matchedMain = null, matchedSub = savedSub;
                     for (const main in CATEGORY_MAP) {
                         if (CATEGORY_MAP[main].includes(savedSub)) { matchedMain = main; break; }
@@ -1375,7 +1375,7 @@
                                 const subBtn = subBtns.find(b => b.textContent.trim() === matchedSub);
                                 if (subBtn) subBtn.click();
                             }
-                        }, 100);
+                        }, 200);
                     }
                 }
                 
