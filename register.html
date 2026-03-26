@@ -1189,8 +1189,13 @@
 
             const container = document.getElementById('brokerageBtns');
             container.innerHTML = '';
+            const feeLabel = document.querySelector('#brokerageBtns').parentElement.querySelector('.form-label');
             
             if (role === 'realtor' || role === 'admin') {
+                if (feeLabel) feeLabel.innerHTML = '중개보수 지급 <span>*</span>';
+                container.className = 'trade-btn-group';
+                container.style.flexWrap = 'wrap';
+                
                 const options = ['공동중개 0%', '물건수수료지급 25%', '물건수수료지급 50%', '물건수수료지급 100%'];
                 options.forEach(opt => {
                     const btn = document.createElement('button');
@@ -1205,15 +1210,36 @@
                     container.appendChild(btn);
                 });
             } else {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'trade-btn active';
-                btn.innerText = '법정중개보수';
-                document.getElementById('brokerageFee').value = '법정중개보수';
-                btn.onclick = () => {
-                    // 일반회원은 옵션이 하나뿐이므로 항상 선택 상태
-                };
-                container.appendChild(btn);
+                if (feeLabel) feeLabel.innerHTML = '중개수수료 <span>*</span>';
+                container.className = '';
+                container.style.flexWrap = '';
+                
+                const htmlStr = `
+                    <div class="general-fee-container" style="background:#f8f9fa; border:1px solid #e9ecef; border-radius:8px; padding:20px;">
+                        <div style="display:flex; flex-direction:column; gap:15px; margin-bottom: 20px;">
+                            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="document.getElementById('brokerageFee').value='법정수수료 지급'">
+                                <input type="radio" name="genFeeRadio" value="법정수수료 지급" checked onchange="document.getElementById('brokerageFee').value='법정수수료 지급'" style="transform:scale(1.2);">
+                                <span style="font-weight:bold; color:#333;">법정수수료 지급</span>
+                            </label>
+
+                            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="document.getElementById('brokerageFee').value = (document.getElementById('feeAmtVal').value ? document.getElementById('feeAmtVal').value + '만' : '')">
+                                <input type="radio" name="genFeeRadio" value="amount" style="transform:scale(1.2);">
+                                <input type="number" id="feeAmtVal" placeholder="" style="width:80px; padding:5px; border:1px solid #ccc; border-radius:4px;" onfocus="document.querySelector('input[name=genFeeRadio][value=amount]').checked=true;" oninput="document.getElementById('brokerageFee').value = this.value ? this.value + '만' : ''"> <span style="font-weight:bold; color:#333;">만</span>
+                            </label>
+
+                            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="document.getElementById('brokerageFee').value = '기타 ' + (document.getElementById('feeOtherVal').value || '')">
+                                <input type="radio" name="genFeeRadio" value="other" style="transform:scale(1.2);">
+                                <span style="font-weight:bold; color:#1a73e8;">기타</span>
+                                <input type="text" id="feeOtherVal" placeholder="" style="flex:1; padding:5px; border:1px solid #ccc; border-radius:4px;" onfocus="document.querySelector('input[name=genFeeRadio][value=other]').checked=true;" oninput="document.getElementById('brokerageFee').value = '기타 ' + this.value">
+                            </label>
+                        </div>
+                        <div style="font-size:11px; color:#1a73e8; line-height:1.5; background:#eef4fd; padding:12px; border-radius:6px; font-weight:bold;">
+                            ① 매물의뢰서 작성자는 법정수수료를 지급하는 것에 대하여 동의하며, 중개수수료 지급관련 민원이 발생될 경우 <span style="color:#111;">공실뉴스</span> 매물 등록에 제한이 될 수 있음을 확인합니다.
+                        </div>
+                    </div>
+                `;
+                container.innerHTML = htmlStr;
+                document.getElementById('brokerageFee').value = '법정수수료 지급';
             }
         }
 
