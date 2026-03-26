@@ -1180,8 +1180,8 @@
                 addrEl.textContent = '-';
                 if(repEl) repEl.textContent = '';
                 
-                if (p.user_id && supabase) {
-                    supabase.from('members').select('*').eq('id', p.user_id).maybeSingle()
+                if (p.user_id && window.gongsiClient) {
+                    window.gongsiClient.from('members').select('*').eq('id', p.user_id).maybeSingle()
                     .then(({data: profile, error}) => {
                         if (error) {
                             console.error("Realtor fetch error", error);
