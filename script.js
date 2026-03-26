@@ -120,7 +120,7 @@ async function loadPortalNews(category, isLoadMore = false) {
         // articles 테이블에서 published 기사 로드
         let sb = window.gongsiClient || supabaseClient;
         let query = sb.from('articles')
-            .select('id, title, subtitle, content, section1, section2, article_type, reporter_name, reporter_email, keywords, view_count, created_at, rep_media_id, image_url')
+            .select('id, title, subtitle, content, section1, section2, article_type, reporter_name, reporter_email, keywords, view_count, created_at, rep_media_id')
             .eq('status', 'published')
             .order('created_at', { ascending: false });
 
@@ -180,13 +180,8 @@ async function loadPortalNews(category, isLoadMore = false) {
                 }
             }
 
-            // 2순위: articles.image_url 컬럼
-            if (!imgUrl && a.image_url && !a.image_url.includes('source.unsplash.com')) {
-                imgUrl = a.image_url;
-            }
-
-            let imgUrlFromContent = imgUrl;
-            let videoId2 = videoId;
+            // 사용 안 함 (articles.image_url 컬럼 없음)
+            // imgUrl은 article_media 조회 또는 content 파싱으로만 결정
 
             if (a.content) {
                 // 3순위: content에서 유튜브 embed iframe URL 파싱 (videoId 없는 경우에만)
