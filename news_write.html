@@ -974,11 +974,71 @@
             </div>
             
             <div class="modal-footer">
-                <button class="btn-confirm" onclick="closePhotoModal()">✓ 확인</button>
+                <button class="btn-confirm" onclick="confirmPhotoModal()">✓ 확인</button>
                 <button class="btn-cancel" onclick="closePhotoModal()">✕ 취소</button>
             </div>
         </div>
     </div>
+
+    <!-- 사진 추가 모달 로직 처리 -->
+    <script>
+    function confirmPhotoModal() {
+        const fileInput = document.getElementById('fileInput');
+        if (!fileInput.files || fileInput.files.length === 0) {
+            alert("사진 파일을 선택해주세요.");
+            return;
+        }
+        
+        const file = fileInput.files[0];
+        const captionEls = document.querySelectorAll('#photoModal .modal-textarea');
+        const caption = captionEls[0] ? captionEls[0].value.trim() : '';
+        
+        // 정렬 방식 파악
+        let alignStr = 'center';
+        const alignBtns = document.querySelectorAll('#photoModal .modal-row:nth-child(6) .pill-btn, #photoModal .modal-row:nth-child(7) .pill-btn'); // 캡션정렬
+        alignBtns.forEach(btn => {
+            if (btn.classList.contains('active-dark')) {
+                if (btn.innerText === '좌측') alignStr = 'left';
+                if (btn.innerText === '우측') alignStr = 'right';
+            }
+        });
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const dataUrl = e.target.result;
+            const imgId = 'photo_' + Date.now();
+            
+            const pOpen = '<p><br></p>';
+            const pClose = '<p><br></p>';
+            
+            const combinedHtml = pOpen + '<figure class="news-figure" draggable="true" data-type="lib-img" data-photo-id="' + imgId + '" style="text-align:' + alignStr + '; margin:8px auto;">'
+                + '<img src="' + dataUrl + '" style="max-width:100%; display:block; width:100%;">'
+                + '<figcaption contenteditable="true">' + caption + '</figcaption>'
+                + '</figure>' + pClose;
+                
+            if (typeof $ !== 'undefined' && $('#summernote').length) {
+                try {
+                    $('#summernote').summernote('pasteHTML', combinedHtml);
+                } catch(err) {
+                    console.error(err);
+                }
+            }
+            
+            // 기존 오른쪽 라이브러리 연동 (옵션)
+            if (typeof window.addPhotoFromDBToLibrary === 'function') {
+                window.addPhotoFromDBToLibrary(dataUrl);
+            }
+            
+            // 모달 초기화
+            fileInput.value = '';
+            document.getElementById('fileName').textContent = '선택된 파일 없음';
+            if (captionEls[0]) captionEls[0].value = '';
+            
+            closePhotoModal();
+        };
+        reader.readAsDataURL(file);
+    }
+    </script>
 
     <!-- 동영상 추가 모달 -->
     <div class="modal-overlay" id="videoModal">

@@ -294,9 +294,10 @@
         .extra-info-group { padding: 10px 20px 20px 20px; border-bottom: 10px solid #f5f5f5; }
         .extra-section { margin-bottom: 25px; }
         .extra-title { font-size: 16px; font-weight: bold; color: #111; margin-bottom: 15px; display: flex; align-items: center; }
-        .options-container { display: flex; flex-wrap: wrap; gap: 10px; }
-        .option-item { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 68px; height: 68px; background: #fafafa; border-radius: 8px; border: 1px solid #eee; color: #444; font-size: 11px; }
-        .option-icon { font-size: 24px; margin-bottom: 4px; color: #666; }
+        .options-container { display: flex; flex-wrap: wrap; gap: 20px; }
+        .option-item { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 60px; background: transparent; border: none; color: #111; font-size: 13px; }
+        .option-icon { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; margin-bottom: 10px; color: #111; }
+        .option-icon svg { width: 100%; height: 100%; stroke: #222; }
 
         /* ---------------- 상단 전면 필터 및 사이드바 정렬 바 스타일 ---------------- */
         .top-filter-bar { background: #fff; width: 100%; z-index: 20; position: relative; border-bottom: 1px solid #ccc; flex-shrink: 0; }
@@ -1396,23 +1397,27 @@
                 const card = document.getElementById(`property-card-${pastState.p.id}`);
                 if (card) card.classList.add('active');
                 
-                window.showPropertyDetail(pastState.p, { isBackEvent: true, targetTab: pastState.tab });
+                window.showPropertyDetail(pastState.p, { isBackEvent: true, targetTab: pastState.tab, restoreScrollTop: pastState.scrollTop });
             };
 
             window.showPropertyDetail = function(p, options = {}) {
                 const isBackEvent = options.isBackEvent || false;
                 const isInnerClick = options.isInnerClick || false;
                 const targetTab = options.targetTab || 'info';
+                const restoreScrollTop = options.restoreScrollTop || 0;
                 
                 const detailView = document.getElementById('propertyDetailView');
                 if (!detailView) return;
 
                 if (!isBackEvent && detailView.style.display === 'flex' && window.currentLoadedPropertyData) {
-                    // 내부 리스트(공실등록현황)에서 클릭했을 때만 이전 상태 저장
+                    // 내부 리스트(공실등록현황)에서 클릭했을 때만 이전 상태 및 스크롤 저장
+                    const scrollArea = detailView.querySelector('.detail-scroll-area');
+                    const savedScroll = scrollArea ? scrollArea.scrollTop : 0;
+
                     if (isInnerClick) {
                         const activeTabEl = document.querySelector('.detail-tabs .tab-item.active');
                         const currentTab = (activeTabEl && activeTabEl.id === 'tabBtnRealtor') ? 'realtor' : 'info';
-                        window.propertyHistoryStack.push({ p: window.currentLoadedPropertyData, tab: currentTab });
+                        window.propertyHistoryStack.push({ p: window.currentLoadedPropertyData, tab: currentTab, scrollTop: savedScroll });
                     } else {
                         // 외부 리스트(지도, 좌측 메인 리스트 등) 클릭 시 뒤로가기 내역 초기화
                         window.propertyHistoryStack = [];
@@ -1428,9 +1433,15 @@
                     backBtn.style.display = window.propertyHistoryStack.length > 0 ? 'flex' : 'none';
                 }
 
-                // 클릭할 때마다 스크롤을 맨 위로 초기화
+                // 스크롤 초기화 및 뒤로 가기 시 스크롤 복구
                 const scrollArea = detailView.querySelector('.detail-scroll-area');
-                if (scrollArea) scrollArea.scrollTop = 0;
+                if (scrollArea) {
+                    if (isBackEvent) {
+                        setTimeout(() => { scrollArea.scrollTop = restoreScrollTop; }, 80);
+                    } else {
+                        scrollArea.scrollTop = 0;
+                    }
+                }
 
                 // --- 최근 본 매물 저장 로직 ---
                 if (p && p.id) {
@@ -1623,14 +1634,36 @@
                 if (p.options && p.options.length > 0) {
                     // DB 스키마 v3.0: options는 text[] 배열
                     const optArray = Array.isArray(p.options) ? p.options.filter(Boolean) : p.options.split(',').map(o => o.trim()).filter(Boolean);
-                    const iconMap = {
-                        '에어컨': '❄️', '세탁기': '🧺', '냉장고': '🧊', '침대': '🛏️', '옷장': '🚪',
-                        '신발장': '👞', '싱크대': '🚰', '가스레인지': '🔥', '인덕션': '🔥', '전자레인지': '♨️', 'CCTV': '📹',
-                        '비디오폰': '📹', '인터폰': '📞', '무인택배함': '📦', '공동현관보안': '🔐', '현관보안': '🔐', '도어락': '🔐', '방범창': '🪟',
-                        '베란다': '🏢', '엘리베이터': '🛗', '주차가능': '🅿️', '마당': '🪴', '테라스': '☕'
+                    const iconMapSVG = {
+                        '에어컨': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="4" y="6" width="16" height="7" rx="1"></rect><path d="M7 13v4m5-4v5m5-4v4M5 9h14"></path></svg>',
+                        '세탁기': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="5" y="4" width="14" height="16" rx="1"></rect><circle cx="12" cy="13" r="4"></circle><path d="M8 7h2m2 0h1"></path></svg>',
+                        '냉장고': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="5" y="3" width="14" height="18" rx="1"></rect><path d="M5 10h14M8 5v2m0 7v3"></path></svg>',
+                        '침대': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 15V6a2 2 0 012-2h12a2 2 0 012 2v9m-16 0v3m0-3h16m0 0v3"></path><rect x="6" y="9" width="12" height="6" rx="1"></rect></svg>',
+                        '옷장': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="1"></rect><path d="M12 3v18M10 12v3m4-3v3"></path></svg>',
+                        '신발장': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M5 4h14v16H5zM5 9h14M5 14h14M8 20v2m8-2v2"></path><path d="M7 7.5h3m4 0h3M7 12.5h3M7 17.5h3C9 17.5 9.5 16 11 16"></path></svg>',
+                        '싱크대': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="4" y="10" width="16" height="10" rx="1"></rect><path d="M12 10v10M8 10v10M16 10v10M5 20v2m14-2v2M8 4v2m0 -2c0 -1.5 2 -2 3 -1s1 1.5 1 3v2M4 10V8h16v2"></path></svg>',
+                        '가스레인지': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="4" y="6" width="16" height="12" rx="1"></rect><circle cx="8" cy="10" r="1.5"></circle><circle cx="16" cy="10" r="1.5"></circle><circle cx="8" cy="14" r="1.5"></circle><circle cx="16" cy="14" r="1.5"></circle><path d="M4 18v2m16-2v2"></path></svg>',
+                        '인덕션': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="4" y="7" width="16" height="10" rx="1"></rect><circle cx="8" cy="12" r="2"></circle><circle cx="15" cy="12" r="3"></circle></svg>',
+                        '전자레인지': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="6" width="18" height="12" rx="1"></rect><path d="M16 6v12M18 9h1m-1 3h1m-1 3h1M6 10c1-2 3-2 4 0s3 2 4 0"></path></svg>',
+                        'CCTV': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M15 10l4-3v10l-4-3v-4z"></path><rect x="5" y="8" width="10" height="8" rx="1"></rect></svg>',
+                        '비디오폰': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="6" y="4" width="12" height="16" rx="2"></rect><circle cx="12" cy="10" r="2"></circle><path d="M10 16h4"></path></svg>',
+                        '인터폰': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="5" y="4" width="14" height="16" rx="2"></rect><path d="M9 10h6M9 14h6"></path><circle cx="12" cy="7" r="1.5" fill="currentColor"></circle></svg>',
+                        '무인택배함': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="1"></rect><path d="M4 12h16M12 4v16M8 8h.01M16 8h.01M8 16h.01M16 16h.01"></path></svg>',
+                        '공동현관보안': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="1"></rect><path d="M8 11V7a4 4 0 018 0v4M12 15v2"></path></svg>',
+                        '현관보안': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="1"></rect><path d="M8 11V7a4 4 0 018 0v4M12 15v2"></path></svg>',
+                        '도어락': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="6" y="4" width="12" height="16" rx="1"></rect><circle cx="12" cy="16" r="2"></circle><path d="M9 8h1v1H9zM12 8h1v1h-1zM15 8h1v1h-1zM9 11h1v1H9zM12 11h1v1h-1zM15 11h1v1h-1z"></path></svg>',
+                        '방범창': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="1"></rect><path d="M4 12h16M12 4v16M8 4v16M16 4v16M4 8h16M4 16h16"></path></svg>',
+                        '베란다': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 14h18M5 14v6m14-6v6M8 14v6m4-6v6m4-6v6"></path><rect x="4" y="4" width="16" height="10" rx="1"></rect></svg>',
+                        '엘리베이터': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="1"></rect><path d="M12 3v18M8 12l2-2 2 2M16 12l-2 2-2-2"></path></svg>',
+                        '비데': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7 10c0-3 2-4 5-4s5 1 5 4v4c0 3-2 5-5 5s-5-2-5-5v-4z"></path><path d="M12 6V3m-4 0h8"></path><circle cx="12" cy="14" r="2"></circle></svg>',
+                        '주차가능': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M9 16V8h4c2 0 3 1 3 2.5S15 13 13 13H9"></path></svg>',
+                        '마당': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 20h16M6 20v-5c0-3 3-5 5-5s5 2 5 5v5M12 10V4m-3 3l3-3 3 3"></path></svg>',
+                        '테라스': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 12h16M6 12v8m12-8v8M9 12v8m6-8v8M4 6h16"></path></svg>',
+                        'TV': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="7" width="18" height="11" rx="1"></rect><path d="M8 3l4 4 4-4M10 21h4"></path></svg>'
                     };
+                    const defaultIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4l3 3"></path></svg>';
                     optArray.forEach(opt => {
-                        const icon = iconMap[opt] || '✅';
+                        const icon = iconMapSVG[opt] || defaultIcon;
                         optContainer.innerHTML += `
                             <div class="option-item">
                                 <div class="option-icon">${icon}</div>
