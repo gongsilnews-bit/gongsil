@@ -1932,6 +1932,24 @@
             renderVideoGrid();
         }
 
+        // === 사진 (포토DB 연동 함수) ===
+        window.addPhotoFromDBToLibrary = function(url) {
+            var id = 'photo_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+            libPhotos.push({ id: id, dataUrl: url, caption: '' });
+            if (!globalRepId) {
+                globalRepId = id;
+            }
+            renderPhotoGrid();
+
+            var combinedHtml = '<p></p>'
+                + '<figure class="news-figure" draggable="true" data-type="lib-img" data-photo-id="' + id + '" style="text-align:center; margin:8px auto;">'
+                + '<img src="' + url + '" style="max-width:100%; display:block; width:100%;">'
+                + '<figcaption contenteditable="true"></figcaption>'
+                + '</figure>'
+                + '<p></p>';
+            insertNodeAtCursor(combinedHtml);
+        };
+
         // === 사진 ===
         function addLibraryPhotos(inputEl) {
             const files = Array.from(inputEl.files);
