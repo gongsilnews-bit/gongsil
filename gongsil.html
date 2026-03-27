@@ -1393,6 +1393,27 @@
                 document.getElementById('docPriceSubInfo').innerHTML = subInfoArr.join(' <span style="margin:0 4px; color:#ddd;">|</span> ');
                 
                 document.getElementById('docSummaryRooms').textContent = `룸 ${p.room_count || '0'}개`;
+                
+                // 면적 있던 자리에 옵션 넣기 (최대 3개)
+                const optionsStr = (p.options && Array.isArray(p.options) && p.options.length > 0) ? p.options.slice(0,3).join(', ') : '옵션 미확인';
+                document.getElementById('docSummaryArea').textContent = optionsStr;
+
+                const isGeneralBuilding = p.main_category === '상가·업무·공장·토지' || p.main_category === '빌라·주택';
+
+                // Table Info
+                let addr = `${p.sido || ''} ${p.sigungu || ''} ${p.dong || ''} ${p.detail_address || ''}`.trim();
+                let docFeaturesStr = p.building_name || p.property_type || '-';
+                
+                if (p.is_room_private) {
+                    if (isGeneralBuilding) {
+                        addr = `${p.sido || ''} ${p.sigungu || ''} ${p.dong || ''}`.trim();
+                        docFeaturesStr = p.property_type || '-';
+                    }
+                }
+
+                document.getElementById('docLocation').textContent = addr || '주소 정보 없음';
+                document.getElementById('docFeatures').textContent = docFeaturesStr;
+                
                 document.getElementById('docAreaValue').textContent = areaDisplay || '-';
                 document.getElementById('docFloor').textContent = `${p.current_floor || '-'}층 / ${p.total_floor || '-'}층`;
                 document.getElementById('docRoomsDetail').textContent = `${p.room_count || '0'}개 / ${p.bathroom_count || '0'}개`;
