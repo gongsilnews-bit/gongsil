@@ -113,10 +113,18 @@
         .tab-item.active { color: #111; border-bottom-color: #111; }
 
         /* ── 정보 테이블 ── */
-        .info-grid { display: grid; grid-template-columns: 110px 1fr; padding: 16px 0; row-gap: 14px; border-bottom: 1px solid #eee; }
-        .info-label { font-size: 13px; color: #888; }
-        .info-value { font-size: 13px; color: #222; font-weight: 600; word-break: break-all; }
-        .info-desc { grid-column: 1 / -1; font-size: 14px; color: #444; line-height: 1.7; white-space: pre-wrap; padding: 14px; background: #fafafa; border-radius: 6px; margin-top: 4px;}
+        .info-grid { display: grid; grid-template-columns: 110px 1fr; margin: 16px 0; border-top: 2px solid #333; border-bottom: 1px solid #333; }
+        .info-label { 
+            font-size: 13px; color: #444; background: #f7f9fa; font-weight: bold;
+            display: flex; align-items: flex-start; padding: 14px 12px 14px 16px;
+            border-bottom: 1px solid #eee;
+        }
+        .info-value { 
+            font-size: 13px; color: #222; font-weight: 500; 
+            padding: 14px 16px; border-bottom: 1px solid #eee;
+            line-height: 1.6; word-break: break-all;
+        }
+        .info-desc { white-space: pre-wrap; }
 
         /* ── 지도 / 로드뷰 패널 ── */
         .extra-section { padding: 20px 0; border-bottom: 1px solid #eee; }
@@ -359,8 +367,7 @@ function render() {
     var infoHtml = '<div id="tabInfoArea">' + 
         '<div class="info-grid">' +
             infoRows.map(function(arr) { return '<div class="info-label">'+arr[0]+'</div><div class="info-value">'+escHtml(arr[1])+'</div>'; }).join('') +
-            '<div class="info-label">상세설명</div><div class="info-value"></div>' +
-            '<div class="info-desc">' + escHtml(p.description || '') + '</div>' +
+            '<div class="info-label">상세설명</div><div class="info-value info-desc">' + escHtml(p.description || '') + '</div>' +
         '</div>' +
         '<div class="extra-section"><div class="extra-title">📍 위치정보</div><div id="viewMiniMap" class="map-box">로딩중...</div></div>' +
         '<div class="extra-section"><div class="extra-title">🛣️ 로드뷰</div><div id="viewRoadview" class="map-box">로딩중...</div></div>' +
