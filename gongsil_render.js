@@ -134,19 +134,77 @@ function renderPropertyCards(props) {
             const priceStr = formatPriceDisplay(p);
             const imgUrl = (p.images && p.images.length > 0) ? p.images[0] : 'https://via.placeholder.com/150/EEEEEE/999999?text=No+Image';
 
+            // 아파트/오피스텔 상단 이름
+            let propTitle = p.building_name || p.property_type || '공실매물';
+            if (p.main_category === '아파트·오피스텔') {
+                let aptName = p.building_name || p.property_type || '';
+                let dongStr = '';
+                if (p.dong_number) dongStr = String(p.dong_number).includes('동') ? p.dong_number : `${p.dong_number}동`;
+                let roomStr = '';
+                if (p.room_number) roomStr = String(p.room_number).includes('호') ? p.room_number : `${p.room_number}호`;
+                let tempStr = `${aptName} ${dongStr} ${roomStr}`.trim();
+                if (tempStr) propTitle = tempStr;
+            }
+
+            const badgeText = (function(pf) {
+                if (!pf) return '공실매물';
+                if (pf.includes('100') || pf.includes('양타')) return '수수료100%';
+                if (pf.includes('50') || pf.includes('단타')) return '수수료50%';
+                if (pf.includes('25')) return '수수료25%';
+                if (pf.includes('공동')) return '공동중개';
+                return '공동중개';
+            })(p.brokerage_fee);
+
+            // 면적 표시
+            const supAreaM2 = p.supply_area ? parseFloat(p.supply_area) : 0;
+            const excAreaM2 = p.dedicated_area ? parseFloat(p.dedicated_area) : (p.area ? parseFloat(p.area) : 0);
+            const fmtM2P = (m2) => m2 ? `${m2}㎡(${(m2 / 3.3058).toFixed(1)}평)` : '';
+            let areaDisplay = '';
+            if (supAreaM2 && excAreaM2) areaDisplay = `${fmtM2P(supAreaM2)} / ${fmtM2P(excAreaM2)}`;
+            else if (supAreaM2) areaDisplay = fmtM2P(supAreaM2);
+            else if (excAreaM2) areaDisplay = fmtM2P(excAreaM2);
+            else areaDisplay = '정보없음';
+
+            // 서브 정보: 물건종류 | 방향 | 면적
+            const directionStr = p.room_direction || p.direction || '';
+            let subInfoArr = [];
+            if (p.property_type) subInfoArr.push(p.property_type);
+            if (directionStr) subInfoArr.push(directionStr);
+            if (areaDisplay !== '정보없음') subInfoArr.push(areaDisplay);
+            const subInfoHtml = subInfoArr.join(' <span style="color:#ddd; margin:0 4px;">|</span> ');
+
+            // 룸/옵션 정보
+            const optionsStr = (p.options && Array.isArray(p.options) && p.options.length > 0) ? p.options.join(', ') : '';
+            let roomFeatureArr = [];
+            roomFeatureArr.push(`룸 ${p.room_count||'0'}개`);
+            if (p.bathroom_count) roomFeatureArr.push(`욕실 ${p.bathroom_count}개`);
+            if (optionsStr) roomFeatureArr.push(optionsStr);
+            const roomInfoHtml = roomFeatureArr.join(', ');
+
+            // 등록일
+            const regDate = new Date(p.created_at);
+            const dateStr = `${regDate.getFullYear()}.${String(regDate.getMonth()+1).padStart(2,'0')}.${String(regDate.getDate()).padStart(2,'0')}.`;
+
+            let imgHtml = '';
+            if (p.images && p.images.length > 0) {
+                imgHtml = `<div class="property-image"><img src="${p.images[0]}" alt="매물사진"></div>`;
+            } else {
+                imgHtml = `<div class="property-image"><img src="https://via.placeholder.com/150/EEEEEE/999999?text=No+Image" alt="매물사진"></div>`;
+            }
+
             card.innerHTML = `
-                <div class="property-info">
-                    <span class="recommend-tag">추천</span>
-                    <h3 class="price-title">${priceStr}</h3>
-                    <div class="maintenance-fee">관리비 ${p.maintenance_fee || 0}만원</div>
-                    <div class="property-desc">${p.property_type || '매물'} · ${p.area || '-'}㎡ · 층 정보없음</div>
-                    <div class="property-loc">${p.sido || ''} ${p.sigungu || ''} ${p.dong || ''}</div>
-                    <div class="property-detail">${p.description || p.building_name || ''}</div>
-                </div>
-                <div class="property-image">
-                    <img src="${imgUrl}" alt="매물사진">
-                </div>
-            `;
+                        <div class="property-info" style="${imgHtml ? '' : 'width: 100%;'}">
+                            <div class="card-prop-title">${propTitle}</div>
+                            <div class="card-price">${priceStr}</div>
+                            <div class="card-prop-sub">${subInfoHtml}</div>
+                            <div class="card-prop-rooms">${roomInfoHtml}</div>
+                            <div class="card-prop-footer">
+                                <span class="tag-confirm">${badgeText}</span>
+                                <span class="card-prop-date">${dateStr}</span>
+                            </div>
+                        </div>
+                        ${imgHtml}
+                    `;
             listArea.appendChild(card);
         } catch (e) {
             console.error("Card render error:", e, p);
