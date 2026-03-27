@@ -1350,36 +1350,20 @@
             }
         } else {
             // 기사 작성 화면: '라이브러리'에 추가 및 본문에 삽입
-            
-            // 1. 우측 라이브러리에 사진 추가 (전역 변수 libPhotos 연동)
-            var imgId = 'photo_' + Date.now();
-            if (typeof window.libPhotos !== 'undefined') {
-                window.libPhotos.push({ id: imgId, dataUrl: url, caption: '' });
-                if (typeof window.globalRepId !== 'undefined' && !window.globalRepId) {
-                    window.globalRepId = imgId;
-                }
-                if (typeof window.renderPhotoGrid === 'function') {
-                    window.renderPhotoGrid();
-                }
-            }
-
-            // 2. 에디터 본문에 HTML 노드 삽입
-            var combinedHtml = '<p></p>'
-                + '<figure class="news-figure" draggable="true" data-type="lib-img" data-photo-id="' + imgId + '" style="text-align:center; margin:8px auto;">'
-                + '<img src="' + url + '" style="max-width:100%; display:block; width:100%;">'
-                + '<figcaption contenteditable="true"></figcaption>'
-                + '</figure><p></p>';
-
-            if (typeof window.insertNodeAtCursor === 'function') {
-                window.insertNodeAtCursor(combinedHtml);
+            if (typeof window.addPhotoFromDBToLibrary === 'function') {
+                window.addPhotoFromDBToLibrary(url);
             } else if (typeof $ !== 'undefined' && $('#summernote').length) {
+                // 폴백: 에디터에만 직접 삽입
+                var imgId = 'photo_' + Date.now();
+                var combinedHtml = '<p></p>'
+                    + '<figure class="news-figure" draggable="true" data-type="lib-img" data-photo-id="' + imgId + '" style="text-align:center; margin:8px auto;">'
+                    + '<img src="' + url + '" style="max-width:100%; display:block; width:100%;">'
+                    + '<figcaption contenteditable="true"></figcaption>'
+                    + '</figure><p></p>';
                 $('#summernote').summernote('pasteHTML', combinedHtml);
             } else {
-                // 알림 및 클립보드 복사 폴백
                 navigator.clipboard.writeText(url).catch(() => {});
-                // alert(`이미지가 본문에 삽입되었습니다.`);
             }
-
             closePhotodbModal();
         }
     }
