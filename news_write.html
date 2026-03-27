@@ -1273,11 +1273,15 @@
                         ✓ 사용하기
                     </button>
                     <button onclick="event.stopPropagation(); togglePdbFavorite('${p.id}', this)"
-                        style="flex:1; border:none; background:none; padding:8px 4px; cursor:pointer; color:${p.is_favorite ? '#f59e0b' : '#aaa'}; font-weight:600;">
+                        style="flex:1; border:none; background:none; padding:8px 4px; cursor:pointer; color:${p.is_favorite ? '#f59e0b' : '#aaa'}; font-weight:600; border-right:1px solid #f0f0f0;">
                         ${p.is_favorite ? '⭐ 즐겨찾기' : '☆ 즐겨찾기'}
                     </button>
+                    <button onclick="event.stopPropagation(); movePdbPhotoFolder('${p.id}')"
+                        style="flex:0 0 auto; border:none; background:none; padding:8px 10px; cursor:pointer; color:#3b82f6; font-weight:600; font-size:11px; border-right:1px solid #f0f0f0;" title="폴더 변경">
+                        📁이동
+                    </button>
                     <button onclick="event.stopPropagation(); deletePdbPhoto('${p.id}', this.closest('div[style*=border-radius]'))"
-                        style="flex:0 0 auto; border:none; background:none; padding:8px 10px; cursor:pointer; color:#ef4444; font-weight:600;">
+                        style="flex:0 0 auto; border:none; background:none; padding:8px 10px; cursor:pointer; color:#ef4444; font-weight:600;" title="삭제">
                         🗑
                     </button>
                 </div>`;
@@ -1405,10 +1409,18 @@
         cardEl?.remove();
     }
 
+    // ─── 예외 상황 대비 강제 주입 함수 ───
+    function forceInsertPhoto(url, photoId) {
+        var imgId = 'photo_' + photoId;
+        var combinedHtml = '<p></p><figure class="news-figure" draggable="true" data-type="lib-img" data-photo-id="' + imgId + '" style="text-align:center; margin:8px auto;"><img src="' + url + '" style="max-width:100%; display:block; width:100%;"><figcaption contenteditable="true"></figcaption></figure><p></p>';
+        if (typeof $ !== 'undefined' && $('#summernote').length) {
+            try { $('#summernote').summernote('pasteHTML', combinedHtml); } catch(e) { }
+        }
+    }
+
     // ─── 사용하기 (기사 본문에 삽입 or 매물 이미지에 추가) ───
     async function usePhotoInArticle(url, photoId) {
         const sb = window.gongsiClient;
-        // 사용횟수 +1
         if (sb && photoId) {
             sb.rpc('increment_photo_used', { pid: photoId }).catch(() => {
                 sb.from('user_photos').select('used_count').eq('id', photoId).single().then(({ data }) => {
@@ -1418,36 +1430,47 @@
         }
 
         if (window._pdbMode === 'property') {
-            // 매물 등록 이미지 배열에 추가
             if (typeof window.addPdbImageToProperty === 'function') {
                 window.addPdbImageToProperty(url);
                 closePhotodbModal();
             }
         } else {
-            // 기사 작성 화면: '라이브러리'에 추가 및 본문에 삽입
             try {
                 if (typeof window.addPhotoFromDBToLibrary === 'function') {
                     window.addPhotoFromDBToLibrary(url);
-                } else if (typeof $ !== 'undefined' && $('#summernote').length) {
-                    // 폴백: 에디터에만 직접 삽입
-                    var imgId = 'photo_' + Date.now();
-                    var combinedHtml = '<p></p>'
-                        + '<figure class="news-figure" draggable="true" data-type="lib-img" data-photo-id="' + imgId + '" style="text-align:center; margin:8px auto;">'
-                        + '<img src="' + url + '" style="max-width:100%; display:block; width:100%;">'
-                        + '<figcaption contenteditable="true"></figcaption>'
-                        + '</figure><p></p>';
-                    $('#summernote').summernote('pasteHTML', combinedHtml);
                 } else {
-                    navigator.clipboard.writeText(url).catch(() => {});
-                    alert("코드 구조 문제로 에디터 접근이 불가하여 클립보드에 이미지 주소를 복사했습니다: " + url);
+                    forceInsertPhoto(url, photoId);
                 }
             } catch (err) {
                 console.error("본문 삽입 중 오류:", err);
-                alert("이미지 처리 중 일시적인 오류가 발생했습니다. 에디터를 클릭한 후 다시 시도해보세요.\n\n" + err.message);
+                forceInsertPhoto(url, photoId); // 2차 공격적인 강제 폴백
             }
             closePhotodbModal();
         }
     }
+
+    // ─── 폴더 이동 (정리) ───
+    async function movePdbPhotoFolder(photoId) {
+        const newFolder = prompt("이동할 폴더명을 써주세요 (새로 직접 입력하거나 기존 폴더명 입력):");
+        if (!newFolder || !newFolder.trim()) return;
+        const targetFolder = newFolder.trim();
+
+        const sb = window.gongsiClient;
+        if (!sb) return;
+
+        const { error } = await sb.from('user_photos').update({ folder_name: targetFolder }).eq('id', photoId);
+        if (error) return alert("이동 오류: " + error.message);
+        
+        // 폴더 목록 갱신
+        let savedFolders = JSON.parse(localStorage.getItem('pdb_folders_' + window._pdbCurrentUserId) || '[]');
+        if (!savedFolders.includes(targetFolder) && targetFolder !== '기본 폴더') {
+            savedFolders.push(targetFolder);
+            localStorage.setItem('pdb_folders_' + window._pdbCurrentUserId, JSON.stringify(savedFolders));
+        }
+        await loadPhotodbFolders();
+        loadPhotoDB();
+    }
+
     </script>
 
     <!-- AI 기사작성 마법사 모달 -->
