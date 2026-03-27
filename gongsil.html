@@ -844,18 +844,18 @@
                         <div style="font-size: 13px; color: #666; margin-bottom: 4px;" id="docRealtorAddr">서울특별시 강남구 남부순환로 2917</div>
                         <div style="font-size: 15px; font-weight: bold; color: #1f5edb; margin-bottom: 15px; margin-top: 8px;"><span style="color:#1f5edb; margin-right: 4px;">☎</span> <span id="docRealtorPhone">02-564-7600 / 010-8456-2730</span></div>
                         
-                        <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; font-size: 13px; color: #333; display: flex; gap: 15px; justify-content: center;">
-                            <span>매매 <strong style="color:#111" id="docRealtorCountSale">0</strong></span>
-                            <span style="color:#ddd">|</span>
-                            <span>전세 <strong style="color:#111" id="docRealtorCountJeonse">0</strong></span>
-                            <span style="color:#ddd">|</span>
-                            <span>월세 <strong style="color:#111" id="docRealtorCountWolse">0</strong></span>
-                            <span style="color:#ddd">|</span>
-                            <span>단기 <strong style="color:#111" id="docRealtorCountShort">0</strong></span>
+                        <div class="realtor-tab-bar" style="background: #f8f9fa; border-radius: 6px; font-size: 13px; color: #555; display: flex; align-items: stretch; justify-content: flex-start; padding: 0 16px; margin-bottom: 25px; border: 1px solid #ebebeb;">
+                            <div class="realtor-filter-tab active" data-type="전체" style="padding: 12px 15px 12px 0; cursor: pointer; font-weight: bold; color: #111; border-bottom: 2px solid #111; margin-bottom: -1px;" onclick="window.filterRealtorProps('전체', this)">공실등록현황</div>
+                            <div style="flex:1;"></div>
+                            <div class="realtor-filter-tab" data-type="매매" style="padding: 12px 5px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;" onclick="window.filterRealtorProps('매매', this)">매매 <strong style="color:#111" id="docRealtorCountSale">0</strong></div>
+                            <span style="display:flex; align-items:center; color:#ddd; margin: 0 5px;">|</span>
+                            <div class="realtor-filter-tab" data-type="전세" style="padding: 12px 5px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;" onclick="window.filterRealtorProps('전세', this)">전세 <strong style="color:#111" id="docRealtorCountJeonse">0</strong></div>
+                            <span style="display:flex; align-items:center; color:#ddd; margin: 0 5px;">|</span>
+                            <div class="realtor-filter-tab" data-type="월세" style="padding: 12px 5px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;" onclick="window.filterRealtorProps('월세', this)">월세 <strong style="color:#111" id="docRealtorCountWolse">0</strong></div>
+                            <span style="display:flex; align-items:center; color:#ddd; margin: 0 5px;">|</span>
+                            <div class="realtor-filter-tab" data-type="단기" style="padding: 12px 0 12px 5px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;" onclick="window.filterRealtorProps('단기', this)">단기 <strong style="color:#111" id="docRealtorCountShort">0</strong></div>
                         </div>
                     </div>
-
-                    <div style="font-weight:bold; font-size:16px; margin-bottom:15px; border-bottom:2px solid #111; padding-bottom:10px;">공실등록현황</div>
 
                     <!-- 공실등록현황 내용 (기본 표시) -->
                     <div id="subTabProps" style="display:block;">
@@ -2320,39 +2320,120 @@
                 if(cWolseEl) cWolseEl.textContent = cWolse;
                 if(cShortEl) cShortEl.textContent = cShort;
                 
-                // 2. 리스트 렌더링
-                const listEl = document.getElementById('subTabProps');
-                if (!listEl) return;
-                
-                listEl.innerHTML = '';
-                if (props.length === 0) {
-                    listEl.innerHTML = '<div style="text-align:center; padding:30px; color:#888; font-size:13px;">등록된 공실 정보가 없습니다.</div>';
-                    return;
+                window.currentRealtorPropsList = props;
+                const tabTotal = document.querySelector('.realtor-filter-tab[data-type="전체"]');
+                if (tabTotal) {
+                    window.filterRealtorProps('전체', tabTotal);
                 }
-                
-                props.forEach(p => {
-                    const priceStr = window.formatPriceDisplay ? window.formatPriceDisplay(p) : '-';
-                    const confirmDate = new Date(p.updated_at || p.created_at).toISOString().slice(0,10).replace(/-/g, '.');
-                    const areaStr = (p.supply_area && p.area) ? `${p.supply_area}m² / ${p.area}m²` : (p.area || p.supply_area || '-');
-                    const typeStr = p.property_type || '부동산 매물';
-                    const title = p.building_name || p.detail_address || '상세주소 비공개';
-                    
-                    const itemHTML = `
-                        <div style="border-bottom: 1px solid #f0f0f0; padding-bottom: 15px; margin-bottom: 15px; cursor: pointer;" onclick="event.stopPropagation(); window.showPropertyDetail(JSON.parse(decodeURIComponent('${encodeURIComponent(JSON.stringify(p))}')))">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                                <div style="font-size:12px; color:#888;">${typeStr} <span style="background:#f9f9f9; padding:2px 4px; border-radius:2px; font-size:11px; margin-left:4px;">확인 ${confirmDate}</span></div>
-                            </div>
-                            <div style="font-size:15px; font-weight:bold; color:#111; margin-bottom:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${title}</div>
-                            <div style="font-size:17px; font-weight:bold; color:#111; margin-bottom:5px;">${p.trade_type} ${priceStr}</div>
-                            <div style="font-size:13px; color:#666;">${areaStr}</div>
-                        </div>
-                    `;
-                    listEl.insertAdjacentHTML('beforeend', itemHTML);
-                });
-                
             } catch (err) {
                 console.error("Error loading realtor properties:", err);
             }
+        };
+
+        window.filterRealtorProps = function(type, el) {
+            const tabs = document.querySelectorAll('.realtor-filter-tab');
+            tabs.forEach(t => {
+                t.style.fontWeight = 'normal';
+                t.style.color = '#555';
+                t.style.borderBottomColor = 'transparent';
+                t.classList.remove('active');
+            });
+            if (el) {
+                el.style.fontWeight = 'bold';
+                el.style.color = '#111';
+                el.style.borderBottomColor = '#111';
+                el.classList.add('active');
+            }
+
+            const listEl = document.getElementById('subTabProps');
+            if (!listEl) return;
+            listEl.innerHTML = '';
+            
+            let filtered = window.currentRealtorPropsList || [];
+            if (type !== '전체') {
+                filtered = filtered.filter(p => p.trade_type === type);
+            }
+            
+            if (filtered.length === 0) {
+                listEl.innerHTML = '<div style="text-align:center; padding:30px; color:#888; font-size:13px;">등록된 공실 정보가 없습니다.</div>';
+                return;
+            }
+            
+            filtered.forEach(p => {
+                const priceStr = window.formatPriceDisplay ? window.formatPriceDisplay(p) : '-';
+                
+                let propTitle = p.building_name || p.property_type || '공실매물';
+                if (p.main_category === '아파트·오피스텔') {
+                    let aptName = p.building_name || p.property_type || '';
+                    let dongStr = '';
+                    if (p.dong_number) dongStr = String(p.dong_number).includes('동') ? p.dong_number : `${p.dong_number}동`;
+                    let roomStr = '';
+                    if (p.room_number) roomStr = String(p.room_number).includes('호') ? p.room_number : `${p.room_number}호`;
+                    let tempStr = `${aptName} ${dongStr} ${roomStr}`.trim();
+                    if (tempStr) propTitle = tempStr;
+                }
+
+                const badgeText = (function(pf) {
+                    if (!pf) return '공실매물';
+                    if (pf.includes('100') || pf.includes('양타')) return '수수료100%';
+                    if (pf.includes('50') || pf.includes('단타')) return '수수료50%';
+                    if (pf.includes('25')) return '수수료25%';
+                    if (pf.includes('공동')) return '공동중개';
+                    return '공동중개';
+                })(p.brokerage_fee);
+
+                const supAreaM2 = p.supply_area ? parseFloat(p.supply_area) : 0;
+                const excAreaM2 = p.dedicated_area ? parseFloat(p.dedicated_area) : (p.area ? parseFloat(p.area) : 0);
+                const fmtM2P = (m2) => m2 ? `${m2}㎡(${(m2 / 3.3058).toFixed(1)}평)` : '';
+                let areaDisplay = '';
+                if (supAreaM2 && excAreaM2) areaDisplay = `${fmtM2P(supAreaM2)} / ${fmtM2P(excAreaM2)}`;
+                else if (supAreaM2) areaDisplay = fmtM2P(supAreaM2);
+                else if (excAreaM2) areaDisplay = fmtM2P(excAreaM2);
+                else areaDisplay = '정보없음';
+
+                const directionStr = p.room_direction || p.direction || '';
+                let subInfoArr = [];
+                if (p.property_type) subInfoArr.push(p.property_type);
+                if (directionStr) subInfoArr.push(directionStr);
+                if (areaDisplay !== '정보없음') subInfoArr.push(areaDisplay);
+                const subInfoHtml = subInfoArr.join(' <span style="color:#ddd; margin:0 4px;">|</span> ');
+
+                const optionsStr = (p.options && Array.isArray(p.options) && p.options.length > 0) ? p.options.join(', ') : '';
+                let roomFeatureArr = [];
+                roomFeatureArr.push(`룸 ${p.room_count||'0'}개`);
+                if (p.bathroom_count) roomFeatureArr.push(`욕실 ${p.bathroom_count}개`);
+                if (optionsStr) roomFeatureArr.push(optionsStr);
+                const roomInfoHtml = roomFeatureArr.join(', ');
+
+                const regDate = new Date(p.created_at);
+                const dateStr = `${regDate.getFullYear()}.${String(regDate.getMonth()+1).padStart(2,'0')}.${String(regDate.getDate()).padStart(2,'0')}.`;
+
+                let imgHtml = '';
+                if (p.images && p.images.length > 0) {
+                    imgHtml = `<div class="property-image" style="width:90px;height:90px;flex-shrink:0;margin-left:5px;"><img src="${p.images[0]}" alt="매물사진" style="width:100%;height:100%;object-fit:cover;border-radius:6px;"></div>`;
+                } else {
+                    imgHtml = `<div class="property-image" style="width:90px;height:90px;flex-shrink:0;margin-left:5px;"><img src="https://via.placeholder.com/150/EEEEEE/999999?text=No+Image" alt="매물사진" style="width:100%;height:100%;object-fit:cover;border-radius:6px;"></div>`;
+                }
+
+                const jsonStr = encodeURIComponent(JSON.stringify(p));
+
+                const itemHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; padding:16px 0; border-bottom:1px solid #ebebeb; cursor:pointer;" onclick="event.stopPropagation(); window.showPropertyDetail(JSON.parse(decodeURIComponent('${jsonStr}')))">
+                        <div class="property-info" style="flex:1; padding-right:15px; display:flex; flex-direction:column; justify-content:center; min-width:0; gap: 2px;">
+                            <div class="card-prop-title" style="font-size:14px; font-weight:bold; color:#111; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.3;">${propTitle}</div>
+                            <div class="card-price" style="font-size:16px; font-weight:800; color:var(--primary-color); line-height:1.3;">${priceStr}</div>
+                            <div class="card-prop-sub" style="font-size:13px; color:#555; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2;">${subInfoHtml}</div>
+                            <div class="card-prop-rooms" style="font-size:12px; color:#666; margin-bottom:4px; display:-webkit-box; -webkit-line-clamp:1; line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; line-height:1.2;">${roomInfoHtml}</div>
+                            <div class="card-prop-footer" style="display:flex; align-items:center; gap:8px; margin-top:auto;">
+                                <span class="tag-confirm" style="font-size:11px; font-weight:bold; color:#ff5a5f; border:1px solid #ff5a5f; padding:2px 4px; border-radius:2px;">${badgeText}</span>
+                                <span class="card-prop-date" style="font-size:11px; color:#aaa;">${dateStr}</span>
+                            </div>
+                        </div>
+                        ${imgHtml}
+                    </div>
+                `;
+                listEl.insertAdjacentHTML('beforeend', itemHTML);
+            });
         };
 
         window.loadPropertyInquiries = async function(propertyId, realtorId) {
