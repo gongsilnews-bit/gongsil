@@ -523,8 +523,8 @@ window.toggleStatus = async function() {
 
 // 지도/로드뷰 로드
 function loadKakaoMap(p) {
-    // detail_address를 빼고 동까지만 넣어야 좌표를 제대로 찾을 확률이 높음.
-    var searchAddr = [p.sido, p.sigungu, p.dong].filter(Boolean).join(' ');
+    // detail_address 까지 모두 포함해야 검색되는 경우가 있음. (특히 번지수/도로명이 detail_address에 들어있을 때)
+    var searchAddr = [p.sido, p.sigungu, p.dong, p.detail_address].filter(Boolean).join(' ');
     if (!searchAddr || typeof kakao === 'undefined') {
         document.getElementById('viewMiniMap').innerHTML = '주소 정보가 없습니다.';
         document.getElementById('viewRoadview').innerHTML = '주소 정보가 없습니다.';
@@ -589,13 +589,15 @@ async function loadInquiries(p) {
     li.innerHTML = data.map(function(q) {
         var isMine = (ud.email === q.author_email || q.author_id === ud?.profile?.id);
         
-        // 권한 체크: 문의자 본인이거나, 이 매물의 주인이거나, 관리자이거나
+        // 권한 체크: 문의자 본인이거나, 매물의 주인이거나, 관리자이거나
         if(!isMine && !isPropertyAuthor && !isAdmin) {
-            return '<div class="reply-item"><div class="reply-meta">🔒 비밀글입니다.</div></div>';
+            return '<div class="reply-item"><div class="reply-meta">🔒 비밀글입니다. 작성자와 등록자만 확인 가능합니다.</div></div>';
         }
         
         var d = new Date(q.created_at).toLocaleString('ko-KR');
-        var nameTxt = q.author_name || q.author_email || '사용자';
+        var nameTxt = (q.author_id === ud?.profile?.id) ? (ud?.profile?.name || '나의 문의') : '비밀 문의';
+        if(isPropertyAuthor && q.author_id !== ud?.profile?.id) nameTxt = '고객 문의';
+
         var qHtml = '<div class="reply-item">' +
             '<div class="reply-meta"><span class="reply-author">'+escHtml(nameTxt)+'</span><span class="reply-date">'+d+'</span></div>' +
             '<div class="reply-content">'+escHtml(q.content).replace(/\n/g, '<br>')+'</div>';
@@ -633,10 +635,7 @@ window.submitInquiry = async function() {
         property_id: propertyId,
         author_id: ud.profile ? ud.profile.id : null,
         realtor_id: propertyData.user_id,
-        author_name: ud.profile ? ud.profile.name : '방문자',
-        author_email: ud.email,
-        content: txt,
-        status: 'open'
+        content: txt
     }]);
     if(error) { alert('등록 실패: '+error.message); return; }
     document.getElementById('inquiryInput').value = '';
