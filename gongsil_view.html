@@ -308,14 +308,26 @@ function render() {
     var propName = getPropName(p);
     
     // 금액 하단 서브정보
-    var supArea = p.supply_area ? p.supply_area + '㎡' : '';
-    var excArea = p.dedicated_area ? p.dedicated_area + '㎡' : '';
-    var areaDisplay = (supArea && excArea) ? supArea + '/' + excArea : (excArea || supArea || '');
+    var supAreaM2 = p.supply_area ? parseFloat(p.supply_area) : 0;
+    var excAreaM2 = p.dedicated_area ? parseFloat(p.dedicated_area) : (p.area ? parseFloat(p.area) : 0);
+    
+    var fmtM2P = function(m2) { return m2 ? m2 + '㎡(' + (m2 / 3.3058).toFixed(1) + '평)' : ''; };
+
+    var areaDisplay = '';
+    if (supAreaM2 && excAreaM2) {
+        areaDisplay = fmtM2P(supAreaM2) + ' / ' + fmtM2P(excAreaM2);
+    } else if (supAreaM2) {
+        areaDisplay = fmtM2P(supAreaM2);
+    } else if (excAreaM2) {
+        areaDisplay = fmtM2P(excAreaM2);
+    } else {
+        areaDisplay = '정보없음';
+    }
     
     var subInfoParts = [];
     if (p.property_type) subInfoParts.push(escHtml(p.property_type));
     if (p.room_direction) subInfoParts.push(escHtml(p.room_direction));
-    if (areaDisplay) subInfoParts.push('공급/전용 면적: ' + escHtml(areaDisplay));
+    if (areaDisplay !== '정보없음') subInfoParts.push('공급/전용 면적: ' + escHtml(areaDisplay));
     var subInfoHtml = subInfoParts.join(' <span style="color:#ddd;margin:0 8px;">|</span> ');
 
     // 툴바 버튼 (우측정렬)
@@ -416,7 +428,7 @@ function render() {
                     '<span style="color:#ddd">|</span>' +
                     '<span>주차 ' + (p.parking_count ? p.parking_count+'대' : '불가') + '</span>' +
                     '<span style="color:#ddd">|</span>' +
-                    '<span>면적 ' + (p.dedicated_area || p.supply_area || '-') + '㎡</span>' +
+                    '<span>' + ((p.options && p.options.length > 0) ? escHtml(p.options.slice(0,3).join(', ')) : '옵션 미확인') + '</span>' +
                 '</div>' +
             '</div>' +
 

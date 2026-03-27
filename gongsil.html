@@ -1355,22 +1355,37 @@
                 document.getElementById('docPropType').textContent = propTypeStr;
                 document.getElementById('docPriceMain').textContent = priceStr;
                 
-                // 물건종류 방향 면적 하단
-                const supArea = p.supply_area ? `${p.supply_area}㎡` : '';
-                const excArea = p.area ? `${p.area}㎡` : '';
-                const areaDisplay = (supArea && excArea) ? `${supArea}/${excArea}` : (excArea || supArea || '정보없음');
-                let directionStr = p.direction ? p.direction : '';
+                // 물건종류 방향 면적 등 하단 요약
+                const supAreaM2 = p.supply_area ? parseFloat(p.supply_area) : 0;
+                const excAreaM2 = p.dedicated_area ? parseFloat(p.dedicated_area) : (p.area ? parseFloat(p.area) : 0);
+                
+                const fmtM2P = (m2) => m2 ? `${m2}㎡(${(m2 / 3.3058).toFixed(1)}평)` : '';
+
+                let areaDisplay = '';
+                if (supAreaM2 && excAreaM2) {
+                    areaDisplay = `${fmtM2P(supAreaM2)} / ${fmtM2P(excAreaM2)}`;
+                } else if (supAreaM2) {
+                    areaDisplay = fmtM2P(supAreaM2);
+                } else if (excAreaM2) {
+                    areaDisplay = fmtM2P(excAreaM2);
+                } else {
+                    areaDisplay = '정보없음';
+                }
+
+                let directionStr = p.room_direction || p.direction || '';
                 
                 let subInfoArr = [];
                 if (p.property_type) subInfoArr.push(p.property_type);
                 if (directionStr) subInfoArr.push(directionStr);
-                if (areaDisplay) subInfoArr.push(`공급/전용 면적: ${areaDisplay}`);
+                if (areaDisplay !== '정보없음') subInfoArr.push(`공급/전용 면적: ${areaDisplay}`);
                 document.getElementById('docPriceSubInfo').innerHTML = subInfoArr.join(' <span style="margin:0 4px; color:#ddd;">|</span> ');
                 
                 document.getElementById('docSummaryRooms').textContent = `룸 ${p.room_count || '0'}개`;
                 document.getElementById('docSummaryParking').textContent = '주차정보없음';
                 
-                document.getElementById('docSummaryArea').textContent = areaDisplay ? `면적 ${areaDisplay}` : '-';
+                // 면적 있던 자리에 옵션 넣기 (최대 3개)
+                const optionsStr = (p.options && Array.isArray(p.options) && p.options.length > 0) ? p.options.slice(0,3).join(', ') : '옵션 미확인';
+                document.getElementById('docSummaryArea').textContent = optionsStr;
 
                 const isGeneralBuilding = p.main_category === '상가·업무·공장·토지' || p.main_category === '빌라·주택';
 
