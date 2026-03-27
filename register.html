@@ -373,6 +373,31 @@
                 <input type="hidden" id="selectedOptions" value="">
             </div>
 
+            <!-- 주차 및 입주일 섹션 -->
+            <div class="row" style="margin-top: 20px;">
+                <div class="col form-group">
+                    <label class="form-label">주차가능 여부</label>
+                    <select class="form-control" id="parkingCount">
+                        <option value="없음">없음</option>
+                        <option value="협의">협의</option>
+                        <option value="1대">1대</option>
+                        <option value="2대">2대</option>
+                        <option value="3대이상">3대 이상</option>
+                    </select>
+                </div>
+                <div class="col form-group">
+                    <label class="form-label">입주가능일</label>
+                    <div style="display:flex; gap:8px;">
+                        <select class="form-control" id="moveInType" style="flex:1;" onchange="document.getElementById('moveInDate').style.display = this.value === '기타' ? 'block' : 'none'">
+                            <option value="즉시입주(공실)">즉시입주(공실)</option>
+                            <option value="협의가능">협의가능</option>
+                            <option value="기타">기타 (일정입력)</option>
+                        </select>
+                        <input type="text" class="form-control" id="moveInDate" placeholder="예: 5월 중순" style="flex:1; display:none;">
+                    </div>
+                </div>
+            </div>
+
             <hr style="border:0; border-top:1px dashed #ddd; margin: 30px 0;">
 
             <!-- 섹션 2: 위치/주소 -->
@@ -697,6 +722,8 @@
                     total_floor: parseInt(document.getElementById('totalFloor').value) || null,      // 신규
                     supply_area: parseFloat(document.getElementById('supplyArea').value) || 0,
                     dedicated_area: parseFloat(document.getElementById('dedicatedArea').value) || 0, // area → dedicated_area
+                    parking_count: document.getElementById('parkingCount') ? document.getElementById('parkingCount').value : null,
+                    move_in_date: document.getElementById('moveInType') ? (document.getElementById('moveInType').value === '기타' ? document.getElementById('moveInDate').value : document.getElementById('moveInType').value) : null,
                     options: optionsArray,               // 문자열 → 배열
                     sido: document.getElementById('sido').value,
                     sigungu: document.getElementById('sigungu').value,
@@ -1356,6 +1383,19 @@
                 if(data.current_floor) document.getElementById('currentFloor').value = data.current_floor;
                 if(data.total_floor) document.getElementById('totalFloor').value = data.total_floor;
                 
+                // Parking & MoveIn
+                if(document.getElementById('parkingCount') && data.parking_count) document.getElementById('parkingCount').value = data.parking_count;
+                if(document.getElementById('moveInType') && data.move_in_date) {
+                    if (['즉시입주(공실)', '협의가능'].includes(data.move_in_date)) {
+                        document.getElementById('moveInType').value = data.move_in_date;
+                        document.getElementById('moveInDate').style.display = 'none';
+                    } else {
+                        document.getElementById('moveInType').value = '기타';
+                        document.getElementById('moveInDate').style.display = 'block';
+                        document.getElementById('moveInDate').value = data.move_in_date;
+                    }
+                }
+
                 // Areas
                 if(data.supply_area) document.getElementById('supplyArea').value = data.supply_area;
                 if(data.dedicated_area) document.getElementById('dedicatedArea').value = data.dedicated_area;  // area → dedicated_area

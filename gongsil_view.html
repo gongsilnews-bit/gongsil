@@ -351,6 +351,8 @@ function render() {
         ['해당층/총층', (p.current_floor||'-') + '층 / ' + (p.total_floor||'-') + '층'],
         ['방/욕실수', (p.room_count||'-') + '개 / ' + (p.bathroom_count||'-') + '개'],
         ['방향', p.room_direction || '-'],
+        ['주차가능 여부', p.parking_count || '-'],
+        ['입주가능일', p.move_in_date || '협의가능'],
         ['관리비', (p.maintenance_fee||0)+'만원']
     ];
 
@@ -426,7 +428,7 @@ function render() {
                 '<div class="prop-desc-row">' +
                     '<span>룸 ' + (p.room_count||'-') + '개</span>' +
                     '<span style="color:#ddd">|</span>' +
-                    '<span>주차 ' + (p.parking_count ? p.parking_count+'대' : '불가') + '</span>' +
+                    '<span>주차 ' + (p.parking_count || '정보없음') + '</span>' +
                     '<span style="color:#ddd">|</span>' +
                     '<span>' + ((p.options && p.options.length > 0) ? escHtml(p.options.slice(0,3).join(', ')) : '옵션 미확인') + '</span>' +
                 '</div>' +
