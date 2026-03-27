@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>공실뷰 - 공실뉴스 Admin</title>
+    <title>공실상세 - 공실뉴스 Admin</title>
     <link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="base_path.js"></script>
@@ -45,58 +45,63 @@
         .device-btn.active { background: #0bc2c2; color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
         .device-btn:hover:not(.active) { background: #f3f4f6; }
 
-        /* ── 기기 미리보기 프레임 ── */
+        /* ── 기기 미리보기 프레임 (매물열람 사이드바 사이즈와 비슷하게 조정) ── */
+        /* 기본 PC상태에서는 약 450px 폭을 유지해 너무 넓어보이지 않도록 합니다 */
         .preview-frame {
             width: 100%;
-            margin: 0 auto; padding: 40px;
+            max-width: 480px; 
+            margin: 0 auto; 
+            padding: 24px 20px;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+            border: 1px solid #eee;
             transition: max-width 0.3s ease, border-radius 0.3s ease, box-shadow 0.3s ease;
         }
         .preview-frame.tablet {
-            max-width: 768px !important; padding: 24px !important;
-            border: 1px solid #ddd; border-radius: 12px;
-            box-shadow: 0 4px 30px rgba(0,0,0,0.08); background: #fff;
+            max-width: 768px !important; 
         }
         .preview-frame.mobile {
-            max-width: 375px !important; padding: 24px 20px !important;
-            border: 10px solid #333; border-radius: 36px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15); background: #fff;
+            max-width: 375px !important; 
+            border: 8px solid #333; border-radius: 36px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
         }
 
         /* ── 갤러리 ── */
-        .gallery-wrap { position: relative; width: 100%; height: 320px; background: #f0f0f0; overflow: hidden; margin-bottom: 24px; border-radius: 8px; }
+        .gallery-wrap { position: relative; width: 100%; height: 260px; background: #f0f0f0; overflow: hidden; margin-bottom: 20px; border-radius: 8px; }
         .gallery-wrap img { width: 100%; height: 100%; object-fit: cover; }
         .gallery-nav-btn {
             position: absolute; top: 50%; transform: translateY(-50%);
             background: rgba(0,0,0,0.4); color: #fff; border: none;
-            font-size: 20px; padding: 12px 10px; cursor: pointer; border-radius: 4px;
+            font-size: 18px; padding: 10px 8px; cursor: pointer; border-radius: 4px;
         }
         .gallery-nav-btn:hover { background: rgba(0,0,0,0.7); }
-        .gallery-nav-btn.prev { left: 10px; }
-        .gallery-nav-btn.next { right: 10px; }
+        .gallery-nav-btn.prev { left: 8px; }
+        .gallery-nav-btn.next { right: 8px; }
         .gallery-count {
-            position: absolute; bottom: 12px; right: 14px; background: rgba(0,0,0,0.6); color: #fff;
-            font-size: 12px; font-weight: bold; padding: 4px 12px; border-radius: 20px;
+            position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: #fff;
+            font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 20px;
         }
 
         /* ── 헤더 타이틀 ── */
-        .prop-meta-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px; }
-        .tag-confirm { font-size: 12px; font-weight: bold; color: #ff5a5f; border: 1px solid #ff5a5f; padding: 2px 6px; border-radius: 2px; display:inline-block; }
-        .prop-date { color: #aaa; margin-left: 8px; }
-        .prop-name { font-size: 18px; color: #333; font-weight: 700; margin-bottom: 6px; }
-        .prop-price { font-size: 32px; font-weight: 800; color: var(--primary); margin-bottom: 10px; }
-        .prop-subinfo { font-size: 14px; color: #555; }
-        .prop-desc-row { font-size: 15px; color: #444; margin-top: 12px; display:flex; gap:16px; align-items:center; }
+        .prop-meta-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 12px; }
+        .tag-confirm { font-size: 11px; font-weight: bold; color: #ff5a5f; border: 1px solid #ff5a5f; padding: 2px 5px; border-radius: 2px; display:inline-block; }
+        .prop-date { color: #aaa; margin-left: 6px; }
+        .prop-name { font-size: 16px; color: #333; font-weight: 700; margin-bottom: 4px; }
+        .prop-price { font-size: 28px; font-weight: 800; color: var(--primary); margin-bottom: 8px; }
+        .prop-subinfo { font-size: 13px; color: #555; }
+        .prop-desc-row { font-size: 14px; color: #444; margin-top: 10px; display:flex; gap:12px; align-items:center; }
 
         /* ── 가로 툴바 (우측정렬) ── */
         .article-toolbar {
-            display: flex; gap: 8px; flex-wrap: wrap; margin: 24px 0; padding: 14px 0;
+            display: flex; gap: 6px; flex-wrap: wrap; margin: 20px 0; padding: 12px 0;
             border-top: 1px solid #ddd; border-bottom: 1px solid #ddd;
             justify-content: flex-end; /* 우측 정렬 */
             align-items: center;
         }
         .btn-toolbar {
-            padding: 7px 16px; border-radius: 5px; border: 1px solid #ccc;
-            font-size: 13px; background: #fff; color: #444; cursor: pointer; font-family: inherit; font-weight:600; display:inline-flex; align-items:center; gap:6px;
+            padding: 6px 12px; border-radius: 4px; border: 1px solid #ccc;
+            font-size: 12px; background: #fff; color: #444; cursor: pointer; font-family: inherit; font-weight:600; display:inline-flex; align-items:center; gap:4px;
         }
         .btn-toolbar:hover { background: #f9f9f9; }
         .btn-toolbar.blue { background: var(--blue); color: #fff; border-color: var(--blue); }
@@ -104,38 +109,44 @@
 
         /* ── 탭 ── */
         .detail-tabs { display: flex; border-bottom: 2px solid #111; margin-top: 10px; margin-bottom: 10px; }
-        .tab-item { flex: 1; text-align: center; padding: 14px 0; font-size: 15px; font-weight: bold; cursor: pointer; color: #aaa; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+        .tab-item { flex: 1; text-align: center; padding: 12px 0; font-size: 14px; font-weight: bold; cursor: pointer; color: #aaa; border-bottom: 3px solid transparent; margin-bottom: -2px; }
         .tab-item.active { color: #111; border-bottom-color: #111; }
 
         /* ── 정보 테이블 ── */
-        .info-grid { display: grid; grid-template-columns: 130px 1fr; padding: 20px 0; row-gap: 16px; border-bottom: 1px solid #eee; }
-        .info-label { font-size: 14px; color: #888; }
-        .info-value { font-size: 14px; color: #222; font-weight: 600; }
-        .info-desc { grid-column: 1 / -1; font-size: 15px; color: #444; line-height: 1.8; white-space: pre-wrap; padding: 16px; background: #fafafa; border-radius: 8px; margin-top: 8px;}
+        .info-grid { display: grid; grid-template-columns: 110px 1fr; padding: 16px 0; row-gap: 14px; border-bottom: 1px solid #eee; }
+        .info-label { font-size: 13px; color: #888; }
+        .info-value { font-size: 13px; color: #222; font-weight: 600; word-break: break-all; }
+        .info-desc { grid-column: 1 / -1; font-size: 14px; color: #444; line-height: 1.7; white-space: pre-wrap; padding: 14px; background: #fafafa; border-radius: 6px; margin-top: 4px;}
 
         /* ── 지도 / 로드뷰 패널 ── */
-        .extra-section { padding: 24px 0; border-bottom: 1px solid #eee; }
-        .extra-title { font-size: 16px; font-weight: 800; margin-bottom: 16px; color: #111; }
-        .map-box { width: 100%; height: 280px; border-radius: 8px; background: #e5e5e5; display:flex; align-items:center; justify-content:center; color:#999; }
+        .extra-section { padding: 20px 0; border-bottom: 1px solid #eee; }
+        .extra-title { font-size: 15px; font-weight: 800; margin-bottom: 12px; color: #111; }
+        .map-box { width: 100%; height: 240px; border-radius: 6px; background: #e5e5e5; display:flex; align-items:center; justify-content:center; color:#999;font-size:13px; }
 
         /* ── 등록자 정보 카드 ── */
-        .realtor-card { background: #fafafa; border: 1px solid #eee; padding: 24px; border-radius: 8px; text-align: left; }
-        .rc-name { font-size: 20px; font-weight: 800; color: #111; margin-bottom: 8px; }
-        .rc-sub { font-size: 14px; color: #666; margin-bottom: 6px; }
-        .rc-phone { font-size: 18px; font-weight: 900; color: var(--blue); margin-top: 12px; }
+        .realtor-card { background: #fafafa; border: 1px solid #eee; padding: 20px; border-radius: 8px; text-align: left; }
+        .rc-name { font-size: 18px; font-weight: 800; color: #111; margin-bottom: 6px; }
+        .rc-sub { font-size: 13px; color: #666; margin-bottom: 4px; }
+        .rc-phone { font-size: 16px; font-weight: 900; color: var(--blue); margin-top: 10px; }
 
         /* ── 댓글 (1:1 문의) 영역 ── */
-        .comment-section { margin-top: 40px; }
-        .comment-header { font-size: 18px; font-weight: 800; margin-bottom: 16px; color: #111; }
-        .comment-input-box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; background: #fff; margin-bottom: 24px; }
-        .comment-input-box textarea { width: 100%; height: 80px; border: none; outline: none; resize: none; font-family: inherit; font-size: 14px; margin-bottom: 12px; background: transparent; }
-        .comment-btn-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; padding-top: 12px; }
-        .comment-submit { background: #444; color: #fff; border: none; padding: 8px 24px; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        .reply-item { padding: 16px 0; border-bottom: 1px solid #eee; }
+        .comment-section { margin-top: 30px; }
+        .comment-header { font-size: 16px; font-weight: 800; margin-bottom: 14px; color: #111; }
+        .comment-input-box { border: 1px solid #ddd; border-radius: 8px; padding: 14px; background: #fff; margin-bottom: 20px; }
+        .comment-input-box textarea { width: 100%; height: 70px; border: none; outline: none; resize: none; font-family: inherit; font-size: 13px; margin-bottom: 10px; background: transparent; }
+        .comment-btn-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; padding-top: 10px; }
+        .comment-submit { background: #444; color: #fff; border: none; padding: 6px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size:12px; }
+        
+        .reply-item { padding: 14px 0; border-bottom: 1px solid #eee; }
         .reply-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-        .reply-author { font-size: 14px; font-weight: bold; color: #333; }
-        .reply-date { font-size: 12px; color: #aaa; }
-        .reply-content { font-size: 14px; color: #444; line-height: 1.6; }
+        .reply-author { font-size: 13px; font-weight: bold; color: #333; }
+        .reply-date { font-size: 11px; color: #aaa; }
+        .reply-content { font-size: 13px; color: #444; line-height: 1.5; white-space: pre-wrap; }
+        .reply-answer-box { background: #f8f9fa; border-left: 3px solid #1a73e8; padding: 12px; margin-top: 10px; border-radius: 4px; }
+        .reply-answer-lbl { font-size: 12px; font-weight: bold; color: #111; margin-bottom: 4px; }
+        .reply-answer-txt { font-size: 13px; color: #444; line-height: 1.5; white-space: pre-wrap; }
+        .reply-answer-input { margin-top: 10px; padding-left: 8px; border-left: 2px solid #ddd; }
+        .reply-answer-input textarea { width: 100%; height: 50px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; resize: none; margin-bottom: 6px; }
 
         /* ── 우측 사이드바 ── */
         .sidebar-card { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); padding: 20px; margin-bottom: 16px; }
@@ -144,8 +155,8 @@
         .sidebar-log-list { list-style: none; padding: 0; margin-top: 12px; font-size: 13px; color: #555; border-top: 1px solid #f0f0f0; padding-top: 12px; }
         .log-item { margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start; }
         .log-num { font-size: 11px; color: #888; width: 18px; height: 18px; background: #eee; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .log-content { flex: 1; }
-        .log-title { font-size: 13px; color: #333; line-height: 1.4; margin-bottom: 2px; word-break: break-all; }
+        .log-content { flex: 1; min-width:0; }
+        .log-title { font-size: 13px; color: #333; line-height: 1.4; margin-bottom: 2px; word-break: break-word; }
         .log-meta { font-size: 11px; color: #aaa; }
         .log-empty { color: #aaa; text-align: center; padding: 10px; font-size: 13px; }
     </style>
@@ -343,7 +354,7 @@ function render() {
     // 등록자정보 탭
     var realtorHtml = '<div id="tabRealtorArea" style="display:none; padding:20px 0;">' +
         '<div class="realtor-card">' +
-            '<div class="rc-name" id="rgName">이름 불러오는 중...</div>' +
+            '<div class="rc-name" id="rgName">로딩중...</div>' +
             '<div class="rc-sub" id="rgRep"></div>' +
             '<div class="rc-sub" id="rgAddr"></div>' +
             '<div class="rc-phone" id="rgPhone"></div>' +
@@ -356,12 +367,12 @@ function render() {
         '<div class="comment-input-box">' +
             '<textarea id="inquiryInput" placeholder="이 매물에 대해 궁금한 점을 남겨주세요."></textarea>' +
             '<div class="comment-btn-row">' +
-                '<span style="font-size:12px; color:#aaa;">비밀 댓글로 작성되며, 임대인/공인중개사만 확인 가능합니다.</span>' +
+                '<span style="font-size:11px; color:#aaa;">비밀 댓글로 작성되며, 등록자(공인중개사)만 확인 가능합니다.</span>' +
                 '<button class="comment-submit" onclick="submitInquiry()">등록</button>' +
             '</div>' +
         '</div>' +
-        '<div id="inquiryList" style="margin-top:20px;">' +
-            '<div style="text-align:center; padding:30px; color:#aaa; font-size:14px;">불러오는 중...</div>'+
+        '<div id="inquiryList" style="margin-top:16px;">' +
+            '<div style="text-align:center; padding:30px; color:#aaa; font-size:13px;">불러오는 중...</div>'+
         '</div>' +
     '</div>';
 
@@ -378,19 +389,19 @@ function render() {
     document.getElementById('pageBody').innerHTML = 
     '<div style="display:flex; gap:30px; width:100%; align-items:flex-start;">' +
 
-      // ── 좌측 프레임 ──
-      '<div style="flex:1; min-width:0; background:#fff; border-radius:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06);">' +
+      // ── 좌측 프레임 (PC버전이라도 기본 폭이 480px 내외로 제한됨) ──
+      '<div style="flex:1; min-width:0;">' +
         // 디바이스 전환기
-        '<div style="display:flex; justify-content:center; padding:15px; border-bottom:1px solid #f0f0f0; background:#fafafa;">' +
+        '<div style="display:flex; justify-content:center; padding-bottom:15px;">' +
             '<div class="device-btns">' +
-                '<button class="device-btn active" id="devPC" onclick="setDevice(\'pc\')" title="PC">🖥️</button>' +
-                '<button class="device-btn" id="devTB" onclick="setDevice(\'tablet\')" title="태블릿">📱</button>' +
-                '<button class="device-btn" id="devMB" onclick="setDevice(\'mobile\')" title="모바일">📲</button>' +
+                '<button class="device-btn active" id="devPC" onclick="setDevice(\'pc\')" title="PC(기본패널 너비)">🖥️</button>' +
+                '<button class="device-btn" id="devTB" onclick="setDevice(\'tablet\')" title="태블릿 너비">📱</button>' +
+                '<button class="device-btn" id="devMB" onclick="setDevice(\'mobile\')" title="모바일 너비">📲</button>' +
             '</div>' +
         '</div>' +
 
         // 본문
-        '<div class="preview-frame" id="previewFrame" style="transition:all 0.3s;">' +
+        '<div class="preview-frame" id="previewFrame">' +
             galleryHtml +
             '<div class="prop-header-info">' +
                 '<div class="prop-meta-row">' +
@@ -427,9 +438,9 @@ function render() {
         // 메모장
         '<div class="sidebar-card">' +
             '<div class="sidebar-card-title">📝 공실기록</div>' +
-            '<textarea id="logMemoInput" placeholder="이곳에 서비스 메모를 남겨주세요..." style="width:100%; height:100px; padding:10px; border:1px solid #ddd; border-radius:6px; resize:none; font-family:inherit;"></textarea>' +
+            '<textarea id="logMemoInput" placeholder="이곳에 서비스 메모를 남겨주세요..." style="width:100%; height:80px; padding:10px; border:1px solid #ddd; border-radius:6px; resize:none; font-family:inherit;"></textarea>' +
             '<div class="sidebar-memo-footer">' +
-                '<button onclick="addServiceLog()" style="padding:6px 16px; background:#444; color:#fff; border:none; border-radius:4px; font-weight:600; cursor:pointer;">등록</button>' +
+                '<button onclick="addServiceLog()" style="padding:6px 14px; background:#444; color:#fff; border:none; border-radius:4px; font-weight:600; cursor:pointer;">등록</button>' +
             '</div>' +
             '<ul class="sidebar-log-list" id="serviceLogList"></ul>' +
         '</div>' +
@@ -437,7 +448,7 @@ function render() {
         // 최근 로그
         '<div class="sidebar-card">' +
             '<div class="sidebar-card-title">🕐 공실메모기록</div>' +
-            '<div style="font-size:13px; color:#555; padding-top:8px;">' + recentLogsHtml + '</div>' +
+            '<div style="font-size:13px; color:#555; padding-top:4px;">' + recentLogsHtml + '</div>' +
         '</div>' +
       '</div>' +
 
@@ -512,15 +523,16 @@ window.toggleStatus = async function() {
 
 // 지도/로드뷰 로드
 function loadKakaoMap(p) {
-    var addr = [p.sido, p.sigungu, p.dong, p.detail_address].filter(Boolean).join(' ');
-    if (!addr || typeof kakao === 'undefined') {
+    // detail_address를 빼고 동까지만 넣어야 좌표를 제대로 찾을 확률이 높음.
+    var searchAddr = [p.sido, p.sigungu, p.dong].filter(Boolean).join(' ');
+    if (!searchAddr || typeof kakao === 'undefined') {
         document.getElementById('viewMiniMap').innerHTML = '주소 정보가 없습니다.';
         document.getElementById('viewRoadview').innerHTML = '주소 정보가 없습니다.';
         return;
     }
     kakao.maps.load(function() {
         var geocoder = new kakao.maps.services.Geocoder();
-        geocoder.addressSearch(addr, function(result, status) {
+        geocoder.addressSearch(searchAddr, function(result, status) {
             if (status === kakao.maps.services.Status.OK) {
                 var pos = new kakao.maps.LatLng(result[0].y, result[0].x);
                 // 지도
@@ -539,7 +551,7 @@ function loadKakaoMap(p) {
                     else rc.innerHTML = '해당 위치의 로드뷰 정보가 없습니다.';
                 });
             } else {
-                document.getElementById('viewMiniMap').innerHTML = '지도 검색 실패';
+                document.getElementById('viewMiniMap').innerHTML = '지도 검색 실패 ('+searchAddr+')';
                 document.getElementById('viewRoadview').innerHTML = '로드뷰 검색 실패';
             }
         });
@@ -553,37 +565,63 @@ async function loadRealtorInfo(p) {
     if(res.error || !res.data) return;
     var m = res.data;
     if(m.role === 'realtor') {
-        document.getElementById('rgName').textContent = m.company_name || p.author_name;
+        document.getElementById('rgName').textContent = m.company_name || p.author_name || '-';
         document.getElementById('rgRep').textContent = '대표 ' + (m.ceo_name||'-') + (m.company_reg_no ? ' | 등록: '+m.company_reg_no : '');
         document.getElementById('rgAddr').textContent = (m.address||'') + ' ' + (m.address_detail||'');
-        document.getElementById('rgPhone').textContent = '☎ ' + ([m.tel_num, m.cell_num].filter(Boolean).join(', ') || p.author_phone);
+        document.getElementById('rgPhone').textContent = '☎ ' + ([m.tel_num, m.cell_num].filter(Boolean).join(', ') || p.author_phone || '-');
     } else {
-        document.getElementById('rgName').textContent = m.name || p.author_name;
+        document.getElementById('rgName').textContent = m.name || p.author_name || '-';
         document.getElementById('rgRep').textContent = '일반 등록자';
-        document.getElementById('rgPhone').textContent = '☎ ' + p.author_phone;
+        document.getElementById('rgPhone').textContent = '☎ ' + (p.author_phone || '-');
     }
 }
 
-// 1:1 문의 댓글 로드
+// 1:1 문의 댓글 및 응답 로드
 async function loadInquiries(p) {
     var li = document.getElementById('inquiryList');
     var {data, error} = await sb.from('property_inquiries').select('*').eq('property_id', propertyId).order('created_at', {ascending:false});
     if(error) { li.innerHTML = '댓글을 불러올 수 없습니다.'; return; }
     if(!data || !data.length) { li.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px;">등록된 문의가 없습니다.</div>'; return; }
     
+    var isAdmin = ud?.profile?.role === 'admin' || ud?.profile?.role === 'superadmin';
+    var isPropertyAuthor = (ud?.profile?.id === p.user_id); // 현재 열람자가 매물 주인인지 확인
+
     li.innerHTML = data.map(function(q) {
         var isMine = (ud.email === q.author_email || q.author_id === ud?.profile?.id);
-        var isAuthor = (ud?.profile?.id === p.user_id);
-        // 권한 체크: 문의자 본인이거나, 이 매물의 주인이거나
-        if(!isMine && !isAuthor && ud?.profile?.role !== 'admin' && ud?.profile?.role !== 'superadmin') {
+        
+        // 권한 체크: 문의자 본인이거나, 이 매물의 주인이거나, 관리자이거나
+        if(!isMine && !isPropertyAuthor && !isAdmin) {
             return '<div class="reply-item"><div class="reply-meta">🔒 비밀글입니다.</div></div>';
         }
+        
         var d = new Date(q.created_at).toLocaleString('ko-KR');
         var nameTxt = q.author_name || q.author_email || '사용자';
-        return '<div class="reply-item">' +
+        var qHtml = '<div class="reply-item">' +
             '<div class="reply-meta"><span class="reply-author">'+escHtml(nameTxt)+'</span><span class="reply-date">'+d+'</span></div>' +
-            '<div class="reply-content">'+escHtml(q.content).replace(/\n/g, '<br>')+'</div>' +
-        '</div>';
+            '<div class="reply-content">'+escHtml(q.content).replace(/\n/g, '<br>')+'</div>';
+            
+        // 답변 영역
+        if(q.answer) {
+            var ansDate = q.answered_at ? new Date(q.answered_at).toLocaleString('ko-KR') : '';
+            qHtml += '<div class="reply-answer-box">' +
+                '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+                    '<div class="reply-answer-lbl">등록자 답변</div>' +
+                    '<div style="font-size:11px; color:#aaa;">'+ansDate+'</div>' +
+                '</div>' +
+                '<div class="reply-answer-txt">'+escHtml(q.answer).replace(/\n/g, '<br>')+'</div>' +
+            '</div>';
+        } else if(isPropertyAuthor) {
+            // 본인 매물이면 답변 입력 영역 표출
+            qHtml += '<div class="reply-answer-input">' +
+                '<textarea id="ans_'+q.id+'" placeholder="답변을 작성해 주세요."></textarea>' +
+                '<button onclick="submitInquiryAnswer(\''+q.id+'\')" style="background:#1a73e8; color:#fff; border:none; padding:4px 12px; border-radius:3px; font-weight:bold; cursor:pointer; font-size:11px;">답변 등록</button>' +
+            '</div>';
+        } else {
+            qHtml += '<div style="margin-top:8px; font-size:11px; background:#f0f0f0; display:inline-block; padding:3px 6px; border-radius:3px; color:#666;">답변 대기중</div>';
+        }
+        
+        qHtml += '</div>';
+        return qHtml;
     }).join('');
 }
 
@@ -594,6 +632,7 @@ window.submitInquiry = async function() {
     var {error} = await sb.from('property_inquiries').insert([{
         property_id: propertyId,
         author_id: ud.profile ? ud.profile.id : null,
+        realtor_id: propertyData.user_id,
         author_name: ud.profile ? ud.profile.name : '방문자',
         author_email: ud.email,
         content: txt,
@@ -601,6 +640,22 @@ window.submitInquiry = async function() {
     }]);
     if(error) { alert('등록 실패: '+error.message); return; }
     document.getElementById('inquiryInput').value = '';
+    loadInquiries(propertyData);
+};
+
+window.submitInquiryAnswer = async function(inquiryId) {
+    if(!ud.email) { alert('로그인이 필요합니다.'); return; }
+    var txtEl = document.getElementById('ans_' + inquiryId);
+    var txt = txtEl ? txtEl.value.trim() : '';
+    if(!txt) { alert('답변 내용을 입력하세요.'); return; }
+    
+    var {error} = await sb.from('property_inquiries').update({
+        answer: txt,
+        answered_at: new Date().toISOString()
+    }).eq('id', inquiryId);
+    
+    if(error) { alert('답변 등록 실패: '+error.message); return; }
+    alert('답변이 성공적으로 등록되었습니다.');
     loadInquiries(propertyData);
 };
 
