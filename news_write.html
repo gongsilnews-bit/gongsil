@@ -1068,11 +1068,97 @@
             </div>
             
             <div class="modal-footer" style="padding-bottom: 30px;">
-                <button class="btn-confirm" style="background:#5c7cfa;" onclick="closeVideoModal()">✓ 확인</button>
+                <button class="btn-confirm" style="background:#5c7cfa;" onclick="confirmVideoModal()">✓ 확인</button>
                 <button class="btn-cancel" onclick="closeVideoModal()">✕ 취소</button>
             </div>
         </div>
     </div>
+
+    <!-- 동영상 추가/파일 모달 로직 처리 -->
+    <script>
+    function confirmVideoModal() {
+        const textareas = document.querySelectorAll('#videoModal .modal-textarea');
+        const iframeCode = textareas[0] ? textareas[0].value.trim() : '';
+        const caption = textareas[1] ? textareas[1].value.trim() : '';
+
+        if (!iframeCode) {
+            alert("영상 URL을 입력해주세요.");
+            return;
+        }
+
+        // 유튜브 링크 체크
+        let videoId = "";
+        const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+        const match = iframeCode.match(regExp);
+        if (match && match[1].length === 11) {
+            videoId = match[1];
+        }
+
+        const pOpen = '<p><br></p>';
+        const pClose = '<p><br></p>';
+        let combinedHtml = '';
+
+        if (videoId) {
+            const isShorts = iframeCode.includes('/shorts/');
+            const paddingRatio = isShorts ? '177.77%' : '56.25%';
+            const maxWidthStr = isShorts ? '; max-width: 400px; margin: 0 auto;' : '';
+            combinedHtml = pOpen + `<div style="position:relative;padding-bottom:${paddingRatio};height:0;overflow:hidden;max-width:100%;border-radius:8px${maxWidthStr}"><iframe src="https://www.youtube.com/embed/${videoId}" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allowfullscreen></iframe></div>`;
+            if (caption) combinedHtml += `<p style="text-align:center; color:#555; font-size:13px;">${caption}</p>`;
+            combinedHtml += pClose;
+        } else {
+            combinedHtml = pOpen + iframeCode;
+            if (caption) combinedHtml += `<p style="text-align:center; color:#555; font-size:13px;">${caption}</p>`;
+            combinedHtml += pClose;
+        }
+
+        if (typeof $ !== 'undefined' && $('#summernote').length) {
+            try { $('#summernote').summernote('pasteHTML', combinedHtml); } catch(e) {}
+        }
+        
+        if (textareas[0]) textareas[0].value = '';
+        if (textareas[1]) textareas[1].value = '';
+        closeVideoModal();
+    }
+
+    function confirmFileModal() {
+        const fileInput = document.getElementById('docInput');
+        const titleInput = document.querySelector('#fileModal .input-text');
+        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+            alert("파일을 선택해주세요.");
+            return;
+        }
+        const file = fileInput.files[0];
+        const title = (titleInput && titleInput.value.trim()) ? titleInput.value.trim() : file.name;
+
+        // Base64 Data URL로 첨부파일 형태 (브라우저 메모리 로드)
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const dataUrl = e.target.result;
+            const pOpen = '<p><br></p>';
+            const pClose = '<p><br></p>';
+            const fileExt = file.name.split('.').pop().toUpperCase();
+            
+            const combinedHtml = pOpen + `<div style="padding:15px; border:1px solid #ddd; border-radius:6px; background:#fafafa; display:flex; align-items:center; gap:15px; max-width:400px; margin:10px 0;">
+                <div style="background:#5c7cfa; color:white; font-weight:bold; font-size:12px; padding:6px 10px; border-radius:4px; flex-shrink:0;">${fileExt}</div>
+                <div style="flex:1; overflow:hidden;">
+                    <div style="font-size:14px; font-weight:bold; color:#333; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${title}</div>
+                    <div style="font-size:12px; color:#888;">${(file.size / 1024).toFixed(1)} KB</div>
+                </div>
+                <a href="${dataUrl}" download="${file.name}" style="background:#f1f3f5; color:#333; border:1px solid #ddd; padding:6px 12px; border-radius:4px; font-size:12px; text-decoration:none; font-weight:bold; cursor:pointer; flex-shrink:0;">다운로드</a>
+            </div>` + pClose;
+
+            if (typeof $ !== 'undefined' && $('#summernote').length) {
+                try { $('#summernote').summernote('pasteHTML', combinedHtml); } catch(e) {}
+            }
+
+            fileInput.value = '';
+            if (titleInput) titleInput.value = '';
+            document.getElementById('docName').textContent = '선택된 파일 없음';
+            closeFileModal();
+        };
+        reader.readAsDataURL(file);
+    }
+    </script>
 
     <!-- 파일 추가 모달 -->
     <div class="modal-overlay" id="fileModal">
@@ -1109,7 +1195,7 @@
             </div>
             
             <div class="modal-footer" style="padding-bottom: 30px;">
-                <button class="btn-confirm" style="background:#5c7cfa;" onclick="closeFileModal()">✓ 확인</button>
+                <button class="btn-confirm" style="background:#5c7cfa;" onclick="confirmFileModal()">✓ 확인</button>
                 <button class="btn-cancel" onclick="closeFileModal()">✕ 취소</button>
             </div>
         </div>
