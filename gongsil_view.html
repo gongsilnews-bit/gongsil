@@ -420,7 +420,14 @@ function render() {
             galleryHtml +
             '<div class="prop-header-info">' +
                 '<div class="prop-meta-row">' +
-                    '<div><span class="tag-confirm">확인매물</span><span class="prop-date">' + fmtDate(p.created_at) + '</span></div>' +
+                    '<div><span class="tag-confirm">' + escHtml((function(pf){
+                        if (!pf) return '공실매물';
+                        if (pf.includes('100') || pf.includes('양타')) return '수수료100%';
+                        if (pf.includes('50') || pf.includes('단타')) return '수수료50%';
+                        if (pf.includes('25')) return '수수료25%';
+                        if (pf.includes('공동')) return '공동';
+                        return '공동';
+                    })(p.brokerage_fee)) + '</span><span class="prop-date">' + fmtDate(p.created_at) + '</span></div>' +
                 '</div>' +
                 '<div class="prop-name">' + escHtml(propName) + '</div>' +
                 '<div class="prop-price">' + escHtml(priceStr(p)) + '</div>' +
