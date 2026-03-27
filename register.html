@@ -1409,9 +1409,9 @@
                     }
                 }
                 
-                // 2. 거래유형 (두 번째 그룹: 매매, 전세 등)
-                if (btnGroups[1] && data.trade_type) {
-                    const btns = Array.from(btnGroups[1].querySelectorAll('.trade-btn'));
+                // 2. 거래유형 (세 번째 그룹: 매매, 전세 등)
+                if (btnGroups[2] && data.trade_type) {
+                    const btns = Array.from(btnGroups[2].querySelectorAll('.trade-btn'));
                     const target = data.trade_type.trim();
                     const matchedBtn = btns.find(b => b.textContent.trim() === target);
                     if (matchedBtn) matchedBtn.click();
