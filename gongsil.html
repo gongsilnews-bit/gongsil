@@ -2473,7 +2473,7 @@
                         } else if (isRealtor) {
                             answerHtml = `
                                 <div style="margin-top: 12px; margin-left: 5px; border-left: 2px solid #e1e1e1; padding-left: 10px;">
-                                    <textarea id="ans_${idx}_${inq.id}" placeholder="여기에 답변을 작성해 주세요." style="width:100%; height:60px; padding:10px; border:1px solid #ddd; border-radius:4px; font-size:13px; resize:none; outline:none; margin-bottom:5px; box-sizing:border-box;"></textarea>
+                                    <textarea id="ans_${idx}_${inq.id}" placeholder="여기에 답변을 작성해 주세요." style="width:100%; height:60px; padding:10px; border:1px solid #ddd; border-radius:4px; font-size:13px; resize:none; outline:none; margin-bottom:5px; box-sizing:border-box; font-family:inherit;"></textarea>
                                     <button onclick="window.submitInquiryAnswer('${inq.id}', ${idx})" style="background:#1a73e8; color:white; border:none; padding:8px 15px; border-radius:4px; font-size:12px; font-weight:bold; cursor:pointer;">답변 등록</button>
                                 </div>
                             `;
