@@ -170,7 +170,15 @@
             font-size: 20px; font-weight: bold; color: #333; z-index: 100; transition: all 0.2s;
         }
         .detail-close-btn:hover { background: #fff; border-color: #999; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-
+        .btn-detail-back {
+            position: absolute; top: 50%; left: -32px; transform: translateY(-50%);
+            width: 32px; height: 70px; background: #eaedf0;
+            border: 1px solid #ccc; border-right: none; border-radius: 8px 0 0 8px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 20px; font-weight: bold; color: #555; z-index: 1000;
+            box-shadow: -3px 0 6px rgba(0,0,0,0.06); transition: all 0.2s;
+        }
+        .btn-detail-back:hover { background: #e0e4e8; color: #111; }
         /* 상단 사진 갤러리 */
         .detail-gallery {
             position: relative; width: 100%; height: 200px; background: #f0f0f0;
@@ -685,6 +693,7 @@
         <!-- --- (수정) 상세 뷰 (리스트 옆으로 이동) --- -->
         <div class="property-detail-view" id="propertyDetailView">
             <button class="detail-close-btn" onclick="hidePropertyDetail()">&times;</button>
+            <button id="btnDetailBack" class="btn-detail-back" onclick="window.popDetailHistory && window.popDetailHistory()" style="display:none;" title="이전 물건으로 돌아가기">&lt;</button>
             
             <div class="detail-scroll-area">
                 <!-- 상단 사진 -->
@@ -1376,9 +1385,41 @@
                 return val.toLocaleString();
             }
 
-            window.showPropertyDetail = function(p) {
+            window.propertyHistoryStack = window.propertyHistoryStack || [];
+
+            window.popDetailHistory = function() {
+                if (!window.propertyHistoryStack || window.propertyHistoryStack.length === 0) return;
+                const pastState = window.propertyHistoryStack.pop();
+                
+                window.currentlySelectedPropertyId = pastState.p.id;
+                document.querySelectorAll('.property-card').forEach(c => c.classList.remove('active'));
+                const card = document.getElementById(`property-card-${pastState.p.id}`);
+                if (card) card.classList.add('active');
+                
+                window.showPropertyDetail(pastState.p, { isBackEvent: true, targetTab: pastState.tab });
+            };
+
+            window.showPropertyDetail = function(p, options = {}) {
+                const isBackEvent = options.isBackEvent || false;
+                const targetTab = options.targetTab || 'info';
+                
                 const detailView = document.getElementById('propertyDetailView');
                 if (!detailView) return;
+
+                if (!isBackEvent && detailView.style.display === 'flex' && window.currentLoadedPropertyData) {
+                    const activeTabEl = document.querySelector('.detail-tabs .tab-item.active');
+                    const currentTab = (activeTabEl && activeTabEl.id === 'tabBtnRealtor') ? 'realtor' : 'info';
+                    window.propertyHistoryStack.push({ p: window.currentLoadedPropertyData, tab: currentTab });
+                } else if (!isBackEvent) {
+                    window.propertyHistoryStack = [];
+                }
+
+                window.currentLoadedPropertyData = p;
+
+                const backBtn = document.getElementById('btnDetailBack');
+                if (backBtn) {
+                    backBtn.style.display = window.propertyHistoryStack.length > 0 ? 'flex' : 'none';
+                }
 
                 // 클릭할 때마다 스크롤을 맨 위로 초기화
                 const scrollArea = detailView.querySelector('.detail-scroll-area');
@@ -1704,7 +1745,7 @@
                     if(document.getElementById('detailGalleryWrapper')) document.getElementById('detailGalleryWrapper').style.display = 'block';
                 }
                 if (typeof window.switchDetailTab === 'function') {
-                    window.switchDetailTab('info');
+                    window.switchDetailTab(targetTab);
                 }
 
                 detailView.style.display = 'flex';
@@ -1715,6 +1756,8 @@
                 if (detailView) detailView.style.display = 'none';
                 
                 window.currentlySelectedPropertyId = null;
+                window.currentLoadedPropertyData = null;
+                window.propertyHistoryStack = [];
                 document.querySelectorAll('.property-card').forEach(c => c.classList.remove('active'));
             };
 
