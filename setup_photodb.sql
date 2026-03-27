@@ -22,21 +22,25 @@ CREATE INDEX IF NOT EXISTS idx_user_photos_created_at ON public.user_photos(crea
 ALTER TABLE public.user_photos ENABLE ROW LEVEL SECURITY;
 
 -- 본인 사진만 조회
+DROP POLICY IF EXISTS "user_photos_select_own" ON public.user_photos;
 CREATE POLICY "user_photos_select_own"
     ON public.user_photos FOR SELECT
     USING (auth.uid() = user_id);
 
 -- 본인 사진만 삽입
+DROP POLICY IF EXISTS "user_photos_insert_own" ON public.user_photos;
 CREATE POLICY "user_photos_insert_own"
     ON public.user_photos FOR INSERT
     WITH CHECK (auth.uid() = user_id);
 
 -- 본인 사진만 수정
+DROP POLICY IF EXISTS "user_photos_update_own" ON public.user_photos;
 CREATE POLICY "user_photos_update_own"
     ON public.user_photos FOR UPDATE
     USING (auth.uid() = user_id);
 
 -- 본인 사진만 삭제
+DROP POLICY IF EXISTS "user_photos_delete_own" ON public.user_photos;
 CREATE POLICY "user_photos_delete_own"
     ON public.user_photos FOR DELETE
     USING (auth.uid() = user_id);
@@ -58,6 +62,7 @@ VALUES ('user-photos', 'user-photos', false)
 ON CONFLICT (id) DO NOTHING;
 
 -- 업로드: 본인 폴더에만
+DROP POLICY IF EXISTS "user_photos_storage_insert" ON storage.objects;
 CREATE POLICY "user_photos_storage_insert"
     ON storage.objects FOR INSERT
     WITH CHECK (
@@ -66,6 +71,7 @@ CREATE POLICY "user_photos_storage_insert"
     );
 
 -- 조회: 본인 폴더에만
+DROP POLICY IF EXISTS "user_photos_storage_select" ON storage.objects;
 CREATE POLICY "user_photos_storage_select"
     ON storage.objects FOR SELECT
     USING (
@@ -74,6 +80,7 @@ CREATE POLICY "user_photos_storage_select"
     );
 
 -- 삭제: 본인 폴더에만
+DROP POLICY IF EXISTS "user_photos_storage_delete" ON storage.objects;
 CREATE POLICY "user_photos_storage_delete"
     ON storage.objects FOR DELETE
     USING (
