@@ -84,12 +84,12 @@ function initMap() {
 
 
 // 포털 뷰 열기
-window.openPortalView = function() {
+window.openPortalView = function(category = '전체기사') {
     const pv = document.getElementById('portal-view');
     if (pv) {
         pv.style.display = 'block';
         pv.scrollTop = 0;
-        loadPortalNews('전체기사');
+        loadPortalNews(category);
     }
 };
 
@@ -1542,16 +1542,13 @@ window.showNewsDetail = async function(news) {
             }
 
             if (typeof window.openPortalView === 'function') {
-                window.openPortalView();
+                window.openPortalView('검색결과:' + keyword);
+            } else if (typeof window.loadPortalNews === 'function') {
+                window.loadPortalNews('검색결과:' + keyword);
             }
             
             const title = document.getElementById('portalSectionTitle');
             if (title) title.textContent = '검색결과: #' + keyword;
-            
-            // 포털 검색 호출
-            if (typeof window.loadPortalNews === 'function') {
-                window.loadPortalNews('검색결과:' + keyword);
-            }
         };
         
         // 기자 정보
