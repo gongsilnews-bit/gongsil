@@ -960,14 +960,23 @@
             <hr style="border:none; border-top:1px solid #f0f0f0; margin:0 0 16px;">
 
             <!-- 상세 항목 -->
-            <table style="width:100%; font-size:13px; border-collapse:collapse; margin-bottom:16px;">
-                <tr><td style="color:#888; padding:7px 0; width:90px;">거래유형</td><td id="propInfoTrade" style="font-weight:600;"></td></tr>
-                <tr><td style="color:#888; padding:7px 0;">매물종류</td><td id="propInfoType" style="font-weight:600;"></td></tr>
-                <tr><td style="color:#888; padding:7px 0;">전용면적</td><td id="propInfoArea" style="font-weight:600;"></td></tr>
-                <tr><td style="color:#888; padding:7px 0;">방/욕실</td><td id="propInfoRooms" style="font-weight:600;"></td></tr>
-                <tr><td style="color:#888; padding:7px 0;">관리비</td><td id="propInfoMaint" style="font-weight:600;"></td></tr>
-                <tr><td style="color:#888; padding:7px 0;">등록일</td><td id="propInfoDate" style="font-weight:600;"></td></tr>
+            <!-- 상세 항목 -->
+            <table style="width:100%; font-size:13px; border-collapse:collapse; margin-bottom:20px;">
+                <tr><td style="color:#888; padding:10px 0; width:100px; border-top:1px solid #f0f0f0;">소재지</td><td id="propInfoLoc" style="font-weight:600; border-top:1px solid #f0f0f0; line-height:1.4;"></td></tr>
+                <tr><td style="color:#888; padding:10px 0; border-top:1px solid #f0f0f0;">매물특징</td><td id="propInfoFeatures" style="font-weight:600; border-top:1px solid #f0f0f0;"></td></tr>
+                <tr><td style="color:#888; padding:10px 0; border-top:1px solid #f0f0f0;">공급/전용면적</td><td id="propInfoAreaDetail" style="font-weight:600; border-top:1px solid #f0f0f0;"></td></tr>
+                <tr><td style="color:#888; padding:10px 0; border-top:1px solid #f0f0f0;">해당층/총층</td><td id="propInfoFloor" style="font-weight:600; border-top:1px solid #f0f0f0;"></td></tr>
+                <tr><td style="color:#888; padding:10px 0; border-top:1px solid #f0f0f0;">방/욕실수</td><td id="propInfoRooms" style="font-weight:600; border-top:1px solid #f0f0f0;"></td></tr>
+                <tr><td style="color:#888; padding:10px 0; border-top:1px solid #f0f0f0;">방향</td><td id="propInfoDir" style="font-weight:600; border-top:1px solid #f0f0f0;"></td></tr>
+                <tr><td style="color:#888; padding:10px 0; border-top:1px solid #f0f0f0;">주차가능 여부</td><td id="propInfoPark" style="font-weight:600; border-top:1px solid #f0f0f0;"></td></tr>
+                <tr><td style="color:#888; padding:10px 0; border-top:1px solid #f0f0f0;">입주가능일</td><td id="propInfoMoveIn" style="font-weight:600; border-top:1px solid #f0f0f0;"></td></tr>
+                <tr><td style="color:#888; padding:10px 0; border-top:1px solid #f0f0f0;">관리비</td><td id="propInfoMaint" style="font-weight:600; border-top:1px solid #f0f0f0;"></td></tr>
+                <tr><td style="color:#888; padding:10px 0; border-top:1px solid #f0f0f0; border-bottom:1px solid #f0f0f0;">옵션</td><td id="propInfoOpt" style="font-weight:600; border-top:1px solid #f0f0f0; border-bottom:1px solid #f0f0f0; line-height:1.4;"></td></tr>
             </table>
+
+            <!-- 로드뷰 -->
+            <div style="font-size:13px; font-weight:700; color:#333; margin-bottom:8px;">📍 로드뷰</div>
+            <div id="propRoadview" style="width:100%; height:200px; background:#ececec; border-radius:8px; margin-bottom:20px; display:flex; align-items:center; justify-content:center; color:#999; font-size:13px;">로드뷰를 불러오는 중입니다...</div>
 
             <hr style="border:none; border-top:1px solid #f0f0f0; margin:0 0 16px;">
 

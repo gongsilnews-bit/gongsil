@@ -1791,12 +1791,54 @@ window.openPropPanel = async function(propertyId) {
     document.getElementById('propPanelMeta').textContent = [p.property_type, p.dedicated_area ? `전용 ${p.dedicated_area}㎡` : ''].filter(Boolean).join(' · ');
     document.getElementById('propPanelAddrText').textContent = [p.sido, p.sigungu, p.dong].filter(Boolean).join(' ');
 
-    document.getElementById('propInfoTrade').textContent = t || '-';
-    document.getElementById('propInfoType').textContent  = p.property_type || '-';
-    document.getElementById('propInfoArea').textContent  = p.dedicated_area ? `${p.dedicated_area}㎡` : '-';
-    document.getElementById('propInfoRooms').textContent = `${p.room_count || '-'}개 / ${p.bathroom_count || '-'}개`;
+    const fmtM2P = (m2) => m2 ? `${m2}㎡(${(m2 / 3.3058).toFixed(1)}평)` : '';
+    const sArea = parseFloat(p.supply_area) || 0;
+    const dArea = parseFloat(p.dedicated_area) || parseFloat(p.area) || 0;
+    let areaDisplay = '-';
+    if (sArea && dArea) areaDisplay = `${fmtM2P(sArea)} / ${fmtM2P(dArea)}`;
+    else if (sArea) areaDisplay = fmtM2P(sArea);
+    else if (dArea) areaDisplay = fmtM2P(dArea);
+
+    let address = [p.sido, p.sigungu, p.dong, p.detail_address].filter(Boolean).join(' ');
+    let docFeaturesStr = p.building_name || p.property_type || '-';
+    const isGeneral = p.main_category === '상가·업무·공장·토지' || p.main_category === '빌라·주택';
+    if (p.is_room_private) {
+        if (isGeneral) {
+            address = [p.sido, p.sigungu, p.dong].filter(Boolean).join(' ');
+            docFeaturesStr = p.property_type || '-';
+        }
+    }
+
+    const tTrade = document.getElementById('propInfoTrade');
+    if (tTrade) tTrade.textContent = t || '-';
+    
+    document.getElementById('propInfoLoc').textContent = address || '-';
+    document.getElementById('propInfoFeatures').textContent = docFeaturesStr;
+    document.getElementById('propInfoAreaDetail').textContent = areaDisplay;
+    document.getElementById('propInfoFloor').textContent = `${p.current_floor || '-'}층 / ${p.total_floor || '-'}층`;
+    document.getElementById('propInfoRooms').textContent = `${p.room_count || '0'}개 / ${p.bathroom_count || '0'}개`;
+    document.getElementById('propInfoDir').textContent = p.room_direction || p.direction || '-';
+    document.getElementById('propInfoPark').textContent = p.parking_count || '정보없음';
+    document.getElementById('propInfoMoveIn').textContent = p.move_in_date || '협의가능';
     document.getElementById('propInfoMaint').textContent = p.maintenance_fee ? `${p.maintenance_fee}만원` : '-';
-    document.getElementById('propInfoDate').textContent  = p.created_at ? new Date(p.created_at).toLocaleDateString('ko-KR') : '-';
+    document.getElementById('propInfoOpt').textContent = (p.options && Array.isArray(p.options) && p.options.length > 0) ? p.options.join(', ') : '-';
+    
+    // 로드뷰 처리
+    const rvContainer = document.getElementById('propRoadview');
+    if (rvContainer) {
+        if (typeof kakao !== 'undefined' && kakao.maps && p.latitude && p.longitude) {
+            rvContainer.innerHTML = '';
+            const rv = new kakao.maps.Roadview(rvContainer);
+            const rvClient = new kakao.maps.RoadviewClient();
+            const position = new kakao.maps.LatLng(p.latitude, p.longitude);
+            rvClient.getNearestPanoId(position, 50, function(panoId) {
+                if(panoId) rv.setPanoId(panoId, position);
+                else rvContainer.innerHTML = '<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#999; font-size:13px;">해당 지역은 로드뷰가 제공되지 않습니다.</div>';
+            });
+        } else {
+            rvContainer.innerHTML = '<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#999; font-size:13px;">위치 정보가 없습니다.</div>';
+        }
+    }
     document.getElementById('propInfoDesc').textContent  = p.description || '상세 설명이 없습니다.';
 
     // 등록자 정보
