@@ -1,0 +1,503 @@
+﻿diff --git a/gongsil.html b/gongsil.html
+index 823715b..466815a 100644
+--- a/gongsil.html
++++ b/gongsil.html
+@@ -2630,162 +2630,85 @@
+                             ? `${authorInfo.name} (${authorInfo.email})`
+                             : `${maskName(authorInfo.name)} (${maskEmail(authorInfo.email)})`;
+ 
+-                        let answerHtml = '';
+-                        if (inq.answer) {
+-                            const ansDate = inq.answered_at ? new Date(inq.answered_at).toISOString().slice(0,10).replace(/-/g, '.') : '';
+-                            answerHtml = `
+-                                <div style="background: #f8f9fa; border-radius: 4px; padding: 15px; border-left: 3px solid #1a73e8; margin-top:12px;">
+-                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+-                                        <div style="width: 20px; height: 20px; background: #1a73e8; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold;">A</div>
+-                                        <span style="font-size: 13px; font-weight: bold; color: #111;">以묎컻???듬?</span>
+-                                        <span style="font-size: 11px; color: #888; margin-left: auto;">${ansDate}</span>
+-                                    </div>
+-                                    <div style="font-size: 13px; color: #444; line-height: 1.5; white-space: pre-wrap; margin-left:28px;">${inq.answer}</div>
+-                                </div>
+-                            `;
+-                        } else if (isRealtor) {
+-                            answerHtml = `
+-                                <div style="margin-top: 12px; margin-left: 5px; border-left: 2px solid #e1e1e1; padding-left: 10px;">
+-                                    <textarea id="ans_${idx}_${inq.id}" placeholder="?ш린???듬????묒꽦??二쇱꽭??" style="width:100%; height:60px; padding:10px; border:1px solid #ddd; border-radius:4px; font-size:13px; resize:none; outline:none; margin-bottom:5px; box-sizing:border-box; font-family:inherit;"></textarea>
+-                                    <button onclick="window.submitInquiryAnswer('${inq.id}', ${idx})" style="background:#1a73e8; color:white; border:none; padding:8px 15px; border-radius:4px; font-size:12px; font-weight:bold; cursor:pointer;">?듬? ?깅줉</button>
+-                                </div>
+-                            `;
+-                        } else {
+-                            answerHtml = `
+-                                <div style="margin-top:12px;">
+-                                    <span style="display:inline-block; font-size:11px; background:#f0f0f0; padding:4px 8px; border-radius:4px; color:#666; font-weight:bold;">?듬? ?湲곗쨷</span>
+-                                </div>
+-                            `;
+-                        }
+-                        
+-                        const headerBadge = isMyInquiry ? '<span style="color:#1a73e8; font-weight:bold;">?섏쓽 臾몄쓽</span>' : '<span style="color:#1a73e8; font-weight:bold;">怨좉컼 臾몄쓽</span>';
+-                        const headerText = `${headerBadge} <span style="font-size:12px; color:#555; margin-left:6px; font-weight:normal;">${displayStr}</span> <span style="font-size:12px; color:#888; margin-left:4px;">?뵏 鍮꾨?</span>`;
+-                        
+-                        const itemHtml = `
+-                            <div style="background: #fff; border-bottom: 1px solid #f0f0f0; padding: 15px 0;">
+-                                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+-                                    <div style="font-size: 13px; color: #111; display:flex; align-items:center; gap:2px;">${headerText}</div>
+-                                    <div style="font-size: 12px; color: #aaa;">${dateStr}</div>
+-                                </div>
+-                                <div style="font-size: 14px; color: #333; line-height: 1.5; white-space: pre-wrap;">${inq.content}</div>
+-                                ${answerHtml}
+-                            </div>
+-                        `;
+-                        listEl.insertAdjacentHTML('beforeend', itemHtml);
+-                    });
+-                    
+-                    if (visibleCount === 0) {
+-                        listEl.innerHTML = '<div style="text-align:center; padding:30px; color:#888; font-size:13px;">?꾩쭅 ?깅줉??臾몄쓽媛 ?놁뒿?덈떎.</div>';
+-                    }
+-                });
+-                
+-                cntSpans.forEach(span => span.textContent = inquiries.length + '媛?);
+-                
+-            } catch (err) {
+-                console.error("Error loading inquiries:", err);
+-                listEls.forEach(el => el.innerHTML = '<div style="text-align:center; padding:30px; color:#c0392b; font-size:13px;">臾몄쓽 ?댁뿭??遺덈윭?ㅻ뒗???ㅽ뙣?덉뒿?덈떎.</div>');
+-            }
+-        };
+-
+-        window.submitPropertyInquiry = async function(suffix) {
+-            if (!window.currentPropertyId || !window.currentRealtorId) return;
+-            const contentEl = document.getElementById('inpInquiryContent_' + suffix);
+-            const content = contentEl ? contentEl.value.trim() : '';
+-            if (!content) {
+-                alert('臾몄쓽 ?댁슜???낅젰?댁＜?몄슂.');
+-                return;
+-            }
+-            
+-            try {
+-                const { data: { session } } = await window.gongsiClient.auth.getSession();
+-                if (!session || !session.user) {
+-                    alert('濡쒓렇?몄씠 ?꾩슂??湲곕뒫?낅땲??');
+-                    return;
+-                }
+-                
+-                const { error } = await window.gongsiClient
+-                    .from('property_inquiries')
+-                    .insert([{
+-                        property_id: window.currentPropertyId,
+-                        author_id: session.user.id,
+-                        realtor_id: window.currentRealtorId,
+-                        content: content
+-                    }]);
+-                    
+-                if (error) {
+-                    if (error.code === '42P01') alert("DB ?뚯씠釉?property_inquiries)???앹꽦?섏? ?딆븯?듬땲??");
+-                    else throw error;
+-                    return;
+-                }
+-                
+-                contentEl.value = '';
+-                alert('臾몄쓽媛 ?깅줉?섏뿀?듬땲??');
+-                window.loadPropertyInquiries(window.currentPropertyId, window.currentRealtorId);
+-            } catch (err) {
+-                console.error("Error submitting inquiry:", err);
+-                alert('臾몄쓽 ?깅줉 以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.');
+-            }
+-        };
+-
+-        window.submitInquiryAnswer = async function(inquiryId, idx) {
+-            const ansEl = document.getElementById('ans_' + idx + '_' + inquiryId);
+-            const answer = ansEl ? ansEl.value.trim() : '';
+-            if (!answer) {
+-                alert('?듬????낅젰?댁＜?몄슂.');
+-                return;
+-            }
+-            
+-            try {
+-                const { error } = await window.gongsiClient
+-                    .from('property_inquiries')
+-                    .update({
+-                        answer: answer,
+-                        answered_at: new Date().toISOString()
+-                    })
+-                    .eq('id', inquiryId);
+-                    
+-                if (error) throw error;
+-                
+-                alert('?듬????깅줉?섏뿀?듬땲??');
+-                window.loadPropertyInquiries(window.currentPropertyId, window.currentRealtorId);
+-            } catch (err) {
+-                console.error("Error submitting answer:", err);
+-                alert('?듬? ?깅줉 以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.');
+-            }
+-        };
+-    </script>
+-<!-- AI ?꾩슦誘?梨쀫큸 (?곗륫 ?곷떒 ?꾩튂 議곗젅 媛?? -->
++                    <!-- AI ?꾩슦誘?梨쀫큸 (?뚮???怨꾪넻 洹?ъ슫 濡쒕큸 ?붿옄?? -->
+ <div id="ai-companion-container">
+-    <!-- ?λ뫁 ?⑤뒗 遊?踰꾪듉 -->
+-    <div id="aiBotBtn" class="ai-bot-btn" title="AI ?꾩슦誘??닿린" onclick="toggleAIChat()">
+-        <span class="bot-icon">?맲</span>
+-        <div class="bot-badge">1</div>
+-        <div class="bot-tooltip">?덈뀞! ??怨듭떎?댁빞??br>?대뼡 留ㅻЪ 李얠쑝???ㅼ뀲?섏슂?</div>
++    <div id="aiBotBtn" class="ai-bot-btn" title="AI 鍮꾩꽌 ?닿린" onclick="toggleAIChat()">
++        <!-- 洹?ъ슫 而ㅼ뒪? 濡쒕큸 ?꾩씠肄?-->
++        <svg class="bot-icon" width="45" height="45" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
++          <path d="M38 25 L25 5" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
++          <circle cx="25" cy="5" r="5" fill="#0ea5e9" />
++          <path d="M62 25 L75 5" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
++          <circle cx="75" cy="5" r="5" fill="#0ea5e9" />
++          <path d="M25 60 Q20 95 50 95 Q80 95 75 60 Z" fill="#e0f2fe" />
++          <rect x="38" y="80" width="24" height="6" rx="3" fill="#0f172a" />
++          <circle cx="43" cy="83" r="1.5" fill="#38bdf8" />
++          <circle cx="50" cy="83" r="1.5" fill="#38bdf8" />
++          <circle cx="57" cy="83" r="1.5" fill="#38bdf8" />
++          <path d="M10 42 h 15 v 20 h -15 z" fill="#0284c7" />
++          <path d="M75 42 h 15 v 20 h -15 z" fill="#0284c7" />
++          <circle cx="50" cy="50" r="34" fill="#ffffff" />
++          <rect x="22" y="36" width="56" height="26" rx="13" fill="#0f172a" />
++          <rect x="34" y="43" width="8" height="12" rx="4" fill="#22d3ee" />
++          <rect x="58" y="43" width="8" height="12" rx="4" fill="#22d3ee" />
++        </svg>
++        <div class="bot-badge">N</div>
++        <div class="bot-tooltip">?덈뀞! 遺?숈궛 AI 怨듭떎?댁뿉???뮋</div>
+     </div>
+ 
+     <!-- 梨꾪똿李?-->
+     <div id="aiChatWindow" class="ai-chat-window">
+         <div class="chat-header">
+-            <div class="chat-title"><span style="font-size:18px;">?맲</span> ??移쒓뎄 怨듭떎??/div>
++            <div class="chat-title">
++                <svg width="22" height="22" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
++                  <path d="M38 25 L25 5" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
++                  <circle cx="25" cy="5" r="5" fill="#38bdf8" />
++                  <path d="M62 25 L75 5" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
++                  <circle cx="75" cy="5" r="5" fill="#38bdf8" />
++                  <path d="M25 60 Q20 95 50 95 Q80 95 75 60 Z" fill="#e0f2fe" />
++                  <rect x="38" y="80" width="24" height="6" rx="3" fill="#0f172a" />
++                  <path d="M10 42 h 15 v 20 h -15 z" fill="#0284c7" />
++                  <path d="M75 42 h 15 v 20 h -15 z" fill="#0284c7" />
++                  <circle cx="50" cy="50" r="34" fill="#ffffff" />
++                  <rect x="22" y="36" width="56" height="26" rx="13" fill="#0f172a" />
++                  <rect x="34" y="43" width="8" height="12" rx="4" fill="#22d3ee" />
++                  <rect x="58" y="43" width="8" height="12" rx="4" fill="#22d3ee" />
++                </svg>
++                AI 鍮꾩꽌 怨듭떎??+            </div>
+             <button class="chat-close" title="?リ린" onclick="toggleAIChat()">횞</button>
+         </div>
+         <div class="chat-body" id="aiChatBody">
+             <div class="chat-msg ai-msg">
+-                <div class="msg-avatar">?맲</div>
++                <div class="msg-avatar">
++                    <svg width="24" height="24" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
++                      <path d="M38 25 L25 5" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
++                      <circle cx="25" cy="5" r="5" fill="#0ea5e9" />
++                      <path d="M62 25 L75 5" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
++                      <circle cx="75" cy="5" r="5" fill="#0ea5e9" />
++                      <path d="M25 60 Q20 95 50 95 Q80 95 75 60 Z" fill="#e0f2fe" />
++                      <rect x="38" y="80" width="24" height="6" rx="3" fill="#0f172a" />
++                      <path d="M10 42 h 15 v 20 h -15 z" fill="#0ea5e9" />
++                      <path d="M75 42 h 15 v 20 h -15 z" fill="#0ea5e9" />
++                      <circle cx="50" cy="50" r="34" fill="#ffffff" />
++                      <rect x="22" y="36" width="56" height="26" rx="13" fill="#0f172a" />
++                      <rect x="34" y="43" width="8" height="12" rx="4" fill="#22d3ee" />
++                      <rect x="58" y="43" width="8" height="12" rx="4" fill="#22d3ee" />
++                    </svg>
++                </div>
+                 <div class="msg-content">
+-                    以묎컻?щ떂, ?댁꽌?ㅼ꽭?? ?截?br>?ㅻ뒛??<b>?먮떂 留욎땄??留ㅻЪ</b> 李얠븘蹂쇨퉴??<br>?덉궛?대굹 吏??쓣 ?쒓쾶 ?명븯寃?留먯???二쇱꽭?? 
++                    以묎컻?щ떂, ?덈뀞?섏꽭?? ?뮋<br>留ㅻЪ 寃?됰????쒖꽭 遺꾩꽍, 釉뚮━???묒꽦源뚯? ?쒓? ?묐삊?섍퀬 鍮좊Ⅴ寃??꾩??쒕┫寃뚯슂!<br>?꾩슂???묒뾽???꾨옒?먯꽌 ?좏깮?섏떆嫄곕굹 吏곸젒 留먯??댁＜?몄슂!
+                 </div>
+             </div>
+             <!-- Quick Chips -->
+             <div class="chat-chips">
+-                <span class="chip" onclick="sendQuickMsg('媛뺣궓援??щ８ 李얠븘以?)">?뵇 媛뺣궓援??щ８ 李얠븘以?/span>
+-                <span class="chip" onclick="sendQuickMsg('?붾㈃ ?쒖꽭 遺꾩꽍?댁쨾')">?뱤 ?붾㈃ ?쒖꽭 遺꾩꽍</span>
+-                <span class="chip" onclick="sendQuickMsg('?먮떂 釉뚮━??硫섑듃 吏쒖쨾')">?뱷 釉뚮━??硫섑듃 ?묒꽦</span>
++                <span class="chip" onclick="sendQuickMsg('?뵇 媛뺣궓援??щ８ 李얠븘以?)">?뵇 媛뺣궓援?留ㅻЪ 寃??/span>
++                <span class="chip" onclick="sendQuickMsg('?뱤 ?붾㈃ ?쒖꽭 遺꾩꽍?댁쨾')">?뱤 ?쒖꽭 ?붿빟 遺꾩꽍</span>
++                <span class="chip" onclick="sendQuickMsg('?뱷 ?먮떂 釉뚮━??硫섑듃 吏쒖쨾')">?뱷 釉뚮━??硫섑듃 ?묒꽦</span>
+             </div>
+         </div>
+         <div class="chat-footer">
+-            <input type="text" id="aiChatInput" title="硫붿떆吏 ?낅젰?" placeholder="怨듭떎?댁뿉寃?臾쇱뼱蹂댁꽭??.." autocomplete="off" onkeypress="if(event.key==='Enter') sendAIMsg()">
+-            <button class="chat-send" title="蹂대궡湲? onclick="sendAIMsg()">
++            <input type="text" id="aiChatInput" title="硫붿떆吏 ?낅젰?" placeholder="?섎쭔???묐삊??鍮꾩꽌?먭쾶 臾쇱뼱蹂댁꽭??.." autocomplete="off" onkeypress="if(event.key==='Enter') sendAIMsg()">
++            <button class="chat-send" title="?꾩넚" onclick="sendAIMsg()">
+                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"></path></svg>
+             </button>
+         </div>
+@@ -2793,56 +2716,50 @@
+ </div>
+ 
+ <style>
+-/* AI Chatbot Styles */
++/* AI Chatbot Styles - Blue Cute Robot Version */
+ #ai-companion-container {
+-    position: fixed;
+-    top: 130px; /* ?곗륫 ?곷떒 吏??(?먰븯?쒕뒗 ?濡?議곗젅 媛?? */
+-    right: 30px;
+-    z-index: 10000;
+-    pointer-events: none; /* 而⑦뀒?대꼫???대┃ ?덈릺寃?留됯퀬 ?먯떇留??덉슜 */
+-}
+-#ai-companion-container * {
+-    pointer-events: auto;
++    position: fixed; top: 130px; right: 30px;
++    z-index: 10000; pointer-events: none;
+ }
++#ai-companion-container * { pointer-events: auto; }
+ 
+ .ai-bot-btn {
+-    width: 65px; height: 65px;
+-    background: #FFD166; /* 洹?ъ슫 ?몃???*/
+-    border: 3px solid #fff;
+-    border-radius: 50%;
+-    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
++    width: 68px; height: 68px;
++    background: linear-gradient(135deg, #38bdf8, #0284c7);
++    color: white; border-radius: 50%;
++    box-shadow: 0 8px 24px rgba(2, 132, 199, 0.35);
+     display: flex; align-items: center; justify-content: center;
+     cursor: pointer; position: relative;
+-    animation: bounceBot 2.5s infinite ease-in-out;
+-    transition: transform 0.2s;
++    animation: gentleFloat 2.5s ease-in-out infinite;
++    transition: transform 0.2s, box-shadow 0.2s;
++    border: 3px solid rgba(255,255,255,0.4);
+ }
+-.ai-bot-btn:hover { transform: scale(1.1); animation-play-state: paused; }
+-.bot-icon { font-size: 36px; line-height: 1; }
++.ai-bot-btn:hover { transform: scale(1.08); box-shadow: 0 12px 30px rgba(2, 132, 199, 0.45); }
++.bot-icon { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
+ .bot-badge {
+-    position: absolute; top: -2px; right: -2px;
+-    background: #ef476f; color: white;
+-    font-size: 11px; font-weight: bold; width: 22px; height: 22px;
++    position: absolute; top: -4px; right: -4px;
++    background: #ef4444; color: white;
++    font-size: 11px; font-weight: 800; width: 22px; height: 22px;
+     border-radius: 50%; display: flex; align-items: center; justify-content: center;
+-    border: 2px solid #fff;
++    border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+ }
+ .bot-tooltip {
+-    position: absolute; right: 80px; top: 12px;
+-    background: #fff; padding: 12px 16px; border-radius: 12px;
+     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+-    font-size: 13px; font-weight: 800; color: #333;
+-    white-space: nowrap; pointer-events: none; opacity: 1;
++    font-size: 13px; font-weight: 600; color: #fff;
++    white-space: nowrap; pointer-events: none;
+     animation: floatTooltip 3s infinite ease-in-out;
+ }
+ .bot-tooltip::after {
+-    content: ''; position: absolute; right: -6px; top: 14px;
+-    border-width: 6px 0 6px 6px; border-style: solid;
+-    border-color: transparent transparent transparent #fff;
++    content: ''; position: absolute; right: -5px; top: 12px;
++    border-width: 5px 0 5px 6px; border-style: solid;
++    border-color: transparent transparent transparent rgba(15, 23, 42, 0.9);
+ }
+ 
+-@keyframes bounceBot {
++@keyframes gentleFloat {
+     0%, 100% { transform: translateY(0); }
+-    50% { transform: translateY(-8px); }
++    50% { transform: translateY(-6px); }
+ }
++
+ @keyframes floatTooltip {
+     0%, 100% { transform: translateX(0); }
+     50% { transform: translateX(-4px); }
+@@ -2850,91 +2767,100 @@
+ 
+ /* Chat Window */
+ .ai-chat-window {
+-    position: absolute;
+-    top: 75px; /* 踰꾪듉 ?꾨옒濡??대┝ */
+-    right: 0;
+-    width: 350px;
+-    height: 520px;
+-    background: #fff;
+-    border-radius: 20px;
+-    box-shadow: 0 10px 40px rgba(0,0,0,0.25);
++    position: absolute; top: 75px; right: 0;
++    width: 360px; height: 550px;
++    background: #ffffff; border-radius: 16px;
++    box-shadow: 0 12px 48px rgba(15, 23, 42, 0.2);
+     display: none; flex-direction: column; overflow: hidden;
+     transform-origin: top right;
+-    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
++    animation: popInSmooth 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
++    border: 1px solid rgba(0,0,0,0.05);
+ }
+-@keyframes popIn {
+-    from { opacity: 0; transform: scale(0.8); }
++@keyframes popInSmooth {
++    from { opacity: 0; transform: scale(0.95); }
+     to { opacity: 1; transform: scale(1); }
+ }
+ 
+ .chat-header {
+-    background: #FFD166; padding: 18px 20px;
+-    display: flex; justify-content: space-between; align-items: center;
+-    border-bottom: 1px solid rgba(0,0,0,0.05);
++    background: linear-gradient(to right, #1e293b, #334155);
++    padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
+ }
+-.chat-title { font-weight: 800; color: #111; display:flex; gap:8px; align-items:center; font-size:16px; }
+-.chat-close { background: none; border: none; font-size: 26px; color: #555; cursor: pointer; line-height: 1; padding:0; margin:0; }
+-.chat-close:hover { color:#000; }
++.chat-title { font-weight: 600; color: #fff; display:flex; gap:8px; align-items:center; font-size:15px; letter-spacing: -0.3px;}
++.chat-close { background: none; border: none; font-size: 24px; color: rgba(255,255,255,0.7); cursor: pointer; padding:0; line-height:1; }
++.chat-close:hover { color: #fff; }
+ 
+ .chat-body {
+-    flex: 1; padding: 20px; overflow-y: auto; background: #fdfdfd;
++    flex: 1; padding: 20px; overflow-y: auto; background: #f8fafc;
+     display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth;
+ }
+-.chat-msg { display: flex; gap: 10px; max-width: 88%; }
++.chat-msg { display: flex; gap: 10px; max-width: 90%; }
+ .ai-msg { align-self: flex-start; }
+ .my-msg { align-self: flex-end; flex-direction: row-reverse; }
+ 
+-.msg-avatar { width: 36px; height: 36px; background: #ffeebb; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; margin-top:2px; }
++.msg-avatar { 
++    width: 32px; height: 32px; background: #e2e8f0; color: #475569;
++    border-radius: 8px; display: flex; align-items: center; justify-content: center; 
++    flex-shrink: 0; margin-top:2px; 
++}
+ .my-msg .msg-avatar { display: none; }
+ 
+ .msg-content {
+-    background: #fff; border: 1px solid #e2e8f0; padding: 12px 14px;
+-    border-radius: 14px 14px 14px 4px; font-size: 13.5px; color: #222;
+-    line-height: 1.5; box-shadow: 0 2px 6px rgba(0,0,0,0.02); font-weight: 500;
++    background: #fff; border: 1px solid #e2e8f0; padding: 12px 16px;
++    border-radius: 2px 14px 14px 14px; font-size: 13.5px; color: #334155;
++    line-height: 1.5; box-shadow: 0 1px 2px rgba(0,0,0,0.02); font-weight: 500;
+ }
+ .my-msg .msg-content {
+-    background: #4285f4; color: #fff; border: none;
+-    border-radius: 14px 14px 4px 14px; box-shadow: 0 2px 6px rgba(66, 133, 244, 0.2);
++    background: #2563eb; color: #fff; border: none;
++    border-radius: 14px 2px 14px 14px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+ }
+ 
+ .chat-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
+-.chip { border: 1px solid #FFD166; color: #d97706; background: #fffdfa; padding: 7px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+-.chip:hover { background: #FFD166; color: #111; transform:translateY(-1px); }
++.chip { 
++    border: 1px solid #cbd5e1; color: #475569; background: #fff; 
++    padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 600; 
++    cursor: pointer; transition: all 0.2s; white-space: nowrap; 
++}
++.chip:hover { background: #f1f5f9; color: #0f172a; border-color:#94a3b8; }
+ 
+ .chat-footer {
+-    padding: 14px 16px; border-top: 1px solid #eee; background: #fff;
++    padding: 16px; border-top: 1px solid #f1f5f9; background: #fff;
+     display: flex; gap: 10px; align-items: center;
+ }
+ .chat-footer input {
+-    flex: 1; border: 1px solid #ddd; background: #f9f9f9; padding: 12px 16px;
+-    border-radius: 24px; outline: none; font-size: 13.5px; font-family: inherit; transition: 0.2s;
++    flex: 1; border: 1px solid #cbd5e1; background: #f8fafc; padding: 12px 16px;
++    border-radius: 8px; outline: none; font-size: 13.5px; font-family: inherit; transition: 0.2s;
++}
++.chat-footer input:focus { border-color: #3b82f6; background: #fff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
++.chat-send { 
++    background: #2563eb; border: none; color: white; width: 42px; height: 42px; 
++    border-radius: 8px; display: flex; align-items: center; justify-content: center; 
++    cursor: pointer; flex-shrink: 0; transition:0.2s; 
+ }
+-.chat-footer input:focus { border-color: #FFD166; background: #fff; box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.2); }
+-.chat-send { background: #4285f4; border: none; color: white; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition:0.2s; }
+-.chat-send:hover { background: #3367d6; }
++.chat-send:hover { background: #1d4ed8; }
+ 
+-/* Typing animation */
+ .typing-dots { display: flex; gap: 4px; padding: 6px 4px; align-items:center; }
+-.dot { width: 6px; height: 6px; background: #aaa; border-radius: 50%; animation: bounceDot 1.4s infinite ease-in-out both; }
++.dot { width: 5px; height: 5px; background: #94a3b8; border-radius: 50%; animation: bounceDot 1.4s infinite ease-in-out both; }
+ .dot:nth-child(1) { animation-delay: -0.32s; }
+ .dot:nth-child(2) { animation-delay: -0.16s; }
+ @keyframes bounceDot { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+ </style>
+ 
+ <script>
+-// --- AI Chatbot Logic ---
+ const aiWindow = document.getElementById('aiChatWindow');
+ const aiBody = document.getElementById('aiChatBody');
+ const aiInput = document.getElementById('aiChatInput');
+ const tooltip = document.querySelector('.bot-tooltip');
+ 
++const aiAvatarSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
++
+ function toggleAIChat() {
+     if (aiWindow.style.display === 'flex') {
+         aiWindow.style.display = 'none';
+     } else {
+         aiWindow.style.display = 'flex';
+-        tooltip.style.display = 'none'; // ??踰??대㈃ ?댄똻 ?꾧린
+-        document.querySelector('.bot-badge').style.display = 'none'; // ?뚮┝ 諭껋? ?꾧린
++        if (tooltip) tooltip.style.display = 'none';
++        const badge = document.querySelector('.bot-badge');
++        if (badge) badge.style.display = 'none';
+         setTimeout(() => aiInput.focus(), 100);
+         aiBody.scrollTop = aiBody.scrollHeight;
+     }
+@@ -2949,38 +2875,33 @@ function sendAIMsg() {
+     const text = aiInput.value.trim();
+     if (!text) return;
+     
+-    // User Message
+     appendMessage('my', text);
+     aiInput.value = '';
+     
+-    // Typing indicator
+     const typingId = 'typing-' + Date.now();
+     appendTyping(typingId);
+     
+-    // Simulate AI response
+     setTimeout(() => {
+         removeTyping(typingId);
+         let reply = '';
+         if (text.includes('?щ８')) {
+-            reply = '?? ?щ８??李얠쑝?쒕뒗援곗슂 ?맲<br>怨듭떎?대엺 ?꾪꽣瑜?<b>[?щ８]</b>?쇰줈 ?먮룞 ?ㅼ젙?섍퀬 吏?꾨? ?대룞?쒖섟?듬땲?? ??(?곕룞 ?湲곗쨷)';
+-        } else if (text.includes('媛뺣궓')) {
+-            reply = '吏?꾨? <b>[媛뺣궓 硫붿씤 ?곴텒]</b>?쇰줈 諛붾줈 ?대룞?좉퉴?? ?곗륫 吏???붾㈃??二쇰ぉ??二쇱꽭?? ?뿺截?(?곕룞 ?湲곗쨷)';
+-        } else if (text.includes('?쒖꽭 遺꾩꽍')) {
+-            reply = '吏湲?<b>吏?꾩뿉 ?몄텧??留ㅻЪ 12嫄?/b>???쒖꽭瑜?遺꾩꽍?덉뼱?? ?뱤<br><br>??<b>?먮８:</b> ?붿꽭 80~120留???br>??<b>?щ８:</b> ?붿꽭 150~200留???br>?몛 ?됯퇏 蹂댁쬆湲덉? 3,000留????좎엯?덈떎!';
++            reply = '<b>[?щ８]</b> 議곌굔?쇰줈 ?꾪꽣瑜?理쒖쟻?뷀뻽?듬땲?? ??br>吏??酉곕? 媛뺣궓援щ줈 ?대룞 以묒엯?덈떎. (湲곕뒫 ?곕룞 以?';
++        } else if (text.includes('?쒖꽭')) {
++            reply = '?꾩옱 ?붾㈃???몄텧??<b>留ㅻЪ 12嫄댁쓽 ?쒓퀎???곗씠??/b>瑜?遺꾩꽍??寃곌낵?낅땲?? ?뱤<br><br>??<b>?먮８ ?됯퇏:</b> ??80~120留???br>??<b>?щ８ ?됯퇏:</b> ??150~200留???br>?몛 ?됯퇏 蹂댁쬆湲덉? 3,000留????좎쑝濡??뺤꽦?섏뼱 ?덉뒿?덈떎.';
+         } else if (text.includes('釉뚮━??)) {
+-            reply = '?좏깮?섏떊 留ㅻЪ?????<b>?먮떂??移댄넚 釉뚮━??/b> 珥덉븞???묒꽦?덉뼱?? ?명븯寃?蹂듭궗???곗꽭??<br><br><span style="color:#555;font-size:12px;">"怨좉컼?? ?ㅻ뒛 ?붿껌?섏떊 議곌굔????留욌뒗 洹??留ㅻЪ 3媛쒕? 異붾젮蹂댁븯?듬땲?? ?꾨㈃ ?듭쑀由?梨꾧킅??醫뗪퀬 吏?섏쿋??낵 ?꾨낫 3遺?嫄곕━..."</span> <br><button onclick="alert(\\\'蹂듭궗?섏뿀?듬땲?? 移댄넚??遺숈뿬?ｊ린 ?섏꽭??\\\')" style="background:#ef476f;font-family:inherit;font-weight:bold;color:white;border:none;padding:6px 12px;border-radius:12px;font-size:12px;margin-top:10px;cursor:pointer;">?뱞 蹂듭궗?섍린</button>';
++            reply = '怨좉컼 釉뚮━?묒슜 珥덉븞???묒꽦?덉뒿?덈떎. ?꾩슂?섏떊 遺遺꾩쓣 蹂듭궗?섏뿬 ?ъ슜?섏꽭??<br><br><div style="background:#f1f5f9; padding:12px; border-radius:8px; font-size:12px; color:#475569; margin-bottom:8px;">怨좉컼?? ?ㅻ뒛 ?붿껌?섏떊 議곌굔??留욌뒗 ?곕웾 留ㅻЪ 3怨녹쓣 ?꾩꽑?덉뒿?덈떎. ?꾨㈃ ?듭쑀由?援ъ“濡?梨꾧킅???곗닔?섎ŉ, 吏?섏쿋???꾨낫 3遺?嫄곕━???꾩튂???덉뒿?덈떎...</div><button onclick="alert(\\\'?대┰蹂대뱶??蹂듭궗?섏뿀?듬땲??\\\')" style="background:#2563eb;font-family:inherit;font-weight:600;color:white;border:none;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;transition:0.2s;">?뱞 ?띿뒪??蹂듭궗</button>';
+         } else {
+-            reply = '?? ?묒닔 ?꾨즺! ?뱷<br>?쒓? ?묐삊?섍쾶 遺꾩꽍?댁꽌 以묎컻?щ떂???꾩??쒕┫ ???덈룄濡????묐삊?댁???以묒씠?먯슂. ?ㅻⅨ ?꾩슂?섏떊 寃??덈굹??';
++            reply = '?붿껌?섏떊 ?뺣낫媛 ?묒닔?섏뿀?듬땲?? ?뱷<br>?꾩옱 AI 鍮꾩꽌 湲곕뒫??吏?띿쟻?쇰줈 怨좊룄?뷀븯怨??덉뒿?덈떎. ???꾩슂?섏떊 遺꾩꽍 ?뺣낫媛 ?덉쑝?좉???';
+         }
+         appendMessage('ai', reply);
+-    }, 1200); // 1.2珥????듬?
++    }, 1200);
+ }
+ 
+ function appendMessage(type, htmlContent) {
+     const div = document.createElement('div');
+     div.className = `chat-msg ${type}-msg`;
+     if (type === 'ai') {
+-        div.innerHTML = `<div class="msg-avatar">?맲</div><div class="msg-content">${htmlContent}</div>`;
++        div.innerHTML = `<div class="msg-avatar">${aiAvatarSvg}</div><div class="msg-content">${htmlContent}</div>`;
+     } else {
+         div.innerHTML = `<div class="msg-content">${htmlContent}</div>`;
+     }
+@@ -2993,7 +2914,7 @@ function appendTyping(id) {
+     div.className = `chat-msg ai-msg`;
+     div.id = id;
+     div.innerHTML = `
+-        <div class="msg-avatar">?맲</div>
++        <div class="msg-avatar">${aiAvatarSvg}</div>
+         <div class="msg-content" style="padding: 10px 14px;">
+             <div class="typing-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+         </div>
