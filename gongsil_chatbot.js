@@ -287,39 +287,67 @@ window.sendAIMsg = function() {
     const typingId = 'typing-' + Date.now();
     appendTyping(typingId);
     
-    setTimeout(() => {
-        removeTyping(typingId);
+    setTimeout(async () => {
         let reply = '';
         
-        // ========= 무료 모드 (키워드 매칭 규칙 기반) =========
+        // ========= 1. 무료 모드 (키워드 매칭 규칙 기반) =========
         if (text.includes('가입') || text.includes('등록') || text.includes('시작')) {
             reply = '<b>[회원가입 안내]</b> 👤<br>공실열람 회원가입은 아주 간단합니다!<br>우측 상단의 <b>[프로필 아이콘]</b>을 클릭하신 후, <b>[회원가입]</b> 메뉴를 통해 원하시는 계정으로 1분 만에 가입하실 수 있습니다.<br><br>👉 <a href="register.html" style="color:#0284c7;text-decoration:underline;font-weight:bold;">회원가입 페이지로 바로 이동하기</a>';
+            removeTyping(typingId);
+            appendMessage('ai', reply);
+            return;
         } 
         else if (text.includes('요금') || text.includes('결제') || text.includes('무료') || text.includes('가격')) {
             reply = '<b>[요금제 안내]</b> 💳<br>부동산 중개사님들을 위한 요금제는 다음과 같습니다:<br><br>✅ <b>기본 플랜:</b> 월 30,000원<br>(공실 열람 무제한, AI 비서 일 100회 무료 제공)<br>✅ <b>무료 플랜:</b> 기본적인 메뉴 탐색과 제한된 검색 기능 지원<br><br>가입 후 마이페이지에서 상세 요금제 가입이 가능합니다!';
+            removeTyping(typingId);
+            appendMessage('ai', reply);
+            return;
         }
         else if (text.includes('비밀번호') || text.includes('비번') || text.includes('찾기')) {
             reply = '<b>[비밀번호 찾기]</b> 🔐<br>비밀번호를 잊으셨나요? 로그인 페이지 하단의 <b>"비밀번호 찾기"</b> 버튼을 클릭하여 가입하신 이메일로 비밀번호 재설정 링크를 받으실 수 있습니다.';
+            removeTyping(typingId);
+            appendMessage('ai', reply);
+            return;
         }
         else if (text.includes('사용법') || text.includes('이용방법')) {
             reply = '<b>[공실열람 이용방법]</b> 📚<br>상단의 탭을 통해 원하시는 메뉴(공실, 지도, 뉴스 기사, 관리자)로 이동해 보세요. 궁금한 점이 생기면 언제든 저 공실챗봇을 불러주세요!';
-        }
-        // ========= 유료 모드 (시뮬레이션: API 호출이 필요한 복잡한 명령) =========
-        else if (text.includes('투룸')) {
-            reply = '<b>[투룸]</b> 조건으로 필터를 최적화했습니다. ✨<br>지도 뷰를 우측상동으로 이동 중입니다. 멋진 매물이 많네요! (실제 앱에서는 여기서 필터 API가 동작합니다)';
-        } 
-        else if (text.includes('시세')) {
-            reply = '현재 화면에 노출된 <b>매물 12건의 평균 시세 데이터</b>를 분석한 결과입니다. 📊<br><br>👉 <b>원룸 평균:</b> 월 80~120만 원<br>👉 <b>투룸 평균:</b> 월 150~200만 원<br>✅ 평균 보증금은 3,000만 원 선으로 분석되었습니다.';
-        } 
-        else if (text.includes('브리핑')) {
-            reply = '고객 브리핑용 초안을 작성했습니다. 자유롭게 복사하여 카톡으로 전송해 보세요.<br><br><div style="background:#ffffff; padding:14px; border-radius:10px; font-size:13px; color:#334155; margin-bottom:10px; border:1px solid #e0f2fe;">✨ 고객님! 오늘 원하시는 조건에 딱 맞는 특급 매물 3곳을 엄선했습니다. 전면 통유리로 채광이 훌륭하고 지하철역 도보 3분 초역세권입니다...</div><button onclick="alert(\\\'클립보드에 텍스트가 복사되었습니다! 카카오톡에 붙여넣어 보세요.\\\')" style="background:#0ea5e9;font-family:inherit;font-weight:700;color:white;border:none;padding:8px 16px;border-radius:20px;font-size:13px;cursor:pointer;transition:0.2s; box-shadow:0 3px 6px rgba(14,165,233,0.3);">📄 브리핑 복사</button>';
-        } 
-        else {
-            reply = '앗! 아직 학습하지 못한 질문이에요. 🤔<br>["회원가입 방법", "요금제", "비밀번호 찾기"] 와 같은 질문은 바로답변이 가능하며, 매물 정보나 브리핑 멘트도 도와드릴 수 있어요!';
+            removeTyping(typingId);
+            appendMessage('ai', reply);
+            return;
         }
         
+        // ========= 2. 유료 모드 (실제 인공지능 API 연동) =========
+        const GEMINI_API_KEY = "AIzaSyCPsd_8sKQ1IsjaxKNlNRPx0eAKXuMmg9M"; 
+        const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY;
+
+        const aiPrompt = "당신은 항상 밝고 친절한 부동산 중개 비서 AI '공실이'입니다. 부동산 관점에서 전문적이고 도움되는 답변을 한국어로 작성해주세요. 그리고 답변에 파란색 하트(💙)나 반짝이(✨) 같은 이모지를 적절히 사용하여 다정하게 구어체로 대답해야 합니다. 기계처럼 딱딱하게 말하지 마세요. 사용자 질문: " + text;
+
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: aiPrompt }] }]
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error("API 요청 실패: " + response.status);
+            }
+
+            const data = await response.json();
+            const aiText = data.candidates[0].content.parts[0].text;
+            
+            // 단순 텍스트 줄바꿈을 HTML <br>로 변환
+            reply = aiText.replace(/\\n/g, '<br>');
+        } catch (error) {
+            console.error("Gemini API Error:", error);
+            reply = '앗! 지금 서버와 연결하는 중에 문제가 생겼어요. 😥 API 키 설정이나 네트워크 상태를 다시 확인해 주세요!';
+        }
+
+        removeTyping(typingId);
         appendMessage('ai', reply);
-    }, 600); // 무료/키워드 답변은 0.6초만에 빠르게 응답!
+    }, 600);
 };
 
 function scrollToBottom() {
