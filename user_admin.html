@@ -302,6 +302,12 @@
                 loadPage(null, '기사쓰기', 'news_write.html');
                 // 메뉴 활성화 상태 해제
                 document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
+            } else if (pageParam === 'register') {
+                // 공실등록 페이지 직접 열기
+                loadPage(null, '공실등록', 'register.html');
+                document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
+                const firstLink = document.querySelector('.menu-link');
+                if (firstLink) firstLink.classList.add('active');
             }
 
             // 외부에서 ?tab=news 로 진입 시 기사관리 탭 자동 열기
