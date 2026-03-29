@@ -83,8 +83,17 @@ function initGongsilChatbot() {
                     <span class="chip" onclick="sendQuickMsg('📝 손님 브리핑 멘트 짜줘')">📝 브리핑 작성 (AI)</span>
                 </div>
             </div>
+            <!-- 첨부파일 미리보기 구역 -->
+            <div id="aiImgPreviewContainer" style="display:none; padding:10px 16px; background:#f8fafc; border-top:1px solid #e0f2fe; position:relative;">
+                <img id="aiImgPreview" src="" alt="첨부 이미지" style="height:60px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); border:1px solid #cbd5e1; object-fit:cover;">
+                <button onclick="removeAiChatImage()" style="position:absolute; top:4px; left:60px; background:#ef4444; color:white; border:none; width:22px; height:22px; border-radius:50%; font-size:12px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.2);">×</button>
+            </div>
             <div class="chat-footer">
-                <input type="text" id="aiChatInput" title="메시지 입력란" placeholder="나만의 똑똑한 비서에게 물어보세요..." autocomplete="off" onkeypress="if(event.key==='Enter') sendAIMsg()">
+                <label for="aiChatFile" class="chat-attach" title="사진 첨부">
+                    <svg width="20" height="20" fill="none" stroke="#64748b" stroke-width="2" viewBox="0 0 24 24"><path d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </label>
+                <input type="file" id="aiChatFile" accept="image/*" style="display:none;" onchange="handleAiChatFileUpload(event)">
+                <input type="text" id="aiChatInput" title="메시지 입력란" placeholder="사진 📎 후 물어보세요..." autocomplete="off" onkeypress="if(event.key==='Enter') sendAIMsg()">
                 <button class="chat-send" title="전송" onclick="sendAIMsg()">
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"></path></svg>
                 </button>
@@ -204,6 +213,13 @@ function initGongsilChatbot() {
     }
     .chip:hover { background: #0284c7; color: #fff; border-color:#0284c7; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(2, 132, 199, 0.2); }
 
+    .chat-attach {
+        display: flex; align-items: center; justify-content: center;
+        width: 38px; height: 38px; cursor: pointer; background: #f1f5f9;
+        border-radius: 50%; transition: 0.2s; flex-shrink: 0;
+    }
+    .chat-attach:hover { background: #e2e8f0; }
+
     .chat-footer {
         padding: 16px; border-top: 1px solid #e0f2fe; background: #fff;
         display: flex; gap: 12px; align-items: center;
@@ -276,13 +292,57 @@ window.sendQuickMsg = function(text) {
     window.sendAIMsg();
 };
 
+window.currentAiImageB64 = null;
+window.currentAiMimeType = null;
+
+window.handleAiChatFileUpload = function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        const dataUrl = evt.target.result;
+        window.currentAiImageB64 = dataUrl.split(',')[1];
+        window.currentAiMimeType = file.type;
+        document.getElementById('aiImgPreview').src = dataUrl;
+        document.getElementById('aiImgPreviewContainer').style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+    e.target.value = ''; // 같은 파일 다시 선택 가능하게 초기화
+};
+
+window.removeAiChatImage = function() {
+    window.currentAiImageB64 = null;
+    window.currentAiMimeType = null;
+    document.getElementById('aiImgPreviewContainer').style.display = 'none';
+    document.getElementById('aiImgPreview').src = '';
+};
+
 window.sendAIMsg = function() {
     const aiInput = document.getElementById('aiChatInput');
     const text = aiInput.value.trim();
-    if (!text) return;
+    if (!text && !window.currentAiImageB64) return;
     
-    appendMessage('my', text);
+    let userText = text;
+    if (!userText && window.currentAiImageB64) {
+        userText = "이 사진을 바탕으로 부동산 관점에서 파악할 수 있는 특징을 자세하고 친절하게 설명해줘.";
+    }
+    
+    // 내가 보낼 메시지 (채팅창 UI용)
+    let myMsgHtml = text;
+    if (window.currentAiImageB64) {
+        myMsgHtml += `<br><img src="data:${window.currentAiMimeType};base64,${window.currentAiImageB64}" style="max-height:150px; border-radius:8px; margin-top:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">`;
+    }
+    if (!text && window.currentAiImageB64) {
+        myMsgHtml = `<img src="data:${window.currentAiMimeType};base64,${window.currentAiImageB64}" style="max-height:150px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">`;
+    }
+    
+    appendMessage('my', myMsgHtml);
     aiInput.value = '';
+    
+    // 임시로 사진 정보를 보관하고 UI 리셋 (다음 첨부를 위해)
+    const imgB64 = window.currentAiImageB64;
+    const imgMime = window.currentAiMimeType;
+    window.removeAiChatImage();
     
     const typingId = 'typing-' + Date.now();
     appendTyping(typingId);
@@ -291,25 +351,25 @@ window.sendAIMsg = function() {
         let reply = '';
         
         // ========= 1. 무료 모드 (키워드 매칭 규칙 기반) =========
-        if (text.includes('가입') || text.includes('등록') || text.includes('시작')) {
+        if (userText.includes('가입') || userText.includes('등록') || userText.includes('시작')) {
             reply = '<b>[회원가입 안내]</b> 👤<br>공실열람 회원가입은 아주 간단합니다!<br>우측 상단의 <b>[프로필 아이콘]</b>을 클릭하신 후, <b>[회원가입]</b> 메뉴를 통해 원하시는 계정으로 1분 만에 가입하실 수 있습니다.<br><br>👉 <a href="register.html" style="color:#0284c7;text-decoration:underline;font-weight:bold;">회원가입 페이지로 바로 이동하기</a>';
             removeTyping(typingId);
             appendMessage('ai', reply);
             return;
         } 
-        else if (text.includes('요금') || text.includes('결제') || text.includes('무료') || text.includes('가격')) {
+        else if (userText.includes('요금') || userText.includes('결제') || userText.includes('무료') || userText.includes('가격')) {
             reply = '<b>[요금제 안내]</b> 💳<br>부동산 중개사님들을 위한 요금제는 다음과 같습니다:<br><br>✅ <b>기본 플랜:</b> 월 30,000원<br>(공실 열람 무제한, AI 비서 일 100회 무료 제공)<br>✅ <b>무료 플랜:</b> 기본적인 메뉴 탐색과 제한된 검색 기능 지원<br><br>가입 후 마이페이지에서 상세 요금제 가입이 가능합니다!';
             removeTyping(typingId);
             appendMessage('ai', reply);
             return;
         }
-        else if (text.includes('비밀번호') || text.includes('비번') || text.includes('찾기')) {
+        else if (userText.includes('비밀번호') || userText.includes('비번') || userText.includes('찾기')) {
             reply = '<b>[비밀번호 찾기]</b> 🔐<br>비밀번호를 잊으셨나요? 로그인 페이지 하단의 <b>"비밀번호 찾기"</b> 버튼을 클릭하여 가입하신 이메일로 비밀번호 재설정 링크를 받으실 수 있습니다.';
             removeTyping(typingId);
             appendMessage('ai', reply);
             return;
         }
-        else if (text.includes('사용법') || text.includes('이용방법')) {
+        else if (userText.includes('사용법') || userText.includes('이용방법')) {
             reply = '<b>[공실열람 이용방법]</b> 📚<br>상단의 탭을 통해 원하시는 메뉴(공실, 지도, 뉴스 기사, 관리자)로 이동해 보세요. 궁금한 점이 생기면 언제든 저 공실챗봇을 불러주세요!';
             removeTyping(typingId);
             appendMessage('ai', reply);
@@ -320,14 +380,24 @@ window.sendAIMsg = function() {
         const GEMINI_API_KEY = "AIzaSyCPsd_8sKQ1IsjaxKNlNRPx0eAKXuMmg9M"; 
         const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY;
 
-        const aiPrompt = "당신은 항상 밝고 친절한 부동산 중개 비서 AI '공실이'입니다. 부동산 관점에서 전문적이고 도움되는 답변을 한국어로 작성해주세요. 그리고 답변에 파란색 하트(💙)나 반짝이(✨) 같은 이모지를 적절히 사용하여 다정하게 구어체로 대답해야 합니다. 기계처럼 딱딱하게 말하지 마세요. 사용자 질문: " + text;
+        const aiPrompt = "당신은 항상 밝고 친절한 부동산 중개 비서 AI '공실이'입니다. 부동산 관점에서 전문적이고 도움되는 답변을 한국어로 작성해주세요. 그리고 답변에 파란색 하트(💙)나 반짝이(✨) 같은 이모지를 적절히 사용하여 다정하게 구어체로 대답해야 합니다. 기계처럼 딱딱하게 말하지 마세요. 사용자 질문: " + userText;
+
+        const parts = [{ text: aiPrompt }];
+        if (imgB64) {
+            parts.push({
+                inlineData: {
+                    mimeType: imgMime,
+                    data: imgB64
+                }
+            });
+        }
 
         try {
             const response = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: aiPrompt }] }]
+                    contents: [{ parts: parts }]
                 })
             });
 
@@ -339,7 +409,7 @@ window.sendAIMsg = function() {
             const aiText = data.candidates[0].content.parts[0].text;
             
             // 단순 텍스트 줄바꿈을 HTML <br>로 변환
-            reply = aiText.replace(/\\n/g, '<br>');
+            reply = aiText.replace(/\n/g, '<br>');
         } catch (error) {
             console.error("Gemini API Error:", error);
             reply = '앗! 지금 서버와 연결하는 중에 문제가 생겼어요. 😥 API 키 설정이나 네트워크 상태를 다시 확인해 주세요!';
