@@ -383,7 +383,10 @@ window.sendAIMsg = function() {
         // ========= 2. 유료 모드 (실제 인공지능 API 연동 - Supabase Edge Function 경유) =========
         // 🚨 프론트엔드 코드에 API KEY를 노출하지 않습니다.
 
-        const aiPrompt = "당신은 항상 밝고 친절한 부동산 중개 비서 AI '공실이'입니다. 부동산 관점에서 전문적이고 도움되는 답변을 한국어로 작성해주세요. 그리고 답변에 파란색 하트(💙)나 반짝이(✨) 같은 이모지를 적절히 사용하여 다정하게 구어체로 대답해야 합니다. 기계처럼 딱딱하게 말하지 마세요. 사용자 질문: " + userText;
+        const aiPrompt = "당신은 항상 밝고 친절한 부동산 중개 비서 AI '공실이'입니다. 부동산 관점에서 전문적이고 도움되는 답변을 한국어로 작성해주세요. 그리고 답변에 파란색 하트(💙)나 반짝이(✨) 같은 이모지를 적절히 사용하여 다정하게 구어체로 대답해야 합니다. 기계처럼 딱딱하게 말하지 마세요. " + 
+            "또한 사용자가 특정 기능이나 메뉴로 웬만하면 넘어갈 수 있도록 다음의 마크다운 링크 포맷을 답변 끝에 적극적으로 활용해주세요: " + 
+            "공실지도: [공실열람 매물찾기 바로가기](gongsil.html), 뉴스기사: [최신 뉴스/칼럼 홈 바로가기](index.html), 스터디: [공실스터디 홈 바로가기](study.html), 공실등록 및 기사등록: [관리자 페이지 바로가기](user_admin.html), 회원가입/결제안내: [마이페이지/가입 이동하기](register.html). (링크는 반드시 마크다운 [텍스트](url) 형식을 유지할 것). " + 
+            "사용자 질문: " + userText;
 
         const parts = [{ text: aiPrompt }];
         if (imgB64) {
@@ -412,8 +415,11 @@ window.sendAIMsg = function() {
             
             const aiText = data.candidates[0].content.parts[0].text;
             
-            // 단순 텍스트 줄바꿈을 HTML <br>로 변환
+            // 1. 단순 텍스트 줄바꿈을 HTML <br>로 변환
             reply = aiText.replace(/\n/g, '<br>');
+            
+            // 2. 마크다운 링크 [텍스트](url) 형태를 화면 밖으로 이동하는 둥근 버튼으로 변환
+            reply = reply.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="display:inline-block; margin-top:8px; padding:8px 16px; background:#eff6ff; color:#2563eb; border-radius:20px; font-size:14px; font-weight:800; text-decoration:none; border:1px solid #bfdbfe; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">🚀 $1</a>');
         } catch (error) {
             console.error("Gemini API Error:", error);
             reply = '⚠️ 오류 발생:<br><code style="background:#fee;padding:4px;border-radius:4px;font-size:12px;line-height:1.4;display:block;">' + error.message + '</code><br>위 오류 내용을 캡처해서 개발자에게 알려주세요!';
