@@ -631,19 +631,16 @@
             </nav>
         </div>
         <div class="header-right" style="display: flex; align-items: center;">
+            <!-- 기존 로그인 버튼 (구글 로그인으로 변경) -->
+            <a href="#" id="headerLoginBtn" class="btn-login">구글 로그인</a>
             <!-- 로그인된 유저 프로필 영역 (기본 숨김) -->
-            <div id="userProfile" style="display: none; align-items: center; gap: 10px; margin-right: 15px;">
-                <span id="userNameDisplay" style="font-size: 14px; font-weight: bold; color: #333;">이름</span>
+            <div id="userProfile" style="display: none; align-items: center; gap: 8px;">
+                <span id="userNameDisplay" style="font-size: 14px; font-weight: bold; color: #333;"></span>
                 <span id="userRoleBadge" style="font-size: 11px; padding: 3px 6px; border-radius: 4px; background: #f0f0f0; color: #555;">로딩중</span>
                 <a href="#" id="headerLogoutBtn" class="btn-login" style="background:#666; color:white; border:none;">로그아웃</a>
             </div>
-            
-            <!-- 기존 로그인 버튼 (구글 로그인으로 변경) -->
-            <a href="#" id="headerLoginBtn" class="btn-login">구글 로그인</a>
-
             <!-- 기사등록 버튼 -->
             <a href="news_write.html" id="btnWriteArticle" class="btn-login" style="background:#ff9f1c; color:#fff; border:none; margin-right:6px; font-weight:bold;">기사등록</a>
-            
             <a href="https://smartstore.naver.com/mygongsil/products/10361563253" target="_blank" class="btn-biz">중개사무소 가입 및 상품문의 &gt;</a>
         </div>
     </header>
