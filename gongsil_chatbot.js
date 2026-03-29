@@ -377,8 +377,8 @@ window.sendAIMsg = function() {
         }
         
         // ========= 2. 유료 모드 (실제 인공지능 API 연동) =========
-        const GEMINI_API_KEY = "AIzaSyCkB_55N7V9w1267m3ozCdC-091byCo13A"; 
-        const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=" + GEMINI_API_KEY;
+        // ========= 2. 유료 모드 (실제 인공지능 API 연동 - Supabase Edge Function 경유) =========
+        // 🚨 프론트엔드 코드에 API KEY를 노출하지 않습니다.
 
         const aiPrompt = "당신은 항상 밝고 친절한 부동산 중개 비서 AI '공실이'입니다. 부동산 관점에서 전문적이고 도움되는 답변을 한국어로 작성해주세요. 그리고 답변에 파란색 하트(💙)나 반짝이(✨) 같은 이모지를 적절히 사용하여 다정하게 구어체로 대답해야 합니다. 기계처럼 딱딱하게 말하지 마세요. 사용자 질문: " + userText;
 
@@ -393,28 +393,20 @@ window.sendAIMsg = function() {
         }
 
         try {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ parts: parts }]
-                })
+            // 구글에 직접 요청하지 않고, Supabase에 배포된 'chat' 엣지 함수를 호출합니다!
+            const { data, error: functionError } = await window.gongsiClient.functions.invoke('chat', {
+                body: { contents: [{ parts: parts }] }
             });
 
-            if (!response.ok) {
-                const errBody = await response.text();
-                let errMsg = response.status + " 오류";
-                try {
-                    const errJson = JSON.parse(errBody);
-                    if(errJson.error && errJson.error.message) {
-                        errMsg = errJson.error.message;
-                    }
-                } catch(e) {}
-                console.error("Gemini API 오류 응답:", response.status, errBody);
-                throw new Error("API 오류: " + errMsg);
+            if (functionError) {
+                console.error("Supabase Edge Function 오류 응답:", functionError);
+                throw new Error("API 오류: " + (functionError.message || "알 수 없는 오류"));
             }
 
-            const data = await response.json();
+            if(data.error) {
+                 throw new Error("Gemini API 내부 오류: " + (data.error.message || data.error));
+            }
+            
             const aiText = data.candidates[0].content.parts[0].text;
             
             // 단순 텍스트 줄바꿈을 HTML <br>로 변환
