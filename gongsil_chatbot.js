@@ -414,7 +414,7 @@ window.sendAIMsg = function() {
             reply = aiText.replace(/\n/g, '<br>');
         } catch (error) {
             console.error("Gemini API Error:", error);
-            reply = '앗! 지금 서버와 연결하는 중에 문제가 생겼어요. 😥 API 키 설정이나 네트워크 상태를 다시 확인해 주세요!';
+            reply = '⚠️ 오류 발생:<br><code style="background:#fee;padding:4px;border-radius:4px;font-size:12px;">' + error.message + '</code><br><br>위 오류 내용을 캡처해서 개발자에게 알려주세요!';
         }
 
         removeTyping(typingId);
