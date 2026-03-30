@@ -499,6 +499,76 @@
             background: #f8f9fa;
         }
 
+        /* 크리에이터 영역 */
+        .tutor-card {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 24px;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            margin-bottom: 20px;
+        }
+        .tutor-card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .tutor-card-header img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            margin-right: 12px;
+            object-fit: cover;
+        }
+        .tutor-card-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #111;
+        }
+        .btn-tutor-home {
+            margin-left: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #555;
+            text-decoration: none;
+            background: #fdfdfd;
+        }
+        .btn-tutor-home svg {
+            width: 16px;
+            height: 16px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+        }
+        .tutor-card-content {
+            max-height: 240px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            font-size: 15px;
+            color: #444;
+            line-height: 1.8;
+        }
+        .tutor-card-content ul {
+            padding-left: 18px;
+            margin: 0 0 16px 0;
+            list-style-type: disc;
+        }
+        .tutor-card-content li {
+            margin-bottom: 8px;
+        }
+        .tutor-card-desc {
+            color: #aaa;
+            margin: 0;
+            font-size: 14px;
+        }
+
     </style>
 </head>
 <body>
@@ -656,6 +726,39 @@
                 </div>
             </section>
 
+            <!-- 크리에이터 영역 -->
+            <section id="section-tutor" class="detail-section" style="padding-top:40px;">
+                <h3>크리에이터</h3>
+                <div class="tutor-card">
+                    <div class="tutor-card-header">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&h=100" alt="강사 프로필">
+                        <div class="tutor-card-name">Peter Kim</div>
+                        <a href="#" class="btn-tutor-home">
+                            <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                            크리에이터 홈
+                        </a>
+                    </div>
+                    <div class="tutor-card-content" id="tutorContent">
+                        <ul>
+                            <li>現 프로솔브 대표</li>
+                            <li>現 경험수집잡화점 대표</li>
+                            <li>現 노션 전문 강사</li>
+                            <li>現 노션 공식 앰버서더</li>
+                            <li>前 IT 회사 엔지니어 및 마케터</li>
+                            <li>저서로는 &lt;시작노트&gt;, &lt;한 권으로 끝내는 노션&gt;가 있습니다.</li>
+                        </ul>
+                        <p class="tutor-card-desc">늘 어떻게 살 것인가를 고민합니다. 그래서 오늘도 기본으로 돌아갑니다. 우리 삶에 기본은 무엇일까요? 전...</p>
+                    </div>
+                    <!-- 더보기 오버레이 -->
+                    <div class="intro-more-overlay" id="tutorMoreOverlay" style="margin-top: -100px; height: 100px; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1) 70%);">
+                        <button class="btn-intro-more" onclick="expandTutor()">
+                            <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            더보기
+                        </button>
+                    </div>
+                </div>
+            </section>
+
             <!-- 후기 영역 -->
             <section id="section-review" class="detail-section" style="padding-top:40px;">
                 <h3>수강생 리얼 후기 <span style="font-size:16px; font-weight:normal; color:#ff9f1c;">★4.9</span></h3>
@@ -808,11 +911,16 @@
             const overlay = document.getElementById('introMoreOverlay');
             wrapper.style.maxHeight = wrapper.scrollHeight + "px";
             overlay.style.display = "none";
-            
-            // 애니메이션 완료 후 max-height 제거하여 반응형 유지
-            setTimeout(() => {
-                wrapper.style.maxHeight = "none";
-            }, 300);
+            setTimeout(() => { wrapper.style.maxHeight = "none"; }, 300);
+        }
+
+        // 크리에이터 더보기 로직
+        function expandTutor() {
+            const wrapper = document.getElementById('tutorContent');
+            const overlay = document.getElementById('tutorMoreOverlay');
+            wrapper.style.maxHeight = wrapper.scrollHeight + "px";
+            overlay.style.display = "none";
+            setTimeout(() => { wrapper.style.maxHeight = "none"; }, 300);
         }
     </script>
 </body>
