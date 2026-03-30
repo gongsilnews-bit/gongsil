@@ -17,6 +17,9 @@
             --border-color: #e5e8eb;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
         html, body {
             overflow: auto !important;
             height: auto !important;
@@ -28,8 +31,7 @@
             background: #fff;
             border-bottom: 1px solid #ddd;
             z-index: 50;
-            position: sticky;
-            top: 0;
+            position: relative; /* Fixed sticky conflict */
         }
         .study-tier1 {
             display: flex;
@@ -79,7 +81,7 @@
         .sidebar {
             width: 360px;
             position: sticky;
-            top: 100px; /* 고정 위치 */
+            top: 20px; /* 고정 위치 변경 */
         }
 
         /* 스와이퍼 갤러리 */
@@ -109,9 +111,9 @@
             display: flex;
             border-bottom: 1px solid var(--border-color);
             position: sticky;
-            top: 60px; /* .study-nav-bar 아래에 붙음 */
+            top: 0; /* 화면 최상단에 붙음 */
             background: #f8f9fa;
-            z-index: 40;
+            z-index: 90;
             margin-bottom: 40px;
         }
         .content-tabs a {
@@ -140,6 +142,7 @@
             margin-bottom: 60px;
             color: #333;
             line-height: 1.6;
+            scroll-margin-top: 70px; /* 탭 높이만큼 여백 */
         }
         .detail-section h3 {
             font-size: 22px;
