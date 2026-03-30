@@ -76,7 +76,7 @@ function initGongsilChatbot() {
                         안녕하세요! 💙 무엇을 도와드릴까요?<br>공실 검색, 시세 분석은 물론 매물 및 뉴스 등록 팁도 물어보세요!
                     </div>
                 </div>
-                <!-- Quick Chips -->
+                // Quick Chips
                 <div class="chat-chips">
                     <span class="chip" onclick="sendQuickMsg('🔍 특정 지역과 조건(예산, 평수)에 맞는 전/월세 공실을 찾아주거나 검색하는 팁을 알려줘')">🔍 조건별 매물 검색</span>
                     <span class="chip" onclick="sendQuickMsg('📊 요즘 특정 지역의 전세/월세 시세 동향과 시장 분위기를 분석해줘')">📊 주변 시세 분석</span>
@@ -91,6 +91,9 @@ function initGongsilChatbot() {
                 <button onclick="removeAiChatImage()" style="position:absolute; top:4px; left:60px; background:#ef4444; color:white; border:none; width:22px; height:22px; border-radius:50%; font-size:12px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.2);">×</button>
             </div>
             <div class="chat-footer">
+                <button class="chat-clear-btn" title="대화 지우기" onclick="clearChatHistory()" style="background:none; border:none; color:#94a3b8; cursor:pointer; padding:0 8px;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </button>
                 <label for="aiChatFile" class="chat-attach" title="사진 첨부">
                     <svg width="20" height="20" fill="none" stroke="#64748b" stroke-width="2" viewBox="0 0 24 24"><path d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                 </label>
@@ -243,8 +246,13 @@ function initGongsilChatbot() {
     .dot:nth-child(1) { animation-delay: -0.32s; }
     .dot:nth-child(2) { animation-delay: -0.16s; }
     @keyframes bounceDot { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+    
+    .chat-clear-btn:hover { color: #ef4444; }
     `;
     document.head.appendChild(style);
+
+    // 2.5 상태 복원
+    restoreChatState();
 }
 
 // 스크립트가 로드될 때 DOM 상태에 따라 렌더링을 안전하게 시작합니다!
@@ -254,7 +262,85 @@ if (document.readyState === 'loading') {
     initGongsilChatbot();
 }
 
-// 3. 글로벌 함수 및 변수 정의
+// 3. 글로벌 함수 및 변수 정의 (상태 저장/복원 로직)
+window.saveChatState = function() {
+    const aiWindow = document.getElementById('aiChatWindow');
+    const aiBody = document.getElementById('aiChatBody');
+    if (aiWindow && aiBody) {
+        sessionStorage.setItem('aiChatOpen', aiWindow.style.display === 'flex' ? 'true' : 'false');
+        
+        // 타이핑 애니메이션 요소는 저장하지 않음 (페이지 리로드 시 남는 것 방지)
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = aiBody.innerHTML;
+        const typingEls = tempDiv.querySelectorAll('[id^="typing-"]');
+        typingEls.forEach(el => el.remove());
+        
+        sessionStorage.setItem('aiChatHistory', tempDiv.innerHTML);
+    }
+};
+
+window.restoreChatState = function() {
+    const aiWindow = document.getElementById('aiChatWindow');
+    const aiBody = document.getElementById('aiChatBody');
+    const tooltip = document.querySelector('.bot-tooltip');
+    const badge = document.querySelector('.bot-badge');
+    
+    const savedHistory = sessionStorage.getItem('aiChatHistory');
+    const isOpen = sessionStorage.getItem('aiChatOpen') === 'true';
+    
+    if (savedHistory && aiBody) {
+        aiBody.innerHTML = savedHistory;
+    }
+    
+    if (isOpen && aiWindow) {
+        aiWindow.style.display = 'flex';
+        // 창이 열려있으면 말풍선과 뱃지는 숨김
+        if (tooltip) tooltip.style.display = 'none';
+        if (badge) badge.style.display = 'none';
+        scrollToBottom();
+    }
+};
+
+window.clearChatHistory = function() {
+    if (!confirm('대화 내역을 모두 지우시겠습니까?')) return;
+    
+    const aiBody = document.getElementById('aiChatBody');
+    if (aiBody) {
+        // 기본 웰컴 메시지와 칩스만 남기고 싹 비움
+        aiBody.innerHTML = `
+            <div class="chat-msg ai-msg">
+                <div class="msg-avatar">
+                    <svg width="24" height="24" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M38 25 L25 5" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+                        <circle cx="25" cy="5" r="5" fill="#0ea5e9" />
+                        <path d="M62 25 L75 5" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+                        <circle cx="75" cy="5" r="5" fill="#0ea5e9" />
+                        <path d="M25 60 Q20 95 50 95 Q80 95 75 60 Z" fill="#e0f2fe" />
+                        <rect x="38" y="80" width="24" height="6" rx="3" fill="#0f172a" />
+                        <path d="M10 42 h 15 v 20 h -15 z" fill="#0ea5e9" />
+                        <path d="M75 42 h 15 v 20 h -15 z" fill="#0ea5e9" />
+                        <circle cx="50" cy="50" r="34" fill="#ffffff" />
+                        <rect x="22" y="36" width="56" height="26" rx="13" fill="#0f172a" />
+                        <rect x="34" y="43" width="8" height="12" rx="4" fill="#22d3ee" />
+                        <rect x="58" y="43" width="8" height="12" rx="4" fill="#22d3ee" />
+                    </svg>
+                </div>
+                <div class="msg-content">
+                    안녕하세요! 💙 무엇을 도와드릴까요?<br>공실 검색, 시세 분석은 물론 매물 및 뉴스 등록 팁도 물어보세요!
+                </div>
+            </div>
+            <div class="chat-chips">
+                <span class="chip" onclick="sendQuickMsg('🔍 특정 지역과 조건(예산, 평수)에 맞는 전/월세 공실을 찾아주거나 검색하는 팁을 알려줘')">🔍 조건별 매물 검색</span>
+                <span class="chip" onclick="sendQuickMsg('📊 요즘 특정 지역의 전세/월세 시세 동향과 시장 분위기를 분석해줘')">📊 주변 시세 분석</span>
+                <span class="chip" onclick="sendQuickMsg('💰 내가 가진 매물 스펙(면적, 층수, 연식 등)을 주면 적정 임대료나 감정가를 산출하고 예상해줘')">💰 적정 금액 감정</span>
+                <span class="chip" onclick="sendQuickMsg('💡 클릭률이 높아지고 상단에 노출되도록 사람을 이끄는 매력적인 공실(매물) 소개글 작성 꿀팁 알려줘')">💡 상위노출 공실 등록법</span>
+                <span class="chip" onclick="sendQuickMsg('📰 관리자에서 부동산 관련 기사나 칼럼을 등록할 때, 조회수가 잘 나오는 제목 짓는 법과 뉴스 작성 노하우를 알려줘')">📰 클릭 부르는 뉴스 작성</span>
+            </div>
+        `;
+        window.saveChatState();
+    }
+};
+
 const aiAvatarSvg = `
 <svg width="24" height="24" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <path d="M38 25 L25 5" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
@@ -279,10 +365,12 @@ window.toggleAIChat = function() {
     
     if (aiWindow.style.display === 'flex') {
         aiWindow.style.display = 'none';
+        window.saveChatState();
     } else {
         aiWindow.style.display = 'flex';
         if (tooltip) tooltip.style.display = 'none';
         if (badge) badge.style.display = 'none';
+        window.saveChatState();
         setTimeout(() => aiInput.focus(), 100);
         scrollToBottom();
     }
@@ -447,6 +535,7 @@ function appendMessage(type, htmlContent) {
     }
     aiBody.appendChild(div);
     scrollToBottom();
+    window.saveChatState();
 }
 
 function appendTyping(id) {

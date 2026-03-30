@@ -647,12 +647,26 @@
  
     <!-- 뉴스 전용 네비게이션 필터 (공실열람 디자인 복제) -->
     <div class="news-nav-bar">
-        <div class="news-tier1">
+        <div class="news-tier1" style="display: flex; align-items: center;">
             <button class="news-tab-item active">우리동네부동산</button>
             <button class="news-tab-item">뉴스/칼럼</button>
             <button class="news-tab-item" style="text-decoration:underline;">MY관심뉴스</button>
+            <button class="btn-news-search" id="btnNewsSearchToggle" style="background: none; border: none; cursor: pointer; padding: 4px 8px; margin-left: 8px;" onclick="window.toggleNewsSearchPanel()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </button>
         </div>
-        <div class="filter-bar-news">
+        
+        <!-- 검색 입력 패널 (기본 숨김) -->
+        <div id="newsSearchPanel" style="display: none; background-color: #0f141e; width: 100%; padding: 30px 0; text-align: center; position: absolute; left: 0; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+            <div style="position: relative; display: inline-block; width: 500px; max-width: 90%;">
+                <input type="text" id="newsKeywordInput" placeholder="검색어를 입력해주세요" style="width: 100%; padding: 16px 20px; padding-right: 50px; font-size: 16px; border: none; border-radius: 4px; outline: none; box-sizing: border-box;" onkeypress="if(event.key==='Enter') window.executeNewsSearch()">
+                <button onclick="window.executeNewsSearch()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 5px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="filter-bar-news" style="position: relative; z-index: 90;">
             <div class="filter-row">
                 <div class="news-sub-tab active">아파트·오피스텔</div>
                 <div class="news-sub-tab">빌라·주택</div>
@@ -927,6 +941,61 @@
 
     <!-- Supabase 인증 모듈 추가 -->
     <script type="module" src="supabase_auth.js"></script>
+
+    <!-- 뉴스 검색 기능 스크립트 -->
+    <script>
+        window.toggleNewsSearchPanel = function() {
+            const panel = document.getElementById('newsSearchPanel');
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+                setTimeout(() => document.getElementById('newsKeywordInput').focus(), 100);
+            } else {
+                panel.style.display = 'none';
+                document.getElementById('newsKeywordInput').value = '';
+                if(window.filterNewsByKeyword) window.filterNewsByKeyword('');
+            }
+        };
+
+        window.executeNewsSearch = function() {
+            const keyword = document.getElementById('newsKeywordInput').value.trim();
+            if(window.filterNewsByKeyword) {
+                window.filterNewsByKeyword(keyword);
+            }
+        };
+
+        window.filterNewsByKeyword = function(keyword) {
+            // 뉴스 사이드바 및 포털 뷰의 카드들을 클라이언트 사이드에서 숨김 처리
+            const cards = document.querySelectorAll('#news-content > div, #portalContainer > div');
+            if(cards.length === 0) return;
+            
+            let matchCount = 0;
+            cards.forEach(card => {
+                if(card.classList.contains('empty-message') || card.classList.contains('loading-spinner')) return;
+                
+                if (!keyword) {
+                    card.style.display = '';
+                    matchCount++;
+                    return;
+                }
+                const text = card.textContent.toLowerCase();
+                if (text.includes(keyword.toLowerCase())) {
+                    card.style.display = '';
+                    matchCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            if(keyword) {
+                // 간단한 피드백
+                const toast = document.createElement('div');
+                toast.textContent = matchCount > 0 ? '검색결과 ' + matchCount + '건' : '검색 결과가 없습니다.';
+                toast.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:10px 20px; border-radius:20px; z-index:9999; font-size:14px;';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2500);
+            }
+        };
+    </script>
     <!-- ═══ 사이드바 매물 상세 패널 ═══ -->
     <div id="propDetailPanel" style="display:none; position:fixed; top:0; right:0; width:420px; height:100vh; background:#fff; box-shadow:-4px 0 24px rgba(0,0,0,0.15); z-index:9990; overflow-y:auto; transition:transform 0.3s ease; flex-direction:column;">
         <!-- 헤더 -->
