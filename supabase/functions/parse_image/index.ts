@@ -52,7 +52,10 @@ serve(async (req) => {
               sido: { type: "STRING" },
               sigungu: { type: "STRING" },
               dong: { type: "STRING" },
+              detail_address: { type: "STRING" },
               building_name: { type: "STRING" },
+              dong_number: { type: "STRING" },
+              room_number: { type: "STRING" },
               address: { type: "STRING" },
               description: { type: "STRING" },
             }

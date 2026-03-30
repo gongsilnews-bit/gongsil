@@ -1874,10 +1874,13 @@
                     "- total_floor: 전체층 숫자\\n" +
                     "- supply_m2: 공급면적 ㎡ (평수가 써있다면 ㎡로 환산하여 기재)\\n" +
                     "- dedicated_m2: 전용면적 ㎡ (평수가 써있다면 ㎡로 환산하여 기재)\\n" +
-                    "- sido: 광역/도 주소 (예: 서울특별시, 경기도 등)\\n" +
-                    "- sigungu: 시/군/구 주소 (예: 강남구, 부천시 등)\\n" +
-                    "- dong: 읍/면/동 주소 (예: 역삼동, 정자동 등)\\n" +
-                    "- building_name: 건물명 (예: 래미안 파크빌 등)\\n" +
+                    "- sido: 광역/도 주소 (예: 서울특별시, 경기도). (중요: 이미지에 안 쓰여 있어도 건물명이나 위치를 추론해 반드시 채워주세요!)\\n" +
+                    "- sigungu: 시/군/구 주소 (예: 강남구, 서초구). (중요: 반드시 추론해서 채워주세요!)\\n" +
+                    "- dong: 읍/면/동 주소 (예: 서초동, 역삼동). (중요: 반드시 추론해서 채워주세요!)\\n" +
+                    "- detail_address: 나머지 주소 (예: 도로명 주소나 번지수 등, 없으면 빈문자열)\\n" +
+                    "- building_name: 건물/아파트/오피스텔명 (예: 래미안 파크빌, 서초트라팰리스 등)\\n" +
+                    "- dong_number: ~동 (예: 101동)\\n" +
+                    "- room_number: ~호수 (예: 101호)\\n" +
                     "- description: 매물의 핵심 특징, 금액, 주차가능여부, 입주일정 등 텍스트 요약 (기존 내용 보존)";
 
                 if (!window.gongsiClient || !window.gongsiClient.functions) {
@@ -1963,7 +1966,15 @@
                 if(p.sido) document.getElementById('sido').value = p.sido;
                 if(p.sigungu) document.getElementById('sigungu').value = p.sigungu;
                 if(p.dong) document.getElementById('dong').value = p.dong;
+                if(p.detail_address) document.getElementById('detailAddress').value = p.detail_address;
                 if(p.building_name) document.getElementById('buildingName').value = p.building_name;
+                
+                if(p.dong_number) {
+                    document.getElementById('dongDiv').style.display = 'block';
+                    document.getElementById('dongNumber').value = p.dong_number;
+                }
+                if(p.room_number) document.getElementById('roomNumber').value = p.room_number;
+
                 updateFullAddress();
 
                 alert("✨ 놀랍게도 사진 1장으로 매물 정보 분석 및 자동입력이 완료되었습니다! 빠진 부분이나 수정할 부분을 최종 확인해주세요.");
