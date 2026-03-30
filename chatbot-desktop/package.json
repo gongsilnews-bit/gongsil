@@ -1,0 +1,27 @@
+{
+  "name": "gongsil-chatbot-pc",
+  "version": "1.0.0",
+  "description": "공실뉴스 PC 상시 스탠드얼론 챗봇 프로그램",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win"
+  },
+  "author": "GongsilNews",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^29.1.5",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.gongsilnews.chatbot",
+    "productName": "공실챗봇 PC",
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

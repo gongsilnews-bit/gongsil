@@ -108,6 +108,13 @@ function initGongsilChatbot() {
             <!-- 슬라이드 메뉴: 빠른 메뉴보기 (☰) -->
             <div class="chat-slide-menu" id="quickMenu">
                 <div class="menu-grid">
+                    <div class="menu-item" onclick="window.location.href='https://gongsilnews-bit.github.io/gongsil/GongsilChatbot_Setup.exe'" style="grid-column: span 4; background:#f0f9ff; border:1px solid #bae6fd; border-radius:12px; padding:12px; margin-bottom:5px; flex-direction:row; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+                         <div class="menu-icon" style="width:36px; height:36px; font-size:18px; background:#fff; border-color:#0284c7; color:#0284c7;">🖥️</div>
+                         <div style="text-align:left; line-height:1.4;">
+                            <strong style="font-size:14px; color:#0284c7; display:block;">PC버전 설치 (항상 위 고정)</strong>
+                            <span style="font-size:11px; color:#64748b;">엑셀, 카톡 중에도 안가려져요!</span>
+                         </div>
+                    </div>
                     <div class="menu-item" onclick="window.location.href='gongsil.html'">
                         <div class="menu-icon" style="background:#e0f2fe; color:#0284c7;">🔍</div>
                         <span style="font-weight:700;">공실열람</span>
@@ -268,7 +275,7 @@ function initGongsilChatbot() {
         background: #ffffff; border-radius: 20px 20px 0 0; box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
         transition: height 0.3s cubic-bezier(0.16, 1, 0.3, 1); z-index: 100; border-top: 1px solid #e2e8f0;
     }
-    .chat-slide-menu.show { height: 210px; }
+    .chat-slide-menu.show { height: 280px; }
     
     .menu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px 5px; padding: 25px 10px; }
     .menu-item { display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; color: #475569; }
