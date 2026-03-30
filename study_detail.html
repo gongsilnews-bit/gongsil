@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공실뉴스 - 스터디 상세</title>
+    <!-- 기본 스타일 -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+
+    <style>
+        :root {
+            --study-green: #1b4332;
+            --study-accent: #ff9f1c; /* 오렌지 강조색 (수강하기 등) */
+            --border-color: #e5e8eb;
+        }
+
+        html, body {
+            overflow: auto !important;
+            height: auto !important;
+            background-color: #f8f9fa;
+        }
+
+        /* 스터디 공통 네비게이션 */
+        .study-nav-bar {
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+            z-index: 50;
+            position: sticky;
+            top: 0;
+        }
+        .study-tier1 {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            padding: 0 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .study-tab-item {
+            font-size: 16px;
+            font-weight: bold;
+            color: #555;
+            cursor: pointer;
+            padding: 16px 4px;
+            position: relative;
+            text-decoration: none;
+        }
+        .study-tab-item.active {
+            color: var(--study-green);
+        }
+        .study-tab-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--study-green);
+        }
+
+        /* 레이아웃 */
+        .detail-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 40px;
+        }
+
+        .main-content {
+            flex: 1;
+            min-width: 0; /* flex 버그 방지 */
+        }
+
+        .sidebar {
+            width: 360px;
+            position: sticky;
+            top: 100px; /* 고정 위치 */
+        }
+
+        /* 스와이퍼 갤러리 */
+        .swiper-container {
+            width: 100%;
+            height: 480px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #eee;
+            margin-bottom: 40px;
+        }
+        .swiper-slide {
+            text-align: center;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .swiper-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 상세 내용 탭 */
+        .content-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 60px; /* .study-nav-bar 아래에 붙음 */
+            background: #f8f9fa;
+            z-index: 40;
+            margin-bottom: 40px;
+        }
+        .content-tabs a {
+            padding: 16px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #666;
+            text-decoration: none;
+            position: relative;
+        }
+        .content-tabs a.active {
+            color: #111;
+        }
+        .content-tabs a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #111;
+        }
+
+        /* 상세 섹션들 */
+        .detail-section {
+            margin-bottom: 60px;
+            color: #333;
+            line-height: 1.6;
+        }
+        .detail-section h3 {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #111;
+        }
+        .detail-section img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        /* 강사 정보 요약 바 */
+        .tutor-summary-bar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+        .tutor-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #ddd;
+            overflow: hidden;
+        }
+        .tutor-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .tutor-name { font-weight: bold; font-size: 18px; color: #111; }
+        .tutor-desc { color: #666; font-size: 14px; }
+        
+        .score-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 15px;
+            margin-left: auto; /* 우측 정렬 */
+            font-weight: bold;
+        }
+        .score-info .star { color: var(--study-accent); }
+
+        /* 수강 리뷰 */
+        .review-item {
+            padding: 24px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .review-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .reviewer-avatar {
+            width: 40px; height: 40px; border-radius: 50%; background: #ccc; overflow: hidden;
+        }
+        .reviewer-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .reviewer-name { font-weight: bold; font-size: 14px; }
+        .review-date { color: #999; font-size: 12px; }
+        .review-text { font-size: 15px; color: #444; line-height: 1.5; }
+        
+        /* 오른쪽 사이드바 (신청 패널) */
+        .purchase-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #eee;
+        }
+        .cat-tag {
+            display: inline-block;
+            background: #f1f3f5;
+            color: #495057;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        .course-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #111;
+            line-height: 1.4;
+            margin-bottom: 16px;
+        }
+        .price-box {
+            margin-bottom: 24px;
+        }
+        .price-box .discount { color: #fa5252; font-weight: bold; font-size: 18px; margin-right: 8px; }
+        .price-box .original { color: #adb5bd; text-decoration: line-through; font-size: 14px; }
+        .price-box .final { font-size: 28px; font-weight: bold; color: #111; margin-top: 4px; }
+        .price-month { font-size: 14px; color: #666; font-weight: normal; }
+
+        .btn-purchase {
+            display: block;
+            width: 100%;
+            background: var(--study-accent);
+            color: #fff;
+            text-align: center;
+            padding: 16px 0;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s;
+            margin-bottom: 16px;
+        }
+        .btn-purchase:hover {
+            background: #e68a00;
+        }
+
+        .action-tools {
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+        }
+        .tool-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            color: #666;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .tool-icon svg {
+            width: 24px; height: 24px; stroke: #666; fill: none; stroke-width: 2;
+        }
+
+        /* 알림 배너 */
+        .notice-banner {
+            background: #ff6b6b;
+            color: white;
+            padding: 24px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .notice-banner h3 { margin: 0 0 10px 0; font-size: 20px; }
+        .notice-banner p { margin: 0; font-size: 15px; opacity: 0.9; }
+
+    </style>
+</head>
+<body>
+    <!-- 공통 헤더 -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo-group">
+                <a href="https://www.gongsilnews.com/" target="_blank" class="logo-img-link">
+                    <img src="logo.png" alt="공실뉴스" style="height: 40px;">
+                </a>
+                <a href="javascript:location.href=window.BASE_PATH + '/'" class="logo-text-link">
+                    <span class="beta-badge">map 베타서비스</span>
+                </a>
+            </div>
+            <nav class="nav">
+                <a href="index.html" class="nav-tab">뉴스기사</a>
+                <a href="gongsil.html" class="nav-tab">공실열람</a>
+                <a href="study.html" class="nav-tab active">공실스터디</a>
+            </nav>
+        </div>
+        <div class="header-right" style="display: flex; align-items: center;">
+            <a href="#" class="btn-login">구글 로그인</a>
+        </div>
+    </header>
+
+    <!-- 스터디 네비게이션 -->
+    <div class="study-nav-bar">
+        <div class="study-tier1">
+            <div style="display: flex; gap: 24px; font-weight: 500; font-size: 18px;">
+                <a href="study.html" class="study-tab-item active">스터디</a>
+                <div class="study-tab-item">자료실</div>
+                <div class="study-tab-item">커뮤니티</div>
+            </div>
+            <a href="#" class="study-tab-item" style="text-decoration: none; display: flex; align-items: center; gap: 4px; font-weight: 500; font-size: 18px;">
+                내 강의실
+            </a>
+        </div>
+    </div>
+
+    <!-- 상세 레이아웃 -->
+    <div class="detail-container">
+        
+        <!-- 왼쪽: 메인 콘텐츠 -->
+        <main class="main-content">
+            
+            <!-- 상단 이미지 스와이퍼 (사진 4~5장 롤링) -->
+            <div class="swiper swiper-container">
+                <div class="swiper-wrapper">
+                    <!-- 더미 사진들 -->
+                    <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&q=80&w=1000" alt="강의사진 1"></div>
+                    <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=1000" alt="강의사진 2"></div>
+                    <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=1000" alt="강의사진 3"></div>
+                    <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&q=80&w=1000" alt="강의사진 4"></div>
+                    <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=1000" alt="강의사진 5"></div>
+                </div>
+                <!-- 네비게이션 버튼 -->
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-pagination"></div>
+            </div>
+
+            <!-- 강사 및 평가 요약 -->
+            <div class="tutor-summary-bar">
+                <div class="tutor-avatar">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&h=100" alt="강사 프로필">
+                </div>
+                <div>
+                    <div class="tutor-name">김프로 강사</div>
+                    <div class="tutor-desc">부동산 실전 노션 활용법 / 업무 자동화 전문가</div>
+                </div>
+                <div class="score-info">
+                    <span class="star">★ 4.9</span>
+                    <span style="color:#888; font-weight:normal;">(124개의 수강평)</span>
+                </div>
+            </div>
+
+            <!-- 스크롤 탭 -->
+            <div class="content-tabs">
+                <a href="#section-intro" class="active">클래스소개</a>
+                <a href="#section-curri">커리큘럼</a>
+                <a href="#section-tutor">크리에이터</a>
+                <a href="#section-review">후기/게시판</a>
+            </div>
+
+            <!-- 리뉴얼 배너 (스크린샷 참고) -->
+            <div class="notice-banner">
+                <h3>리뉴얼 클래스 안내</h3>
+                <p>해당 클래스는 기존 콘텐츠에서 전체 강의 중 약 30%가 재구성되어 신규 챕터가 추가될 예정입니다.<br>강의를 수강하시면 새롭게 업데이트되는 양식을 함께 사용할 수 있습니다.</p>
+            </div>
+
+            <!-- 클래스 소개 -->
+            <section id="section-intro" class="detail-section">
+                <h3>무엇을 배우나요?</h3>
+                <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=1000" alt="소개 이미지">
+                <p>
+                    <strong>정신없는 부동산 중개 업무, 이제 노션(Notion) 하나로 끝내세요.</strong><br><br>
+                    고객 관리, 매물 대장, 일정 관리까지 흩어져 있던 정보를 한 곳에 모으는 놀라운 경험!<br>
+                    본 스터디에서는 부동산 업무에 최적화된 템플릿을 단계별로 직접 만들어보고 바로 실무에 적용해봅니다.<br>
+                    <ul>
+                        <li>✨ 나만의 체계적인 매물 데이터베이스 구축</li>
+                        <li>📅 고객 문의 내역과 방문 일정 연동</li>
+                        <li>🚀 자동화 코드를 활용한 단순 반복 업무 제거</li>
+                    </ul>
+                </p>
+                <br>
+                <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=1000" alt="소개 이미지">
+            </section>
+
+            <!-- 커리큘럼 -->
+            <section id="section-curri" class="detail-section" style="padding-top:40px;">
+                <h3>클래스 커리큘럼</h3>
+                <div style="background:#fff; border:1px solid #ddd; border-radius:8px; padding:20px;">
+                    <div style="border-bottom:1px solid #eee; padding-bottom:12px; margin-bottom:12px;"><strong>1주차: 노션 기초 및 세팅 가이드</strong></div>
+                    <div style="border-bottom:1px solid #eee; padding-bottom:12px; margin-bottom:12px;"><strong>2주차: 실무형 매물 대장 만들기 (데이터베이스)</strong></div>
+                    <div style="border-bottom:1px solid #eee; padding-bottom:12px; margin-bottom:12px;"><strong>3주차: 고객 응대 파이프라인 ও 계약 관리 보드</strong></div>
+                    <div style="padding-bottom:0px;"><strong>4주차: 협업 시스템 및 모바일 연동 실전 꿀팁</strong></div>
+                </div>
+            </section>
+
+            <!-- 후기 영역 -->
+            <section id="section-review" class="detail-section" style="padding-top:40px;">
+                <h3>수강생 리얼 후기 <span style="font-size:16px; font-weight:normal; color:#ff9f1c;">★4.9</span></h3>
+                
+                <div class="review-item">
+                    <div class="review-header">
+                        <div class="reviewer-avatar"><img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&h=100" alt="유저"></div>
+                        <div>
+                            <div class="reviewer-name">착한임대 (부동산회원)</div>
+                            <div class="review-date">2026.03.20</div>
+                        </div>
+                        <div class="score-info" style="margin-left:auto; font-size:13px;"><span class="star">★★★★★</span></div>
+                    </div>
+                    <div class="review-text">
+                        매일 수첩에 적고 엑셀에 적고 반복하던 일을 노션으로 합치니 업무 효율이 엄청나게 올랐습니다! 
+                        특히 강사님이 주신 부동산 전용 템플릿은 그대로 복사해서 쓰기만 해도 될 정도로 완성도가 높아서 놀랐어요. 무조건 추천합니다.
+                    </div>
+                </div>
+
+                <div class="review-item">
+                    <div class="review-header">
+                        <div class="reviewer-avatar"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&h=100" alt="유저"></div>
+                        <div>
+                            <div class="reviewer-name">공인중개사 A</div>
+                            <div class="review-date">2026.03.18</div>
+                        </div>
+                        <div class="score-info" style="margin-left:auto; font-size:13px;"><span class="star">★★★★★</span></div>
+                    </div>
+                    <div class="review-text">
+                        초보자도 따라하기 너무 좋은 클래스! 
+                        영상 길이도 적당해서 일 끝나고 짬짬이 한두 강씩 보기 딱 좋았어요. 피드백도 엄청 빠르십니다 :)
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 오른쪽: 사이드바 (구매/신청 패널) -->
+        <aside class="sidebar">
+            <div class="purchase-card">
+                <div class="cat-tag">챗GPT / 업무툴</div>
+                <h1 class="course-title">[2026 개정] 노션으로 끝내는 실전 시스템: 템플릿, 기록, 프로젝...</h1>
+                
+                <div class="price-box">
+                    <span class="discount">35%</span>
+                    <span class="original">300,000원</span>
+                    <div class="final">195,000<span style="font-size:18px;">원</span> <span class="price-month">/ 평생 소장</span></div>
+                </div>
+                
+                <!-- 혜택 배너 작게 -->
+                <div style="background:#f1f8e9; color:#2e7d32; padding:10px 14px; border-radius:6px; font-size:13px; font-weight:bold; margin-bottom:20px; display:flex; align-items:center; gap:8px;">
+                    <span>💸</span> 무이자 할부 혜택 적용가 반영
+                </div>
+
+                <button class="btn-purchase" onclick="alert('결제 / 수강신청 페이지로 이동합니다.')">12개월 무이자 수강하기</button>
+
+                <div class="action-tools">
+                    <div class="tool-icon">
+                        <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                        찜하기
+                    </div>
+                    <div class="tool-icon">
+                        <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                        공유
+                    </div>
+                    <div class="tool-icon">
+                        <svg viewBox="0 0 24 24"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
+                        선물
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+    <script>
+        // 최상단 이미지 갤러리 롤링 설정
+        const swiper = new Swiper('.swiper-container', {
+            loop: true,           // 무한 롤링
+            autoplay: {
+                delay: 3000,     // 3초마다 자동 넘김
+                disableOnInteraction: false,
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+        });
+
+        // 탭 스크롤 활성화 로직
+        const tabs = document.querySelectorAll('.content-tabs a');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                // 부드러운 스크롤은 브라우저 기본 CSS scroll-behavior: smooth 로 제어할 수도 있지만
+                // 여기선 UI 스타일 변경만 적용
+                tabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

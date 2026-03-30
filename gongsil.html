@@ -2048,12 +2048,72 @@
 
             window.shareProperty = function() {
                 const url = window.location.href.split('?')[0] + '?view_id=' + (window.currentlySelectedPropertyId || '');
+                window.currentShareUrl = url;
+                document.getElementById('shareModal').style.display = 'flex';
+            };
+
+            window.copyShareLink = function() {
                 if (navigator.clipboard) {
-                    navigator.clipboard.writeText(url).then(() => {
+                    navigator.clipboard.writeText(window.currentShareUrl).then(() => {
                         window.showGongsilToast('🔗 링크가 복사되었습니다.');
+                        document.getElementById('shareModal').style.display = 'none';
                     });
                 } else {
-                    prompt('아래 링크를 복사하세요:', url);
+                    prompt('아래 링크를 복사하세요:', window.currentShareUrl);
+                    document.getElementById('shareModal').style.display = 'none';
+                }
+            };
+
+            window.shareToKakao = function() {
+                if (typeof Kakao === 'undefined') {
+                    window.showGongsilToast('카카오 공유 기능을 불러오지 못했습니다.');
+                    return;
+                }
+                if (!Kakao.isInitialized()) {
+                    Kakao.init('435d3602201a49ea712e5f5a36fe6efc'); // 카카오 앱 키
+                }
+                
+                let pTitle = '공실뉴스 매물정보';
+                let pDesc = '상세 매물 정보를 확인해보세요.';
+                let pImg = 'https://via.placeholder.com/800x400/1a73e8/ffffff?text=GongsilNews';
+                
+                const titleEl = document.getElementById('detTitle');
+                if (titleEl && titleEl.textContent) pTitle = titleEl.textContent;
+                
+                const priceEl = document.getElementById('detPrice');
+                if (priceEl && priceEl.textContent) pDesc = priceEl.textContent;
+                
+                const imgEl = document.getElementById('detPhotoMain');
+                if (imgEl && imgEl.src && !imgEl.src.includes('No+Image')) {
+                    pImg = imgEl.src;
+                }
+
+                try {
+                    Kakao.Share.sendDefault({
+                        objectType: 'feed',
+                        content: {
+                            title: pTitle,
+                            description: pDesc,
+                            imageUrl: pImg,
+                            link: {
+                                mobileWebUrl: window.currentShareUrl,
+                                webUrl: window.currentShareUrl,
+                            },
+                        },
+                        buttons: [
+                            {
+                                title: '웹으로 보기',
+                                link: {
+                                    mobileWebUrl: window.currentShareUrl,
+                                    webUrl: window.currentShareUrl,
+                                },
+                            },
+                        ],
+                    });
+                    document.getElementById('shareModal').style.display = 'none';
+                } catch (err) {
+                    console.error('Kakao Share error:', err);
+                    window.showGongsilToast('카카오톡 공유에 실패했습니다.');
                 }
             };
 
@@ -2824,6 +2884,27 @@
             }
         };
     </script>
+    
+    <!-- 카카오톡 공유하기 Modal -->
+    <div id="shareModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:10000; flex-direction:column; justify-content:center; align-items:center;">
+        <div style="background:#fff; border-radius:12px; width:340px; padding:24px 20px; box-sizing:border-box; position:relative; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+            <button onclick="document.getElementById('shareModal').style.display='none'" style="position:absolute; top:15px; right:15px; background:none; border:none; font-size:20px; color:#111; cursor:pointer;">✕</button>
+            <h3 style="margin:0 0 20px 0; font-size:18px; color:#111;">공유하기</h3>
+            
+            <button onclick="window.shareToKakao()" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; background:#191919; color:#fff; border:none; padding:14px; border-radius:8px; font-size:15px; font-weight:bold; cursor:pointer; margin-bottom:12px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="#FEE500"><path d="M12 3c5.523 0 10 3.866 10 8.636 0 4.77-4.477 8.636-10 8.636-1.745 0-3.385-.386-4.832-1.07l-4.223 1.155a.49.49 0 0 1-.58-.65l1.096-3.876C2.264 14.162 1 12.167 1 11.636 1 6.866 5.477 3 12 3z"/></svg>
+                카카오로 링크 공유하기
+            </button>
+            
+            <button onclick="window.copyShareLink()" style="width:100%; background:none; border:none; color:#555; font-size:14px; cursor:pointer; padding:10px; border-radius:8px; display:inline-block;">
+                공유 링크 복사
+            </button>
+        </div>
+    </div>
+    
+    <!-- Kakao JS SDK for Kakao Share (v2) -->
+    <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"></script>
+
 <script src="gongsil_chatbot.js?v=20250329d"></script>
 
 </body>
