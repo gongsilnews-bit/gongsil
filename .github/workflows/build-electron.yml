@@ -3,8 +3,8 @@ name: Build and Release Electron App
 on:
   push:
     branches: [ "main" ]
-    paths:
-      - 'chatbot-desktop/**'
+    #paths:
+#      - 'chatbot-desktop/**'
   workflow_dispatch:
 
 jobs:
@@ -39,7 +39,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: chatbot-desktop/dist/GongsilChatbot_Setup.exe
-        name: "공실챗봇 PC버전 최신 다운로드"
+        name: "공실챗봇 PC버전 최신 ?�운로드"
         tag_name: "v1.0.${{ github.run_number }}"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
