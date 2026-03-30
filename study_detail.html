@@ -451,6 +451,48 @@
         .curri-play-icon polygon {
             fill: #fff;
         }
+        .intro-content-wrapper {
+            max-height: 480px;
+            overflow: hidden;
+            position: relative;
+            transition: max-height 0.3s ease;
+        }
+        .intro-more-overlay {
+            position: relative;
+            margin-top: -120px; 
+            height: 120px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1) 80%);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 20px;
+            z-index: 10;
+        }
+        .btn-intro-more {
+            background: #fff;
+            border: 1px solid #ddd;
+            color: #333;
+            font-size: 15px;
+            font-weight: bold;
+            padding: 12px 36px;
+            border-radius: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: background 0.2s;
+        }
+        .btn-intro-more svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+        }
+        .btn-intro-more:hover {
+            background: #f8f9fa;
+        }
 
     </style>
 </head>
@@ -544,20 +586,29 @@
 
             <!-- 클래스 소개 -->
             <section id="section-intro" class="detail-section">
-                <h3>무엇을 배우나요?</h3>
-                <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=1000" alt="소개 이미지">
-                <p>
-                    <strong>정신없는 부동산 중개 업무, 이제 노션(Notion) 하나로 끝내세요.</strong><br><br>
-                    고객 관리, 매물 대장, 일정 관리까지 흩어져 있던 정보를 한 곳에 모으는 놀라운 경험!<br>
-                    본 스터디에서는 부동산 업무에 최적화된 템플릿을 단계별로 직접 만들어보고 바로 실무에 적용해봅니다.<br>
-                    <ul>
-                        <li>✨ 나만의 체계적인 매물 데이터베이스 구축</li>
-                        <li>📅 고객 문의 내역과 방문 일정 연동</li>
-                        <li>🚀 자동화 코드를 활용한 단순 반복 업무 제거</li>
-                    </ul>
-                </p>
-                <br>
-                <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=1000" alt="소개 이미지">
+                <div class="intro-content-wrapper" id="introContent">
+                    <h3>무엇을 배우나요?</h3>
+                    <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=1000" alt="소개 이미지">
+                    <p>
+                        <strong>정신없는 부동산 중개 업무, 이제 노션(Notion) 하나로 끝내세요.</strong><br><br>
+                        고객 관리, 매물 대장, 일정 관리까지 흩어져 있던 정보를 한 곳에 모으는 놀라운 경험!<br>
+                        본 스터디에서는 부동산 업무에 최적화된 템플릿을 단계별로 직접 만들어보고 바로 실무에 적용해봅니다.<br>
+                        <ul>
+                            <li>✨ 나만의 체계적인 매물 데이터베이스 구축</li>
+                            <li>📅 고객 문의 내역과 방문 일정 연동</li>
+                            <li>🚀 자동화 코드를 활용한 단순 반복 업무 제거</li>
+                        </ul>
+                    </p>
+                    <br>
+                    <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=1000" alt="소개 이미지">
+                </div>
+                <!-- 더보기 오버레이 -->
+                <div class="intro-more-overlay" id="introMoreOverlay">
+                    <button class="btn-intro-more" onclick="expandIntro()">
+                        <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        더보기
+                    </button>
+                </div>
             </section>
 
             <!-- 커리큘럼 -->
@@ -741,6 +792,19 @@
                 closePreviewModal();
             }
         });
+
+        // 클래스 소개 더보기 로직
+        function expandIntro() {
+            const wrapper = document.getElementById('introContent');
+            const overlay = document.getElementById('introMoreOverlay');
+            wrapper.style.maxHeight = wrapper.scrollHeight + "px";
+            overlay.style.display = "none";
+            
+            // 애니메이션 완료 후 max-height 제거하여 반응형 유지
+            setTimeout(() => {
+                wrapper.style.maxHeight = "none";
+            }, 300);
+        }
     </script>
 </body>
 </html>
