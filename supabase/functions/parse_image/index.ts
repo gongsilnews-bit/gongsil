@@ -12,8 +12,8 @@ serve(async (req) => {
 
   try {
     const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY") || "";
-    // User requested "flash 1.5 API"
-    const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" + GEMINI_API_KEY;
+    // User requested "flash 1.5 API", falling back to flash-lite-latest as used in chat 
+    const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=" + GEMINI_API_KEY;
 
     const body = await req.json();
     const contents = body.contents;
