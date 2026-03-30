@@ -108,10 +108,10 @@ function initGongsilChatbot() {
             <!-- 슬라이드 메뉴: 빠른 메뉴보기 (☰) -->
             <div class="chat-slide-menu" id="quickMenu">
                 <div class="menu-grid">
-                    <div class="menu-item" onclick="window.location.href='https://gongsilnews-bit.github.io/gongsil/GongsilChatbot_Setup.exe'" style="grid-column: span 4; background:#f0f9ff; border:1px solid #bae6fd; border-radius:12px; padding:12px; margin-bottom:5px; flex-direction:row; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+                    <div class="menu-item" onclick="window.location.href='https://github.com/gongsilnews-bit/gongsil/releases/latest/download/GongsilChatbot_Setup.exe'" style="grid-column: span 4; background:#f0f9ff; border:1px solid #bae6fd; border-radius:12px; padding:12px; margin-bottom:5px; flex-direction:row; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
                          <div class="menu-icon" style="width:36px; height:36px; font-size:18px; background:#fff; border-color:#0284c7; color:#0284c7;">🖥️</div>
                          <div style="text-align:left; line-height:1.4;">
-                            <strong style="font-size:14px; color:#0284c7; display:block;">PC버전 설치 (항상 위 고정)</strong>
+                            <strong style="font-size:14px; color:#0284c7; display:block;">PC버전 데스크탑 앱 다운로드 (.exe)</strong>
                             <span style="font-size:11px; color:#64748b;">엑셀, 카톡 중에도 안가려져요!</span>
                          </div>
                     </div>
