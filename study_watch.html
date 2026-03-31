@@ -369,11 +369,11 @@
             if (isPreview) {
                 const style = document.createElement('style');
                 style.innerHTML = `
-                    .watch-layout { height: auto !important; overflow: visible !important; margin-top: 0 !important; }
-                    .watch-main { overflow: visible !important; }
+                    .watch-layout { height: auto !important; overflow: visible !important; }
+                    .watch-main { overflow: visible !important; background: #fff; }
                     .watch-sidebar { overflow: visible !important; height: auto !important; border-left: 1px solid #e2e8f0; }
                     .curr-list { overflow: visible !important; }
-                    .watch-header { display: none !important; } 
+                    /* 상단 제목(헤더)을 볼 수 있게 다시 복구 */
                     ::-webkit-scrollbar { display: none; }
                     body { -ms-overflow-style: none; scrollbar-width: none; overflow: hidden !important; }
                     
@@ -384,17 +384,18 @@
                 `;
                 document.head.appendChild(style);
 
-                // 관리자용 버튼 바 (동영상과 하단 탭 사이에 생성)
+                // 관리자용 버튼 바 (동영상 컨테이너 바로 밑, 강의 제목 위로 배치)
+                // 버튼 사이즈 표준화 (height 32px, text 13px)
                 const adminHtml = `
-                <div style="display:flex; justify-content:center; gap:8px; padding:15px; border-top:1px dashed #cbd5e1; border-bottom:1px dashed #cbd5e1; background:#f8fafc; margin:0 32px 24px 32px;">
-                    <button style="padding: 8px 24px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; font-weight:600; cursor:pointer;" onclick="window.parent.postMessage('goList', '*')">⬅️ 목록</button>
-                    <button style="padding: 8px 24px; border:1px solid #3b82f6; border-radius:6px; background:#fff; font-weight:600; color:#3b82f6; cursor:pointer;" onclick="window.parent.postMessage('goEdit', '*')">✏️ 수정</button>
-                    <button style="padding: 8px 24px; border:1px solid #ef4444; border-radius:6px; background:#fff; font-weight:600; color:#ef4444; cursor:pointer;" onclick="alert('목록 화면에서 체크 후 삭제해주세요.')">🗑️ 삭제</button>
-                    <button style="padding: 8px 24px; border:1px solid #10b981; border-radius:6px; background:#fff; font-weight:600; color:#10b981; cursor:pointer;" onclick="window.parent.postMessage('goPreview', '*')">👀 실제 화면 미리보기</button>
-                    <button style="padding: 8px 24px; border:none; border-radius:6px; background:#ff9f1c; color:#fff; font-weight:600; cursor:pointer;">✅ 승인(공개 발행)</button>
+                <div style="display:flex; justify-content:flex-start; align-items:center; gap:6px; padding:12px 32px; background:#f8fafc; border-bottom:1px solid #e2e8f0; border-top:none;">
+                    <button style="display:inline-flex; align-items:center; height:32px; padding:0 12px; font-size:13px; font-weight:500; border:1px solid #cbd5e1; border-radius:4px; background:#fff; color:#475569; cursor:pointer;" onclick="window.parent.postMessage('goList', '*')">⬅️ 목록</button>
+                    <button style="display:inline-flex; align-items:center; height:32px; padding:0 12px; font-size:13px; font-weight:500; border:1px solid #3b82f6; border-radius:4px; background:#fff; color:#3b82f6; cursor:pointer;" onclick="window.parent.postMessage('goEdit', '*')">✏️ 수정</button>
+                    <button style="display:inline-flex; align-items:center; height:32px; padding:0 12px; font-size:13px; font-weight:500; border:1px solid #ef4444; border-radius:4px; background:#fff; color:#ef4444; cursor:pointer;" onclick="alert('목록 화면에서 체크 후 삭제해주세요.')">🗑️ 삭제</button>
+                    <button style="display:inline-flex; align-items:center; height:32px; padding:0 12px; font-size:13px; font-weight:500; border:1px solid #10b981; border-radius:4px; background:#fff; color:#10b981; cursor:pointer;" onclick="window.parent.postMessage('goPreview', '*')">👀 실제 화면 보기</button>
+                    <button style="display:inline-flex; align-items:center; height:32px; padding:0 12px; font-size:13px; font-weight:500; border:none; border-radius:4px; background:#ff9f1c; color:#fff; cursor:pointer;">✅ 승인(공개 발행)</button>
                 </div>
                 `;
-                document.querySelector('.video-info-bar').insertAdjacentHTML('afterend', adminHtml);
+                document.querySelector('.video-container').insertAdjacentHTML('afterend', adminHtml);
 
                 // 부모로부터 디바이스 모드 수신하여 클래스 부착
                 window.addEventListener('message', (e) => {
