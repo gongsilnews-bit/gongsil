@@ -389,6 +389,8 @@
             if(lessonsData && lessonsData.length > 0) {
                 allLessons = lessonsData;
                 renderCurriculumSidebar(lessonsData);
+                // 진도율 초기화 반영
+                if(typeof updateProgress === 'function') updateProgress();
                 // 자동 재생 방지를 위해 클릭 전 첫 화면 세팅만 수행
                 loadLessonPlayer(lessonsData[0]);
             } else {
@@ -499,6 +501,72 @@
                     svg.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>`;
                 }
             }
+            
+            // 🔥 진도율 아이콘 원래 상태(완료) 복구 🔥
+            if(typeof updateProgress === 'function') updateProgress();
+            
+            // 🔥 수강 완료 및 다음 버튼 활성화 🔥
+            const currentLessonIndex = allLessons.findIndex(l => l.id === lesson.id);
+            const finishBtn = document.querySelector('.finish-btn');
+            if(finishBtn) {
+                finishBtn.onclick = () => {
+                    markLessonComplete(lesson.id); // 1. 완료 마킹
+                    if(currentLessonIndex + 1 < allLessons.length) {
+                        // 2. 다음 강의 존재 시 이동
+                        loadLessonPlayer(allLessons[currentLessonIndex + 1]);
+                    } else {
+                        // 3. 마지막 강의일 경우
+                        alert("마지막 강의입니다. 모든 과정을 수강하셨습니다! 🎉");
+                    }
+                };
+            }
+        }
+
+        // --- 🌟 강의 수강 완료 처리 및 진도율 업데이트 ---
+        function markLessonComplete(lessonId) {
+            const courseId = new URLSearchParams(window.location.search).get('id');
+            const key = 'completed_lessons_' + courseId;
+            let completed = JSON.parse(localStorage.getItem(key) || '[]');
+            if(!completed.includes(lessonId)) {
+                completed.push(lessonId);
+                localStorage.setItem(key, JSON.stringify(completed));
+            }
+            updateProgress(); // 화면 갱신 호출
+        }
+
+        // --- 🌟 진도율 바 및 아이콘 갱신 기능 ---
+        function updateProgress() {
+            if(!allLessons || allLessons.length === 0) return;
+            const courseId = new URLSearchParams(window.location.search).get('id');
+            const key = 'completed_lessons_' + courseId;
+            let completed = JSON.parse(localStorage.getItem(key) || '[]');
+            
+            // 전체 중 완료된 갯수
+            const realCompleted = completed.filter(id => allLessons.some(l => l.id === id));
+            const pct = Math.round((realCompleted.length / allLessons.length) * 100);
+            
+            const pctText = document.querySelector('.progress-pct');
+            const barFill = document.querySelector('.progress-bar-fill');
+            if(pctText) pctText.innerText = `${pct}% (${realCompleted.length} / ${allLessons.length}강)`;
+            if(barFill) barFill.style.width = pct + '%';
+
+            // 우측 사이드바 각 리스트에 V(체크) 표시 부여
+            realCompleted.forEach(cId => {
+                const citem = document.getElementById(`curr-item-${cId}`);
+                if(citem) {
+                    const iconWrap = citem.querySelector('.ci-icon');
+                    // 현재 재생중(playing)인 항목의 아이콘은 건드리지 않음
+                    if(iconWrap && !iconWrap.classList.contains('playing')) {
+                        iconWrap.classList.remove('locked');
+                        iconWrap.classList.add('played');
+                        iconWrap.style.color = '#10b981'; // 초록색 지정
+                        const svg = iconWrap.querySelector('svg');
+                        if(svg) {
+                            svg.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>`;
+                        }
+                    }
+                }
+            });
         }
 
         // [강의 노트 & 자료] 탭 다시 그리기 (요약 설명 + 공통 첨부파일)
@@ -521,7 +589,7 @@
                 allMaterials.forEach(mat => {
                     const isLink = mat.material_type === 'link';
                     const icon = isLink ? '🔗' : '📄';
-                    const dlText = isLink ? '구글드라이브 열기' : 'PC 다운로드';
+                    const dlText = isLink ? '자료 다운로드' : 'PC 다운로드';
                     const bg = isLink ? '#eff6ff' : '#f0fdf4';
                     const tx = isLink ? '#3b82f6' : '#16a34a';
 
