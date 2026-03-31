@@ -6,12 +6,12 @@ if (!supabase) {
     console.error("공실 프로젝트 클라이언트가 초기화되지 않았습니다! supabase_gongsi_config.js 로드 확인 필요.");
 }
 
-// UI 요소 가져오기
-const loginBtn = document.getElementById('headerLoginBtn');
-const logoutBtn = document.getElementById('headerLogoutBtn');
-const userProfile = document.getElementById('userProfile');
-const userNameDisplay = document.getElementById('userNameDisplay');
-const userRoleBadge = document.getElementById('userRoleBadge');
+// UI 요소 가져오기 (다중 요소 지원을 위해 class와 id 모두 선택)
+const loginBtns = document.querySelectorAll('#headerLoginBtn, .headerLoginBtn');
+const logoutBtns = document.querySelectorAll('#headerLogoutBtn, .headerLogoutBtn');
+const userProfiles = document.querySelectorAll('#userProfile, .userProfile');
+const userNameDisplays = document.querySelectorAll('#userNameDisplay, .userNameDisplay');
+const userRoleBadges = document.querySelectorAll('#userRoleBadge, .userRoleBadge');
 
 // 초기 상태 체크
 async function initAuth() {
@@ -28,17 +28,17 @@ supabase.auth.onAuthStateChange(async (event, session) => {
 async function handleAuthStateChange(user) {
     if (user) {
         // 로그인 상태: UI 업데이트
-        if (loginBtn) loginBtn.style.display = 'none';
-        if (userProfile) userProfile.style.display = 'flex';
-        if (userNameDisplay) userNameDisplay.textContent = user.user_metadata.full_name || user.email.split('@')[0];
-        if (userRoleBadge) userRoleBadge.textContent = "정보 확인중...";
+        loginBtns.forEach(btn => btn.style.display = 'none');
+        userProfiles.forEach(p => p.style.display = 'flex');
+        userNameDisplays.forEach(d => d.textContent = user.user_metadata.full_name || user.email.split('@')[0]);
+        userRoleBadges.forEach(b => b.textContent = "정보 확인중...");
         
         // Supabase DB(members)에서 권한 정보 가져오기
         await handleUserDocument(user);
     } else {
         // 로그아웃 상태: UI 업데이트
-        if (loginBtn) loginBtn.style.display = 'inline-block';
-        if (userProfile) userProfile.style.display = 'none';
+        loginBtns.forEach(btn => btn.style.display = 'inline-block');
+        userProfiles.forEach(p => p.style.display = 'none');
         
         // 전역 상태 초기화
         window.currentUser = null;
@@ -46,16 +46,14 @@ async function handleAuthStateChange(user) {
     }
 }
 
-
-// 구글 로그인 클릭 이벤트 (이제 바로 로그인 시도)
-if(loginBtn) {
+// 구글 로그인 클릭 이벤트 (현재 페이지로 돌아오기 위해 window.location.href 사용)
+loginBtns.forEach(loginBtn => {
     loginBtn.addEventListener('click', async (e) => {
         e.preventDefault();
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: window.location.origin + (window.BASE_PATH || '')
-
+                redirectTo: window.location.href
             }
         });
         if (error) {
@@ -63,10 +61,10 @@ if(loginBtn) {
             alert("구글 로그인 중 오류가 발생했습니다: " + error.message);
         }
     });
-}
+});
 
 // 로그아웃 클릭 이벤트
-if(logoutBtn) {
+logoutBtns.forEach(logoutBtn => {
     logoutBtn.addEventListener('click', async (e) => {
         e.preventDefault();
         const { error } = await supabase.auth.signOut();
@@ -76,7 +74,7 @@ if(logoutBtn) {
             console.error("로그아웃 에러:", error);
         }
     });
-}
+});
 
 // Supabase DB에 유저 정보 저장 및 불러오기 (권한 판별용)
 async function handleUserDocument(user) {

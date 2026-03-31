@@ -218,8 +218,15 @@
             </nav>
         </div>
         <div class="g-header-right">
-            <a href="#" class="g-btn-text">구글 로그인</a>
-            <a href="#" class="g-btn-round">중개사무소 가입 및 상품문의 &gt;</a>
+            <!-- Logged in state UI -->
+            <div class="userProfile" style="display: none; align-items: center; gap: 10px;">
+                <span class="userNameDisplay" style="font-weight: bold; color: #fff;"></span>
+                <span class="userRoleBadge" style="font-size: 11px; padding: 3px 6px; border-radius: 4px; background: rgba(255,255,255,0.2); color: #fff;">로딩중</span>
+                <a href="#" class="headerLogoutBtn g-btn-text">로그아웃</a>
+            </div>
+            
+            <a href="#" class="headerLoginBtn g-btn-text">구글 로그인</a>
+            <a href="https://smartstore.naver.com/mygongsil/products/10361563253" target="_blank" class="g-btn-round">중개사무소 가입 및 상품문의 &gt;</a>
         </div>
     </header>
 
@@ -239,8 +246,15 @@
             </nav>
         </div>
         <div class="g-header-right">
-            <a href="#" class="g-btn-sticky-text">구글 로그인</a>
-            <a href="#" class="g-btn-sticky-round">중개사무소 가입 및 상품문의 &gt;</a>
+            <!-- Logged in state UI -->
+            <div class="userProfile" style="display: none; align-items: center; gap: 10px;">
+                <span class="userNameDisplay" style="font-weight: bold;"></span>
+                <span class="userRoleBadge" style="font-size: 11px; padding: 3px 6px; border-radius: 4px; background: #f0f0f0; color: #555;">로딩중</span>
+                <a href="#" class="headerLogoutBtn g-btn-sticky-text">로그아웃</a>
+            </div>
+            
+            <a href="#" class="headerLoginBtn g-btn-sticky-text">구글 로그인</a>
+            <a href="https://smartstore.naver.com/mygongsil/products/10361563253" target="_blank" class="g-btn-sticky-round">중개사무소 가입 및 상품문의 &gt;</a>
         </div>
     </header>
 
@@ -541,6 +555,10 @@
             loadNotices();
         });
     </script>
+    <!-- 공실 스크립트 연결 -->
+    <script src="base_path.js"></script>
+    <script type="module" src="supabase_gongsi_config.js"></script>
+    <script type="module" src="supabase_auth.js"></script>
     <!-- 스크롤 시 상단 메뉴 나타내기 -->
     <script>
         window.addEventListener('scroll', function() {
