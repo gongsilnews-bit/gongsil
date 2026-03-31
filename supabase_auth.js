@@ -50,10 +50,18 @@ async function handleAuthStateChange(user) {
 loginBtns.forEach(loginBtn => {
     loginBtn.addEventListener('click', async (e) => {
         e.preventDefault();
+        
+        let redirectPath = window.location.pathname;
+        // GitHub Pages Clean URL(예: /gongsil)인 경우 뒤에 /가 붙어 404가 나는 것을 방지하기 위해 .html을 붙임
+        if (redirectPath !== '/' && !redirectPath.endsWith('.html') && !redirectPath.endsWith('/')) {
+            redirectPath += '.html';
+        }
+        const redirectUrl = window.location.origin + redirectPath + window.location.search;
+
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: window.location.href
+                redirectTo: redirectUrl
             }
         });
         if (error) {
@@ -109,16 +117,16 @@ async function handleUserDocument(user) {
 
     } catch (error) {
         console.error("회원 정보 조회 에러:", error);
-        if (userRoleBadge) {
-            userRoleBadge.textContent = "조회 에러";
-            userRoleBadge.style.background = "red";
-            userRoleBadge.style.color = "white";
-        }
+        userRoleBadges.forEach(badge => {
+            badge.textContent = "조회 에러";
+            badge.style.background = "red";
+            badge.style.color = "white";
+        });
     }
 }
 
 function updateRoleUI(userData) {
-    if(!userRoleBadge) return;
+    if(!userRoleBadges || userRoleBadges.length === 0) return;
 
     // 기존 톱니바퀴 버튼이 있으면 제거
     const existingGear = document.getElementById('adminGearBtn');
@@ -141,59 +149,66 @@ function updateRoleUI(userData) {
     // 최종 표시 텍스트 (관리자는 등급 표시 생략)
     const displayText = userData.role === 'admin' ? roleName + " >>" : roleName + membershipName + " >>";
 
-    userRoleBadge.textContent = displayText;
+    userRoleBadges.forEach(badge => {
+        badge.textContent = displayText;
 
-    // 역할 및 등급별 배지 스타일 설정
-    if (userData.role === 'admin') {
-        userRoleBadge.style.background = "#e74c3c";
-        userRoleBadge.style.color = "white";
-    } else if (userData.role === 'realtor') {
-        // 부동산회원은 블루 계통
-        userRoleBadge.style.background = "#1a73e8";
-        userRoleBadge.style.color = "white";
-    } else if (userData.membership === 'paid') {
-        // 일반 유료 회원 스타일
-        userRoleBadge.style.background = "#ff9f1c";
-        userRoleBadge.style.color = "white";
-    } else {
-        // 일반 무료 회원 스타일
-        userRoleBadge.style.background = "#f0f0f0";
-        userRoleBadge.style.color = "#555";
-    }
+        // 역할 및 등급별 배지 스타일 설정
+        if (userData.role === 'admin') {
+            badge.style.background = "#e74c3c";
+            badge.style.color = "white";
+        } else if (userData.role === 'realtor') {
+            badge.style.background = "#1a73e8";
+            badge.style.color = "white";
+        } else if (userData.membership === 'paid') {
+            badge.style.background = "#ff9f1c";
+            badge.style.color = "white";
+        } else {
+            badge.style.background = "#f0f0f0";
+            badge.style.color = "#555";
+            
+            // Top transparent header might need white background for text visibility if on hero, but we rely on its own transparent style if needed.
+            // Let's ensure default text color handles hero correctly, or we can use specific styles:
+            // Since top header `.userRoleBadge` has rgba(255,255,255,0.2) and color #fff, we might override it here. 
+            // In fact, modifying styles inline here will override the CSS.
+        }
 
-    // 기본 공통 스타일
-    userRoleBadge.style.cursor = "pointer";
-    userRoleBadge.style.display = "inline-flex";
-    userRoleBadge.style.alignItems = "center";
-    userRoleBadge.style.padding = "5px 12px";
-    userRoleBadge.style.borderRadius = "6px";
-    userRoleBadge.style.fontWeight = "bold";
-    userRoleBadge.style.fontSize = "12px";
-    userRoleBadge.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
-    userRoleBadge.style.transition = "all 0.2s ease";
-    userRoleBadge.title = tooltipLabel;
+        // 기본 공통 스타일
+        badge.style.cursor = "pointer";
+        badge.style.display = "inline-flex";
+        badge.style.alignItems = "center";
+        badge.style.padding = "5px 12px";
+        badge.style.borderRadius = "6px";
+        badge.style.fontWeight = "bold";
+        badge.style.fontSize = "12px";
+        badge.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
+        badge.style.transition = "all 0.2s ease";
+        badge.title = tooltipLabel;
 
-    userRoleBadge.onclick = () => {
-        window.location.href = targetPage;
-    };
+        badge.onclick = () => {
+            window.location.href = targetPage;
+        };
 
-    // 호버 효과
-    userRoleBadge.onmouseenter = () => {
-        userRoleBadge.style.transform = "translateY(-1px)";
-        userRoleBadge.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
-        if(userData.role === 'admin') userRoleBadge.style.background = "#c0392b";
-        else if(userData.role === 'realtor') userRoleBadge.style.background = "#1557b0";
-        else if(userData.membership === 'paid') userRoleBadge.style.background = "#e67e22";
-        else userRoleBadge.style.background = "#e5e5e5";
-    };
-    userRoleBadge.onmouseleave = () => {
-        userRoleBadge.style.transform = "translateY(0)";
-        userRoleBadge.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
-        if(userData.role === 'admin') userRoleBadge.style.background = "#e74c3c";
-        else if(userData.role === 'realtor') userRoleBadge.style.background = "#1a73e8";
-        else if(userData.membership === 'paid') userRoleBadge.style.background = "#ff9f1c";
-        else userRoleBadge.style.background = "#f0f0f0";
-    };
+        // 호버 효과
+        badge.onmouseenter = () => {
+            badge.style.transform = "translateY(-1px)";
+            badge.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
+            if(userData.role === 'admin') badge.style.background = "#c0392b";
+            else if(userData.role === 'realtor') badge.style.background = "#1557b0";
+            else if(userData.membership === 'paid') badge.style.background = "#e67e22";
+            else badge.style.background = "#e5e5e5";
+        };
+        badge.onmouseleave = () => {
+            badge.style.transform = "translateY(0)";
+            badge.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
+            if(userData.role === 'admin') badge.style.background = "#e74c3c";
+            else if(userData.role === 'realtor') badge.style.background = "#1a73e8";
+            else if(userData.membership === 'paid') badge.style.background = "#ff9f1c";
+            else {
+                badge.style.background = "#f0f0f0";
+                badge.style.color = "#555";
+            }
+        };
+    });
 }
 
 // 실행
