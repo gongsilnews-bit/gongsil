@@ -101,9 +101,33 @@
         .m-sidebar {
             width: 220px; flex-shrink: 0; position: sticky; top: 20px;
         }
-        .side-title {
-            font-size: 18px; font-weight: 800; margin-bottom: 24px; color: var(--text-main);
-            padding-bottom: 16px; border-bottom: 2px solid #1f2937;
+        .side-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #1f2937;
+        }
+        .side-title { font-size: 18px; font-weight: 800; color: var(--text-main); margin: 0; }
+        .side-search-icon {
+            cursor: pointer; color: var(--text-sub); transition: 0.2s;
+            display: flex; align-items: center; justify-content: center;
+            padding: 4px; border-radius: 4px;
+        }
+        .side-search-icon:hover { color: var(--primary); background: rgba(255, 123, 0, 0.1); }
+        .side-search-box {
+            overflow: hidden; transition: max-height 0.3s ease, margin-bottom 0.3s ease, opacity 0.3s ease;
+            max-height: 0; opacity: 0; margin-bottom: 0;
+            display: flex; gap: 6px;
+        }
+        .side-search-box.open {
+            max-height: 50px; opacity: 1; margin-bottom: 16px;
+        }
+        .side-search-input {
+            flex: 1; background: #fff; border: 1px solid var(--border); border-radius: 6px;
+            padding: 8px 12px; font-size: 14px; outline: none; min-width: 0;
+        }
+        .side-search-input:focus { border-color: var(--primary); }
+        .side-search-submit {
+            background: var(--text-main); color: #fff; border: none; border-radius: 6px;
+            padding: 0 12px; font-size: 13px; font-weight: bold; cursor: pointer;
         }
         .side-menu { list-style: none; padding: 0; margin: 0; }
         .side-menu li {
@@ -185,25 +209,7 @@
         .meta-icon { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; }
         .star-icon { width: 14px; height: 14px; fill: var(--primary); color: transparent; }
 
-        /* 세련된 검색창 */
-        .search-wrapper {
-            background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 6px;
-            display: flex; align-items: center; gap: 8px; margin: 0 0 24px 0; max-width: 400px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03); transition: 0.3s;
-        }
-        .search-wrapper:focus-within { border-color: var(--primary); box-shadow: 0 6px 20px rgba(255, 123, 0, 0.1); }
-        .search-select {
-            border: none; background: transparent; color: var(--text-sub); font-size: 14px; font-weight: 600;
-            padding: 8px 10px; outline: none; cursor: pointer;
-            border-right: 1px solid var(--border); border-radius: 0; white-space: nowrap;
-        }
-        .search-input { flex: 1; border: none; font-size: 15px; outline: none; color: var(--text-main); font-family: inherit; padding-left: 8px; min-width: 0; }
-        .search-input::placeholder { color: #94a3b8; }
-        .search-btn {
-            background: #e2e8f0; color: #475569; border: none; border-radius: 6px; padding: 0 16px; height: 36px;
-            font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; white-space: nowrap;
-        }
-        .search-btn:hover { background: #cbd5e1; color: var(--text-main); }
+        /* 세련된 검색창 (이전 방식 - 삭제됨) */
 
         /* 일반 그리드 (3열) */
         .materials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
@@ -288,7 +294,17 @@
             
             <!-- 좌측 사이드바 (캡쳐 요청사항: 2차 목차를 좌측으로) -->
             <aside class="m-sidebar">
-                <h3 class="side-title">앱(APP) 자료</h3>
+                <div class="side-header">
+                    <h3 class="side-title">앱(APP) 자료</h3>
+                    <div class="side-search-icon" onclick="toggleSideSearch()" title="자료 검색">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    </div>
+                </div>
+                <!-- 검색 입력창 (기본 숨김) -->
+                <div class="side-search-box" id="sideSearchBox">
+                    <input type="text" class="side-search-input" placeholder="검색어 입력">
+                    <button class="side-search-submit">검색</button>
+                </div>
                 <ul class="side-menu">
                     <li class="active">전체</li>
                     <li>기자전용</li>
@@ -391,13 +407,6 @@
                 </div>
 
                 <hr class="section-divider">
-
-                <!-- 검색창 -->
-                <div class="search-wrapper">
-                    <select class="search-select"><option>전체</option><option>제목</option></select>
-                    <input type="text" class="search-input" placeholder="원하시는 자료를 검색해 보세요.">
-                    <button class="search-btn">검색</button>
-                </div>
 
                 <!-- 하단 일반 자료 리스트 (3열 그리드) -->
                 <div class="materials-grid">
@@ -537,6 +546,11 @@
                 0: { slidesPerView: 1.2 }
             }
         });
+
+        // 좌측 사이드바 검색 토글
+        function toggleSideSearch() {
+            document.getElementById('sideSearchBox').classList.toggle('open');
+        }
     </script>
 </body>
 </html>
