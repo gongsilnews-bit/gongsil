@@ -8,23 +8,23 @@
     <link rel="stylesheet" href="style.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
     
     <style>
         :root {
             --primary: #FF7B00;       /* 고급스러운 공실뉴스 시그니처 오렌지 */
-            --primary-dark: #E65C00;  /* 호버용 짙은 오렌지 */
-            --accent-orange: #FF7B00; /* 오렌지 엑센트 통일 */
-            --text-main: #1f2937;     /* 세련된 차콜 블랙 */
-            --text-sub: #6b7280;      /* 중간 회색 텍스트 */
-            --bg-gray: #f9fafb;       /* 밝은 스모크 화이트 */
-            --border: #e5e7eb;
+            --primary-dark: #E65C00;
+            --accent-orange: #FF7B00; 
+            --text-main: #1f2937;     
+            --text-sub: #6b7280;      
+            --bg-gray: #f8fafc;       
+            --border: #e2e8f0;
         }
 
         html, body {
-            margin: 0; padding: 0;
-            background-color: #ffffff;
-            font-family: 'Pretendard', sans-serif;
-            color: var(--text-main);
+            margin: 0; padding: 0; background-color: #ffffff;
+            font-family: 'Pretendard', sans-serif; color: var(--text-main);
             overflow-x: hidden;
         }
 
@@ -51,16 +51,31 @@
 
         /* 자료실 메인 컨테이너 */
         .materials-container {
-            max-width: 1240px; margin: 50px auto 100px; padding: 0 20px;
+            max-width: 1240px; margin: 40px auto 100px; padding: 0 20px;
         }
-
-        /* 대타이틀 */
         .page-title {
-            font-size: 34px; font-weight: 800; color: var(--text-main);
-            margin-bottom: 30px; letter-spacing: -0.5px;
+            font-size: 32px; font-weight: 800; color: var(--text-main);
+            margin-bottom: 24px; letter-spacing: -0.5px;
         }
 
-        /* 1차 탭: 메인 카테고리 (밑줄 방식) */
+        /* 최상단 라운드 필터 (아파트, 빌라 등) */
+        .top-filters {
+            display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px;
+        }
+        .t-filter {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 18px; border-radius: 50px; border: 1px solid var(--border);
+            background: #fff; color: var(--text-sub); font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: 0.2s;
+        }
+        .t-filter:hover { border-color: var(--primary); color: var(--primary); }
+        .t-filter.active {
+            background: rgba(255, 123, 0, 0.08); border-color: var(--primary); color: var(--primary);
+        }
+        .chk-icon { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; display: none; }
+        .t-filter.active .chk-icon { display: block; }
+
+        /* 1차 탭: 메인 카테고리 (드론영상, APP 등) */
         .primary-tabs {
             display: flex; gap: 32px; border-bottom: 2px solid var(--border);
             margin-bottom: 40px; position: relative;
@@ -77,146 +92,137 @@
             height: 3px; background: var(--text-main); border-radius: 3px 3px 0 0;
         }
 
-        /* 현재 섹션 타이틀 & 서브 뱃지 */
-        .section-header {
-            display: flex; align-items: baseline; gap: 12px;
-            margin-bottom: 30px; justify-content: center;
-        }
-        .section-title {
-            font-size: 30px; font-weight: 800; color: var(--text-main);
-            letter-spacing: -0.5px;
-        }
-        .section-badge {
-            font-size: 14px; font-weight: 700; color: var(--text-sub);
-            background: var(--bg-gray); padding: 4px 10px; border-radius: 6px;
+        /* 2-단 레이아웃 (좌측 사이드바, 우측 컨텐츠) */
+        .materials-layout {
+            display: flex; align-items: flex-start; gap: 40px;
         }
 
-        /* 2차 탭: 서브 카테고리 (Pill 형태) */
-        .secondary-tabs {
-            display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
-            margin-bottom: 40px;
+        /* 좌측 사이드바 메뉴 */
+        .m-sidebar {
+            width: 220px; flex-shrink: 0; position: sticky; top: 20px;
         }
-        .s-tab {
-            padding: 10px 20px; border-radius: 20px;
+        .side-title {
+            font-size: 18px; font-weight: 800; margin-bottom: 24px; color: var(--text-main);
+            padding-bottom: 16px; border-bottom: 2px solid #1f2937;
+        }
+        .side-menu { list-style: none; padding: 0; margin: 0; }
+        .side-menu li {
             font-size: 15px; font-weight: 600; color: var(--text-sub);
-            background: #fff; cursor: pointer; transition: 0.2s;
+            padding: 14px 16px; border-radius: 8px; cursor: pointer;
+            transition: 0.2s ease; margin-bottom: 4px; display: flex; justify-content: space-between;
         }
-        .s-tab:hover { background: var(--bg-gray); color: var(--text-main); }
-        .s-tab.active {
-            background: var(--accent-orange); color: #fff;
-            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.25);
-        }
+        .side-menu li:hover { background: var(--bg-gray); color: var(--text-main); }
+        .side-menu li.active { background: var(--primary); color: #fff; font-weight: 700; box-shadow: 0 4px 12px rgba(255, 123, 0, 0.2); }
+        .side-menu li.active::after { content: '>'; font-weight:800; }
 
-        /* 세련된 검색창 (Floating Styled) */
-        .search-wrapper {
-            background: #fff; border: 1px solid var(--border);
-            border-radius: 12px; padding: 8px;
-            display: flex; align-items: center; gap: 12px;
-            max-width: 760px; margin: 0 auto 50px;
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
-            transition: 0.3s;
+        /* 우측 메인 컨텐츠 영역 */
+        .m-content { flex: 1; min-width: 0; }
+
+        /* Top 10 섹션 */
+        .top10-section { margin-bottom: 50px; }
+        .top10-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
         }
-        .search-wrapper:focus-within {
-            border-color: var(--primary);
-            box-shadow: 0 8px 30px rgba(14, 165, 233, 0.1);
+        .top10-title { font-size: 22px; font-weight: 800; color: var(--text-main); display:flex; align-items:center; gap:8px;}
+        .top10-title .fire { color: #ef4444; font-size:24px;}
+        .top10-nav { display: flex; gap: 8px; }
+        .sw-btn {
+            width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border);
+            background: #fff; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s; color: var(--text-main);
         }
-        .search-select {
-            border: none; background: var(--bg-gray); color: var(--text-sub);
-            font-size: 14px; font-weight: 600; border-radius: 8px;
-            padding: 12px 16px 12px 14px; outline: none; cursor: pointer;
-            appearance: none; /* remove default arrow */
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat; background-position: right 10px center; background-size: 16px;
-            padding-right: 32px; min-width: 110px;
-        }
-        .search-input {
-            flex: 1; border: none; font-size: 15px; outline: none;
-            color: var(--text-main); font-family: inherit;
-        }
-        .search-input::placeholder { color: #94a3b8; }
-        .search-btn {
-            background: var(--text-main); color: #fff; border: none;
-            border-radius: 8px; padding: 0 24px; height: 44px;
-            font-size: 15px; font-weight: 700; cursor: pointer;
-            display: flex; align-items: center; gap: 6px; transition: 0.2s;
-        }
-        .search-btn:hover { background: #334155; }
+        .sw-btn:hover { background: var(--bg-gray); border-color: #cbd5e1; }
+        .sw-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+        /* Swiper 설정 */
+        .top10-swiper { padding-bottom: 20px; margin-left: -10px; padding-left: 10px; margin-right: -10px; padding-right: 10px; }
         
-        /* 모바일용 검색창 스택 */
-        @media (max-width: 640px) {
-            .search-wrapper { flex-direction: column; align-items: stretch; padding: 12px; border-radius: 16px; }
-            .search-input { padding: 12px 4px; }
-        }
-
-        /* 자료실 4열 카드 그리드 */
-        .materials-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 24px;
-        }
-        @media (max-width: 1024px) { .materials-grid { grid-template-columns: repeat(3, 1fr); } }
-        @media (max-width: 768px) { .materials-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 480px) { .materials-grid { grid-template-columns: 1fr; } }
-
-        /* 카드 UI */
+        /* 카드 UI 공통 */
         .m-card {
-            background: #fff; border: 1px solid var(--border); border-radius: 16px;
+            background: #fff; border: 1px solid var(--border); border-radius: 12px;
             overflow: hidden; cursor: pointer; transition: all 0.3s ease;
-            display: flex; flex-direction: column;
+            display: flex; flex-direction: column; height: 100%; position: relative;
         }
         .m-card:hover {
             transform: translateY(-6px);
-            box-shadow: 0 16px 32px rgba(15, 23, 42, 0.08);
+            box-shadow: 0 16px 30px rgba(0, 0, 0, 0.08);
             border-color: #cbd5e1;
         }
+        .m-thumb-box { width: 100%; aspect-ratio: 16 / 9; overflow: hidden; position: relative; background: #e2e8f0; }
+        .m-thumb { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+        .m-card:hover .m-thumb { transform: scale(1.05); }
+
+        /* Top 10 특화 카드 표시 */
+        .card-top10 .rank-num {
+            position: absolute; top: -2px; left: 16px; background: var(--text-main); color: #fff;
+            width: 32px; height: 38px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 6px;
+            font-size: 18px; font-weight: 800; z-index: 10;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 85%, 0 100%);
+        }
+        .card-top10:nth-child(1) .rank-num { background: var(--primary); }
+
+        .badge-wrap { position: absolute; top: 12px; left: 12px; display: flex; gap: 6px; z-index: 10; }
+        .card-top10 .badge-wrap { left: 56px; } /* 랭크표시 피하기 */
         
-        /* 호버 시 썸네일 살짝 확대 효과 */
-        .m-thumb-box {
-            width: 100%; aspect-ratio: 16 / 9; overflow: hidden; position: relative;
-            background: #e2e8f0;
-        }
-        .m-thumb {
-            width: 100%; height: 100%; object-fit: cover;
-            transition: transform 0.4s ease;
-        }
-        .m-card:hover .m-thumb {
-            transform: scale(1.05);
-        }
+        .m-badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 800; letter-spacing: 0.5px; }
+        .b-notice { background: #ef4444; color: #fff; }
+        .b-hot { background: #fee2e2; color: #ef4444; }
+        .b-new { background: #e0f2fe; color: #0284c7; }
 
-        /* 뱃지 위치 (사진 왼쪽 위) */
-        .badge-wrap {
-            position: absolute; top: 12px; left: 12px;
-            display: flex; gap: 6px; z-index: 10;
-        }
-        .m-badge {
-            padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;
-        }
-        .b-notice { background: #ef4444; color: #fff; }          /* 빨강 - 공지 */
-        .b-hot { background: #fee2e2; color: #ef4444; }           /* 연빨강 - HOT */
-        .b-new { background: #e0f2fe; color: #0284c7; }           /* 연파랑 - NEW */
-
-        /* 카드 본문 */
-        .m-body {
-            padding: 20px; display: flex; flex-direction: column; flex: 1;
-        }
-        .m-category {
-            font-size: 13px; font-weight: 700; color: var(--accent-orange);
-            margin-bottom: 8px;
-        }
+        .m-body { padding: 16px; display: flex; flex-direction: column; flex: 1; }
+        .m-category { font-size: 13px; font-weight: 700; color: var(--accent-orange); margin-bottom: 8px; }
         .m-title {
-            font-size: 16px; font-weight: 700; color: var(--text-main);
-            line-height: 1.4; margin-bottom: 16px;
-            /* 2줄 말줄임표 처리 */
+            font-size: 15px; font-weight: 700; color: var(--text-main);
+            line-height: 1.4; margin-bottom: 12px;
             display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
         }
         .m-meta {
             display: flex; justify-content: space-between; align-items: center;
-            margin-top: auto; font-size: 13px; color: var(--text-sub);
+            margin-top: auto; font-size: 12px; color: var(--text-sub);
         }
-        .m-author { display: flex; align-items: center; gap: 6px; }
-        .m-view { display: flex; align-items: center; gap: 4px; }
-        
+        .m-author { display: flex; align-items: center; gap: 4px; }
+        .m-view { display: flex; align-items: center; gap: 4px; color: var(--primary); font-weight: bold; }
         .meta-icon { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; }
+        .star-icon { width: 14px; height: 14px; fill: var(--primary); color: transparent; }
+
+        /* 구분선 */
+        .section-divider { border: 0; height: 1px; background: var(--border); margin: 40px 0; }
+
+        /* 세련된 검색창 */
+        .search-wrapper {
+            background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 6px;
+            display: flex; align-items: center; gap: 12px; margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03); transition: 0.3s;
+        }
+        .search-wrapper:focus-within { border-color: var(--primary); box-shadow: 0 6px 20px rgba(255, 123, 0, 0.1); }
+        .search-select {
+            border: none; background: transparent; color: var(--text-sub); font-size: 14px; font-weight: 600;
+            padding: 10px 14px; outline: none; cursor: pointer;
+            border-right: 1px solid var(--border); border-radius: 0;
+        }
+        .search-input { flex: 1; border: none; font-size: 15px; outline: none; color: var(--text-main); font-family: inherit; padding-left: 8px; }
+        .search-input::placeholder { color: #94a3b8; }
+        .search-btn {
+            background: var(--text-main); color: #fff; border: none; border-radius: 6px; padding: 0 20px; height: 38px;
+            font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s;
+        }
+        .search-btn:hover { background: #334155; }
+
+        /* 일반 그리드 (3열) */
+        .materials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        
+        /* 반응형 */
+        @media (max-width: 1024px) {
+            .materials-layout { flex-direction: column; }
+            .m-sidebar { width: 100%; position: static; margin-bottom: 20px; }
+            .side-menu { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+            .side-menu li { white-space: nowrap; margin-bottom: 0; }
+            .side-menu li.active::after { display: none; }
+            .materials-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 768px) { .materials-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 480px) { .materials-grid { grid-template-columns: 1fr; } }
+
     </style>
 </head>
 <body>
@@ -260,8 +266,26 @@
     <!-- MAIN CONTENT -->
     <div class="materials-container">
         
-        <!-- 대타이틀 -->
         <h1 class="page-title">자료실</h1>
+
+        <!-- 최상단 필터 (캡쳐 요청사항) -->
+        <div class="top-filters">
+            <button class="t-filter active">
+                <svg class="chk-icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> 아파트/오피스텔
+            </button>
+            <button class="t-filter">
+                <svg class="chk-icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> 빌라/주택
+            </button>
+            <button class="t-filter">
+                <svg class="chk-icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> 원룸/투룸
+            </button>
+            <button class="t-filter">
+                <svg class="chk-icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> 상가/업무/공장/토지
+            </button>
+            <button class="t-filter">
+                <svg class="chk-icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> 분양
+            </button>
+        </div>
 
         <!-- 1차 탭 메뉴 -->
         <div class="primary-tabs">
@@ -272,167 +296,259 @@
             <div class="p-tab">계약서/양식</div>
         </div>
 
-        <!-- 현재 화면 제목 -->
-        <div class="section-header">
-            <h2 class="section-title">APP(앱)</h2>
-            <span class="section-badge">#공실뉴스기자 전용</span>
-        </div>
-
-        <!-- 2차 탭 메뉴 -->
-        <div class="secondary-tabs">
-            <div class="s-tab active">전체</div>
-            <div class="s-tab">글쓰기</div>
-            <div class="s-tab">부동산마케팅</div>
-            <div class="s-tab">이미지제작</div>
-            <div class="s-tab">기사작성</div>
-            <div class="s-tab">유튜브운영</div>
-            <div class="s-tab">기타</div>
-        </div>
-
-        <!-- 검색창 (현대화) -->
-        <div class="search-wrapper">
-            <select class="search-select">
-                <option value="all">전체</option>
-                <option value="title">제목</option>
-                <option value="content">내용</option>
-            </select>
-            <input type="text" class="search-input" placeholder="필요한 자료(키워드)를 입력해 주세요">
-            <button class="search-btn">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                검색
-            </button>
-        </div>
-
-        <!-- 카드 그리드 (4열) -->
-        <div class="materials-grid">
+        <!-- 레이아웃 시작 (사이드바 + 콘텐츠) -->
+        <div class="materials-layout">
             
-            <!-- 아이템 1 (공지배지) -->
-            <div class="m-card">
-                <div class="m-thumb-box">
-                    <div class="badge-wrap">
-                        <span class="m-badge b-notice">공지</span>
-                    </div>
-                    <!-- 썸네일 예시 (Unsplash) -->
-                    <img class="m-thumb" src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=600" alt="썸네일">
-                </div>
-                <div class="m-body">
-                    <div class="m-category">기사작성</div>
-                    <div class="m-title">공실NEWS 부동산 매물 콘텐츠 AI R1.2 (업데이트 배포)</div>
-                    <div class="m-meta">
-                        <div class="m-author">
-                            <svg class="meta-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                            공실뉴스
+            <!-- 좌측 사이드바 (캡쳐 요청사항: 2차 목차를 좌측으로) -->
+            <aside class="m-sidebar">
+                <h3 class="side-title">앱(APP) 자료</h3>
+                <ul class="side-menu">
+                    <li class="active">전체</li>
+                    <li>기자전용</li>
+                    <li>글쓰기</li>
+                    <li>부동산마케팅</li>
+                    <li>이미지제작</li>
+                    <li>기사작성</li>
+                    <li>유튜브운영</li>
+                    <li>기타</li>
+                </ul>
+            </aside>
+
+            <!-- 우측 메인 컨텐츠 -->
+            <main class="m-content">
+                
+                <!-- 상단: 금주의 Top 10 스와이퍼 (이동형) -->
+                <div class="top10-section">
+                    <div class="top10-header">
+                        <h2 class="top10-title"><span class="fire">🔥</span> 금주의 APP 다운로드 Top 10</h2>
+                        <div class="top10-nav">
+                            <button class="sw-btn top10-prev"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+                            <button class="sw-btn top10-next"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
                         </div>
-                        <div class="m-view">
-                            <svg class="meta-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                            39
+                    </div>
+
+                    <div class="swiper top10-swiper">
+                        <div class="swiper-wrapper">
+                            <!-- Top 1 -->
+                            <div class="swiper-slide">
+                                <div class="m-card card-top10">
+                                    <span class="rank-num">1</span>
+                                    <div class="m-thumb-box">
+                                        <div class="badge-wrap"><span class="m-badge b-hot">HOT</span></div>
+                                        <img class="m-thumb" src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=400" alt="썸네일">
+                                    </div>
+                                    <div class="m-body">
+                                        <div class="m-category">기사작성</div>
+                                        <div class="m-title">부동산 매물 콘텐츠 AI 템플릿 V2.0</div>
+                                        <div class="m-meta">
+                                            <div class="m-author">👤 공실뉴스</div>
+                                            <div class="m-view"><svg class="star-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> 4.9 (128)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Top 2 -->
+                            <div class="swiper-slide">
+                                <div class="m-card card-top10">
+                                    <span class="rank-num">2</span>
+                                    <div class="m-thumb-box">
+                                        <img class="m-thumb" src="https://images.unsplash.com/photo-1555421689-d68471e189f2?auto=format&fit=crop&q=80&w=400" alt="썸네일">
+                                    </div>
+                                    <div class="m-body">
+                                        <div class="m-category">글쓰기</div>
+                                        <div class="m-title">조회수 터지는 마법의 제목 100선</div>
+                                        <div class="m-meta">
+                                            <div class="m-author">👤 김기자</div>
+                                            <div class="m-view"><svg class="star-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> 4.8 (95)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Top 3 -->
+                            <div class="swiper-slide">
+                                <div class="m-card card-top10">
+                                    <span class="rank-num">3</span>
+                                    <div class="m-thumb-box">
+                                        <div class="badge-wrap"><span class="m-badge b-new">NEW</span></div>
+                                        <img class="m-thumb" src="https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&q=80&w=400" alt="썸네일">
+                                    </div>
+                                    <div class="m-body">
+                                        <div class="m-category">이미지제작</div>
+                                        <div class="m-title">상가 매물 강조용 포토샵 소스 모음집</div>
+                                        <div class="m-meta">
+                                            <div class="m-author">👤 디자이너K</div>
+                                            <div class="m-view"><svg class="star-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> 4.7 (52)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Top 4 -->
+                            <div class="swiper-slide">
+                                <div class="m-card card-top10">
+                                    <span class="rank-num">4</span>
+                                    <div class="m-thumb-box">
+                                        <img class="m-thumb" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=400" alt="썸네일">
+                                    </div>
+                                    <div class="m-body">
+                                        <div class="m-category">기타</div>
+                                        <div class="m-title">현장 브리핑용 체크리스트 (PDF)</div>
+                                        <div class="m-meta">
+                                            <div class="m-author">👤 최고중개</div>
+                                            <div class="m-view"><svg class="star-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> 4.5 (41)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- 아이템 2 (HOT 배지) -->
-            <div class="m-card">
-                <div class="m-thumb-box">
-                    <div class="badge-wrap">
-                        <span class="m-badge b-hot">HOT</span>
-                    </div>
-                    <img class="m-thumb" src="https://images.unsplash.com/photo-1555421689-d68471e189f2?auto=format&fit=crop&q=80&w=600" alt="썸네일">
-                </div>
-                <div class="m-body">
-                    <div class="m-category">기사작성</div>
-                    <div class="m-title">공실뉴스 뉴스/칼럼 기사 작성 AI 도우미 (N1.2 버전)</div>
-                    <div class="m-meta">
-                        <div class="m-author"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>공실뉴스</div>
-                        <div class="m-view"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>62</div>
-                    </div>
-                </div>
-            </div>
+                <hr class="section-divider">
 
-            <!-- 아이템 3 (NEW 배지) -->
-            <div class="m-card">
-                <div class="m-thumb-box">
-                    <div class="badge-wrap">
-                        <span class="m-badge b-new">NEW</span>
-                    </div>
-                    <img class="m-thumb" src="https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&q=80&w=600" alt="썸네일">
+                <!-- 검색창 -->
+                <div class="search-wrapper">
+                    <select class="search-select"><option>전체</option><option>제목</option></select>
+                    <input type="text" class="search-input" placeholder="원하시는 자료를 검색해 보세요.">
+                    <button class="search-btn">검색</button>
                 </div>
-                <div class="m-body">
-                    <div class="m-category">이미지제작</div>
-                    <div class="m-title">공실뉴스AI 스튜디오 SS14 최신 필터 팩 모음집</div>
-                    <div class="m-meta">
-                        <div class="m-author"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>공실뉴스</div>
-                        <div class="m-view"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>47</div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- 아이템 4 (배지 없음) -->
-            <div class="m-card">
-                <div class="m-thumb-box">
-                    <img class="m-thumb" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=600" alt="썸네일">
-                </div>
-                <div class="m-body">
-                    <div class="m-category">부동산마케팅</div>
-                    <div class="m-title">AI 부동산 상세페이지 템플릿 RD 10 (포토샵 연동형)</div>
-                    <div class="m-meta">
-                        <div class="m-author"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>공실뉴스</div>
-                        <div class="m-view"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>18</div>
+                <!-- 하단 일반 자료 리스트 (3열 그리드) -->
+                <div class="materials-grid">
+                    
+                    <div class="m-card">
+                        <div class="m-thumb-box">
+                            <div class="badge-wrap"><span class="m-badge b-notice">공지</span></div>
+                            <img class="m-thumb" src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=600" alt="썸네일">
+                        </div>
+                        <div class="m-body">
+                            <div class="m-category">기사작성</div>
+                            <div class="m-title">공실NEWS 부동산 매물 콘텐츠 AI R1.2</div>
+                            <div class="m-meta">
+                                <div class="m-author"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>공실뉴스</div>
+                                <div class="m-view"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>39</div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- 아이템 5 (썸네일이 어두운 계열) -->
-            <div class="m-card">
-                <div class="m-thumb-box">
-                    <img class="m-thumb" src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=600" alt="썸네일">
-                </div>
-                <div class="m-body">
-                    <div class="m-category">기타</div>
-                    <div class="m-title">[26년형] 부동산 양도소득세 간편 자동 계산기 (스프레드시트)</div>
-                    <div class="m-meta">
-                        <div class="m-author"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>공실뉴스</div>
-                        <div class="m-view"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>9</div>
+                    <div class="m-card">
+                        <div class="m-thumb-box">
+                            <div class="badge-wrap"><span class="m-badge b-hot">HOT</span></div>
+                            <img class="m-thumb" src="https://images.unsplash.com/photo-1555421689-d68471e189f2?auto=format&fit=crop&q=80&w=600" alt="썸네일">
+                        </div>
+                        <div class="m-body">
+                            <div class="m-category">기사작성</div>
+                            <div class="m-title">공실뉴스 뉴스/칼럼 기사 작성 AI 도우미 (N1.2 버전)</div>
+                            <div class="m-meta">
+                                <div class="m-author"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>공실뉴스</div>
+                                <div class="m-view"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>62</div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- 아이템 6 -->
-            <div class="m-card">
-                <div class="m-thumb-box">
-                    <img class="m-thumb" src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=600" alt="썸네일">
-                </div>
-                <div class="m-body">
-                    <div class="m-category">글쓰기</div>
-                    <div class="m-title">고객을 사로잡는 마법의 카피라이팅 모음 50선 (워드)</div>
-                    <div class="m-meta">
-                        <div class="m-author"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>공실뉴스</div>
-                        <div class="m-view"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>124</div>
+                    <div class="m-card">
+                        <div class="m-thumb-box">
+                            <div class="badge-wrap"><span class="m-badge b-new">NEW</span></div>
+                            <img class="m-thumb" src="https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&q=80&w=600" alt="썸네일">
+                        </div>
+                        <div class="m-body">
+                            <div class="m-category">이미지제작</div>
+                            <div class="m-title">공실뉴스AI 스튜디오 SS14 최신 필터 팩 모음집</div>
+                            <div class="m-meta">
+                                <div class="m-author"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>공실뉴스</div>
+                                <div class="m-view"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>47</div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-        </div> <!-- grid ends -->
+                    <div class="m-card">
+                        <div class="m-thumb-box">
+                            <img class="m-thumb" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=600" alt="썸네일">
+                        </div>
+                        <div class="m-body">
+                            <div class="m-category">부동산마케팅</div>
+                            <div class="m-title">AI 부동산 상세페이지 템플릿 RD 10 (포토샵 연동형)</div>
+                            <div class="m-meta">
+                                <div class="m-author"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>공실뉴스</div>
+                                <div class="m-view"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>18</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="m-card">
+                        <div class="m-thumb-box">
+                            <img class="m-thumb" src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=600" alt="썸네일">
+                        </div>
+                        <div class="m-body">
+                            <div class="m-category">기타</div>
+                            <div class="m-title">[26년형] 부동산 양도소득세 간편 계산기 스프레드시트</div>
+                            <div class="m-meta">
+                                <div class="m-author"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>공실뉴스</div>
+                                <div class="m-view"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>9</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="m-card">
+                        <div class="m-thumb-box">
+                            <img class="m-thumb" src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=600" alt="썸네일">
+                        </div>
+                        <div class="m-body">
+                            <div class="m-category">글쓰기</div>
+                            <div class="m-title">고객을 사로잡는 마법의 카피라이팅 모음 50선</div>
+                            <div class="m-meta">
+                                <div class="m-author"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>공실뉴스</div>
+                                <div class="m-view"><svg class="meta-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>124</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div> <!-- grid ends -->
+            </main>
+        </div>
     </div> <!-- container ends -->
 
-    <!-- 스크립트: 탭 클릭 상호작용 예시 -->
+    <!-- 스크립트 -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
     <script>
+        // 최상단 둥근 버튼 활성화
+        document.querySelectorAll('.t-filter').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.t-filter').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // 1차 탭 활성화
         document.querySelectorAll('.p-tab').forEach(tab => {
             tab.addEventListener('click', function() {
                 document.querySelectorAll('.p-tab').forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
-                
-                // 임시로 섹션 제목 변경 효과
-                const titleText = this.innerText;
-                document.querySelector('.section-title').innerText = titleText;
+                document.querySelector('.side-title').innerText = this.innerText + ' 자료';
             });
         });
 
-        document.querySelectorAll('.s-tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                document.querySelectorAll('.s-tab').forEach(t => t.classList.remove('active'));
+        // 2차(사이드바) 활성화
+        document.querySelectorAll('.side-menu li').forEach(li => {
+            li.addEventListener('click', function() {
+                document.querySelectorAll('.side-menu li').forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
             });
+        });
+
+        // Top 10 스와이퍼 초기화
+        const swiper = new Swiper('.top10-swiper', {
+            slidesPerView: 3,       // 한 번에 3개 보여주기
+            spaceBetween: 20,       // 카드 카드 사이 여백
+            navigation: {
+                nextEl: '.top10-next',
+                prevEl: '.top10-prev',
+            },
+            breakpoints: {
+                // 반응형 처리
+                1024: { slidesPerView: 3 },
+                768: { slidesPerView: 2 },
+                0: { slidesPerView: 1.2 }
+            }
         });
     </script>
 </body>
