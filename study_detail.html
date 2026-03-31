@@ -980,6 +980,101 @@
             alert("[" + kw + "] 내용을 검색합니다.");
             window.toggleGlobalSearchPanel();
         };
+        // -------- 🌟 Supabase 실데이터 연동 로직 🌟 --------
+        document.addEventListener("DOMContentLoaded", async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const courseId = urlParams.get('id');
+
+            // 1. 코스 ID가 없으면 접근 차단
+            if (!courseId) {
+                alert("[오류] 데이터가 지정되지 않았습니다. 메인 화면으로 이동합니다.");
+                location.href = 'study.html';
+                return;
+            }
+
+            const sb = window.gongsiClient;
+            if (!sb) return;
+
+            try {
+                // DOM 요소 가져오기
+                const titleEl = document.querySelector('.course-title');
+                const priceFinalEl = document.querySelector('.price-box .final');
+                const discountEl = document.querySelector('.price-box .discount');
+                const originalEl = document.querySelector('.price-box .original');
+                const introContent = document.getElementById('introContent');
+                const curriContainer = document.querySelector('.curri-list');
+                const btnPurchase = document.querySelector('.btn-purchase');
+                const btnModal = document.querySelector('.btn-modal-subscribe');
+                const catTag = document.querySelector('.cat-tag');
+
+                // 2. 코스 읽어오기
+                const { data: course, error } = await sb.from('study_courses').select('*').eq('id', courseId).single();
+                if (error || !course) throw error;
+
+                if(titleEl) titleEl.innerText = course.title;
+                if(catTag) catTag.innerText = '부동산 실전 특강';
+                
+                const costNum = course.price;
+                const costStr = costNum > 0 ? costNum.toLocaleString() + ' P' : '무료 특강';
+                
+                if(priceFinalEl) {
+                    priceFinalEl.innerHTML = `${costNum > 0 ? costNum.toLocaleString() : '무료'}<span style="font-size:18px;">${costNum > 0 ? '원' : ''}</span> <span class="price-month">/ 평생 소장</span>`;
+                }
+                if(discountEl) discountEl.style.display = 'none';
+                if(originalEl) originalEl.style.display = 'none';
+
+                if (course.thumbnail_urls && course.thumbnail_urls.length > 0) {
+                    const swiperWrap = document.querySelector('.swiper-wrapper');
+                    if(swiperWrap) {
+                        let newHtml = '';
+                        course.thumbnail_urls.forEach(url => {
+                            newHtml += `<div class="swiper-slide"><img src="${url}" alt="썸네일" style="width:100%;height:100%;object-fit:cover;"></div>`;
+                        });
+                        swiperWrap.innerHTML = newHtml;
+                    }
+                }
+                
+                // 🔥 링크 업데이트 🔥
+                const watchUrl = `study_watch.html?id=${course.id}`;
+                
+                if(btnPurchase) {
+                    btnPurchase.innerText = costNum > 0 ? `${costStr} 결제 후 수강하기` : '👉 무료 수강 시작하기';
+                    btnPurchase.onclick = (e) => { e.preventDefault(); location.href = watchUrl; };
+                }
+                if(btnModal) {
+                    btnModal.onclick = (e) => { e.preventDefault(); location.href = watchUrl; };
+                }
+
+                if(course.description && introContent) {
+                    introContent.innerHTML = `<h3 style="margin-bottom:20px;">무엇을 배우나요?</h3><div style="font-size:16px; line-height:1.7;">${course.description}</div>`;
+                }
+
+                // 3. 목차 읽어오기
+                const { data: lessons } = await sb.from('study_lessons').select('*').eq('course_id', courseId).order('order_index', {ascending: true});
+                
+                let curriHtml = '';
+                if (lessons && lessons.length > 0) {
+                    lessons.forEach((les, i) => {
+                        curriHtml += `
+                        <div class="curri-item" onclick="location.href='${watchUrl}'">
+                            <div class="curri-title" style="flex:1;">제 ${i+1}강. ${les.title}</div>
+                            <div class="curri-actions">
+                                <svg class="curri-play-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+                            </div>
+                        </div>`;
+                    });
+                } else {
+                    curriHtml = `<div style="padding: 30px; text-align: center; color: #888;">챕터(영상)가 아직 등록되지 않았습니다.</div>`;
+                }
+
+                if (curriContainer) curriContainer.innerHTML = curriHtml;
+
+            } catch(e) {
+                console.error("데이터 통신 에러:", e);
+                alert("존재하지 않거나 삭제된 강의입니다.");
+                location.href = 'study.html';
+            }
+        });
     </script>
 
     <script type="module" src="supabase_auth.js"></script>

@@ -365,7 +365,11 @@
             const courseId = urlParams.get('id');
             const isPreview = urlParams.get('preview') === 'true';
             
-            if(!courseId) return;
+            if(!courseId) {
+                alert("삭제 되거나 잘못된 강의 주소입니다. 스터디 메인으로 이동합니다.");
+                location.href = "study.html";
+                return;
+            }
 
             const sb = window.gongsiClient;
             if(!sb) return;
