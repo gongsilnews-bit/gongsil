@@ -202,8 +202,8 @@
             <input type="text" id="filterKeyword" class="filter-input" placeholder="강의명을 검색하세요." style="width: 100%; max-width: 300px;">
         </div>
 
-        <button class="btn-search" onclick="alert('검색 필터 기능은 DB 연동 후 작동합니다.')">🔍 검색</button>
-        <button class="btn-reset" onclick="alert('초기화 클릭됨')">초기화</button>
+        <button class="btn-search" onclick="applyFilters()">🔍 검색</button>
+        <button class="btn-reset" onclick="resetFilters()">초기화</button>
     </div>
 
     <!-- 액션 및 유틸 버튼 영역 -->
@@ -211,7 +211,7 @@
         <div class="left-actions">
             <!-- 🌟 핵심: 클릭 시 방금 작업한 study_write.html 로 이동 -->
             <button onclick="window.parent.loadPage(null, '새 강의 등록', 'study_write.html')" class="btn-write">+ 새 강의 등록</button>
-            <button class="btn" onclick="alert('선택삭제 처리')">🗑️ 선택삭제</button>
+            <button class="btn" onclick="deleteSelectedCourses()">🗑️ 선택삭제</button>
         </div>
     </div>
 
@@ -245,13 +245,42 @@
 </div>
 
 <script>
+    // 전역 상태 변수 (검색 및 페이징)
+    let currentPage = 1;
+    const pageSize = 10;
+    let currentStatus = 'all';
+    let currentKeyword = '';
+
     // 전체 선택/토글
     function toggleAll(chk) {
         document.querySelectorAll('.row-check').forEach(function(c){ c.checked = chk.checked; });
     }
 
+    // 🌟 필터 적용 (검색 버튼 클릭)
+    function applyFilters() {
+        currentStatus = document.getElementById('filterStatus').value;
+        currentKeyword = document.getElementById('filterKeyword').value.trim();
+        currentPage = 1; // 검색 시 항상 1페이지로 돌아감
+        loadCourses();
+    }
+
+    // 🌟 초기화 (초기화 버튼 클릭)
+    function resetFilters() {
+        document.getElementById('filterStatus').value = 'all';
+        document.getElementById('filterKeyword').value = '';
+        currentStatus = 'all';
+        currentKeyword = '';
+        currentPage = 1;
+        loadCourses();
+    }
+
     // 🌟 Supabase 연동: 실제 강의 데이터 불러오기 🌟
     document.addEventListener("DOMContentLoaded", () => {
+        // 엔터키 검색 이벤트 연결
+        document.getElementById('filterKeyword').addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') applyFilters();
+        });
+        
         loadCourses();
     });
 
@@ -263,35 +292,54 @@
         }
 
         try {
-            // DB 조회 (가장 최근에 만든 강의가 맨 위로 오게 내림차순 정렬)
-            const { data, error } = await sb.from('study_courses').select('*').order('created_at', { ascending: false });
+            // 로딩 상태 표시
+            document.getElementById('studyTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 50px 0; color:#9ca3af;">데이터를 불러오는 중입니다...</td></tr>`;
+
+            // 1. 전체 데이터 개수 (count) 가져오기 (필터 적용)
+            let queryCount = sb.from('study_courses').select('*', { count: 'exact', head: true });
+            if (currentStatus !== 'all') queryCount = queryCount.eq('status', currentStatus);
+            if (currentKeyword !== '') queryCount = queryCount.ilike('title', `%${currentKeyword}%`);
+            
+            const { count, error: countError } = await queryCount;
+            if (countError) throw countError;
+
+            // 2. 실제 데이터 페이징 조회 (limit, offset 방식)
+            const from = (currentPage - 1) * pageSize;
+            const to = from + pageSize - 1;
+
+            let queryData = sb.from('study_courses').select('*').order('created_at', { ascending: false }).range(from, to);
+            
+            // 필터 추가
+            if (currentStatus !== 'all') queryData = queryData.eq('status', currentStatus);
+            if (currentKeyword !== '') queryData = queryData.ilike('title', `%${currentKeyword}%`);
+
+            const { data, error } = await queryData;
             if (error) throw error;
 
             const tbody = document.getElementById('studyTableBody');
+
+            // 총 N건 숫자 연동
+            const countHeader = document.querySelector('.card-header .count-info span');
+            if(countHeader) countHeader.innerText = `총 ${count}건`;
             
             if (!data || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 50px 0; color:#64748b; font-weight:600;">등록된 스터디 강의가 없습니다.<br><br><span style="font-weight:400; font-size:13px;">상단의 [+ 새 강의 등록] 버튼을 눌러보세요.</span></td></tr>`;
-                
-                // 건수 업데이트
-                document.getElementById('countTotal').innerText = `총 0건`;
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 50px 0; color:#64748b; font-weight:600;">조건에 맞는 등록된 강의가 없습니다.</td></tr>`;
+                renderPagination(0);
                 return;
             }
 
             let html = '';
             data.forEach(course => {
-                // 날짜 포맷 (예: 2026. 03. 31. 오후 3:30)
                 const dateText = new Date(course.created_at).toLocaleString('ko-KR', {
                     year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
                 });
 
-                // 상태 표시 배지
                 let badgeHtml = '';
                 if(course.status === 'published') badgeHtml = '<span class="badge-status status-published">판매중</span>';
                 else if(course.status === 'draft') badgeHtml = '<span class="badge-status status-draft">임시저장</span>';
                 else if(course.status === 'pending') badgeHtml = '<span class="badge-status" style="background:#3b82f6;">승인대기</span>';
                 else badgeHtml = '<span class="badge-status status-hidden">숨김처리</span>';
 
-                // URL 연동 시 강의 ID를 파라미터로 붙여 나중에 해당 글만 불러오도록 세팅
                 const viewUrl = `study_view.html?id=${course.id}`;
                 const editUrl = `study_write.html?id=${course.id}`;
                 const priceText = course.price > 0 ? course.price.toLocaleString() + ' P' : '무료강의';
@@ -314,12 +362,7 @@
             });
 
             tbody.innerHTML = html;
-
-            // 총 N건 숫자 연동
-            const countHeader = document.querySelector('.card-header .count-info span');
-            if(countHeader) {
-                countHeader.innerText = `총 ${data.length}건`;
-            }
+            renderPagination(count);
 
         } catch (e) {
             console.error("데이터 로드 실패", e);
@@ -327,18 +370,63 @@
         }
     }
 
-    // 🌟 완전 삭제(Delete) 로직 추가
+    // 🌟 하단 페이징 렌더링 로직 (현재 1~3, 이전/다음)
+    function renderPagination(totalCount) {
+        const totalPages = Math.ceil(totalCount / pageSize) || 1;
+        const pageLinks = document.getElementById('pageLinks');
+        const prevBtn = document.querySelector('.pagination .page-link:first-child');
+        const nextBtn = document.querySelector('.pagination .page-link:last-child');
+
+        // 이전/다음 버튼 이벤트 덮어쓰기 로직
+        prevBtn.onclick = (e) => { e.preventDefault(); if(currentPage > 1) { currentPage--; loadCourses(); } };
+        nextBtn.onclick = (e) => { e.preventDefault(); if(currentPage < totalPages) { currentPage++; loadCourses(); } };
+
+        // 페이지 번호 생성
+        let pHtml = '';
+        for(let i=1; i<=totalPages; i++){
+            if(i === currentPage) {
+                pHtml += `<a href="#" class="page-link active" onclick="event.preventDefault()">${i}</a>`;
+            } else {
+                pHtml += `<a href="#" class="page-link" onclick="event.preventDefault(); currentPage=${i}; loadCourses();">${i}</a>`;
+            }
+        }
+        pageLinks.innerHTML = pHtml;
+    }
+
+    // 🌟 완전 삭제(Delete) 로직
     async function deleteCourse(id) {
-        if(!confirm("⚠️ 경고: 정말로 이 강의를 삭제하시겠습니까?\\n(해당 강의에 등록된 목차, 영상 주소, 첨부파일 등 모든 정보가 함께 영구삭제되며 복구할 수 없습니다.)")) return;
-        
+        if(!confirm("⚠️ 경고: 정말로 이 강의를 삭제하시겠습니까?\\n(강의에 등록된 목차, 영상, 첨부파일 등 모든 정보가 함께 영구삭제됩니다.)")) return;
         const sb = window.gongsiClient;
         const { error } = await sb.from('study_courses').delete().eq('id', id);
-        
         if(error) {
             alert("삭제 중 서버 통신 에러가 발생했습니다: " + error.message);
         } else {
-            alert("강의가 목록에서 완전히 삭제되었습니다.");
-            loadCourses(); // 목록 새로고침
+            alert("강의가 삭제되었습니다.");
+            loadCourses(); 
+        }
+    }
+
+    // 🌟 선택삭제 일괄처리 로직
+    async function deleteSelectedCourses() {
+        const checked = Array.from(document.querySelectorAll('.row-check:checked')).map(chk => chk.value);
+        if (checked.length === 0) {
+            alert("삭제할 강의를 먼저 체크박스에 선택해주세요.");
+            return;
+        }
+
+        if(!confirm(`⚠️ 선택하신 총 ${checked.length}개의 강의를 일괄 영구 삭제하시겠습니까?`)) return;
+
+        const sb = window.gongsiClient;
+        // Supabase에서 in() 을 사용해 여러 ID 한 번에 삭제
+        const { error } = await sb.from('study_courses').delete().in('id', checked);
+        
+        if (error) {
+            alert("일괄 삭제 처리 중 오류가 발생했습니다: " + error.message);
+        } else {
+            alert(`${checked.length}건이 성공적으로 삭제되었습니다.`);
+            document.getElementById('checkAll').checked = false; // 상단 전체선택 박스 해제
+            currentPage = 1; // 1페이지로 새로고침
+            loadCourses();
         }
     }
 </script>

@@ -490,102 +490,9 @@
             <a href="#" class="view-all">전체보기 〉</a>
         </div>
 
-        <div class="lecture-grid">
-            <!-- 더미 강의 카드 1 -->
-            <div class="lecture-card" onclick="location.href='study_detail'">
-                <div class="lecture-thumb">
-                    <img src="https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=400" alt="강의">
-                    <span class="badge-new">NEW</span>
-                    <div class="bookmark-btn">🔖</div>
-                </div>
-                <div class="lecture-info">
-                    <div class="lecture-cat">챗GPT/AI</div>
-                    <h3 class="lecture-title">부동산 중개인을 위한 챗GPT 실전 활용법: 매물 광고 자동화</h3>
-                    <div class="lecture-meta">
-                        <span class="instructor">김프로 강사</span>
-                        <div class="rating">★ 4.9 (124)</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 더미 강의 카드 2 -->
-            <div class="lecture-card">
-                <div class="lecture-thumb">
-                    <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=400" alt="강의">
-                    <div class="bookmark-btn">🔖</div>
-                </div>
-                <div class="lecture-info">
-                    <div class="lecture-cat">경매물건분석</div>
-                    <h3 class="lecture-title">왕초보도 1주 만에 끝내는 실전 경매 권리분석 가이드</h3>
-                    <div class="lecture-meta">
-                        <span class="instructor">이전문가</span>
-                        <div class="rating">★ 4.8 (89)</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 더미 강의 카드 3 -->
-            <div class="lecture-card">
-                <div class="lecture-thumb">
-                    <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=400" alt="강의">
-                    <div class="bookmark-btn">🔖</div>
-                </div>
-                <div class="lecture-info">
-                    <div class="lecture-cat">블로그글쓰기</div>
-                    <h3 class="lecture-title">네이버 블로그 상위 노출 전략: 지역 기반 부동산 마케팅</h3>
-                    <div class="lecture-meta">
-                        <span class="instructor">박작가</span>
-                        <div class="rating">★ 4.7 (56)</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 더미 강의 카드 4 -->
-            <div class="lecture-card">
-                <div class="lecture-thumb">
-                    <img src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&q=80&w=400" alt="강의">
-                    <div class="bookmark-btn">🔖</div>
-                </div>
-                <div class="lecture-info">
-                    <div class="lecture-cat">유튜브영상제작</div>
-                    <h3 class="lecture-title">조회수 터지는 임장 유튜브 기획부터 프리미어 프로 편집까지</h3>
-                    <div class="lecture-meta">
-                        <span class="instructor">유디터</span>
-                        <div class="rating">★ 5.0 (210)</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 더미 강의 카드 5 -->
-            <div class="lecture-card">
-                <div class="lecture-thumb">
-                    <img src="https://images.unsplash.com/photo-1454165833767-0e96ef4a3771?auto=format&fit=crop&q=80&w=400" alt="강의">
-                    <div class="bookmark-btn">🔖</div>
-                </div>
-                <div class="lecture-info">
-                    <div class="lecture-cat">중개실무기타</div>
-                    <h3 class="lecture-title">2026 부동산 법률 개정안 총정리 및 중개 사고 예방 교육</h3>
-                    <div class="lecture-meta">
-                        <span class="instructor">조변호사</span>
-                        <div class="rating">★ 4.9 (45)</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 더미 강의 카드 6 -->
-            <div class="lecture-card">
-                <div class="lecture-thumb">
-                    <img src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&q=80&w=400" alt="강의">
-                    <div class="bookmark-btn">🔖</div>
-                </div>
-                <div class="lecture-info">
-                    <div class="lecture-cat">챗GPT/AI</div>
-                    <h3 class="lecture-title">AI로 만드는 고퀄리티 매물 홍보 이미지 및 가상 인테리어</h3>
-                    <div class="lecture-meta">
-                        <span class="instructor">디자이너 최</span>
-                        <div class="rating">★ 4.6 (32)</div>
-                    </div>
-                </div>
+        <div class="lecture-grid" id="frontendLectureGrid">
+            <div style="grid-column: 1 / -1; text-align:center; padding: 100px 0; color:#64748b; font-size:16px; font-weight:600;">
+                현재 등록된 강의 데이터를 불러오는 중입니다...
             </div>
         </div>
     </main>
@@ -646,8 +553,85 @@
             });
         });
 
-        // Swiper 배너 초기화
+        // -------- 🌟 프론트엔드 실데이터 연동 로직 🌟 --------
+        async function loadFrontendCourses() {
+            const grid = document.getElementById('frontendLectureGrid');
+            if(!window.gongsiClient) {
+                grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:red;padding:40px;">DB 서버 연결 상태를 확인해주세요.</div>`;
+                return;
+            }
+
+            try {
+                // 관리자가 '판매중'으로 승인한 데이터만 최신순으로 가져오기
+                const { data, error } = await window.gongsiClient
+                    .from('study_courses')
+                    .select('*')
+                    .eq('status', 'published')
+                    .order('created_at', { ascending: false });
+
+                if(error) throw error;
+
+                if(!data || data.length === 0) {
+                    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:100px 0;color:#94a3b8;font-size:16px;">현재 신청 가능한 오픈 스터디가 없습니다.<br>관리자가 강의를 승인하면 이곳에 표시됩니다.</div>`;
+                    return;
+                }
+
+                // 멋진 썸네일을 위한 고화질 기본 랜덤 이미지 풀
+                const defaultImages = [
+                    'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=400',
+                    'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=400',
+                    'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=400',
+                    'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&q=80&w=400',
+                    'https://images.unsplash.com/photo-1454165833767-0e96ef4a3771?auto=format&fit=crop&q=80&w=400',
+                    'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&q=80&w=400'
+                ];
+
+                let html = '';
+                data.forEach((course, idx) => {
+                    // 실제 썸네일이 업로드되어 있다면 사용, 없다면 랜덤 배정
+                    const imgUrl = (course.thumbnail_urls && course.thumbnail_urls.length > 0) ? course.thumbnail_urls[0] : defaultImages[idx % defaultImages.length];
+                    
+                    const priceText = course.price > 0 ? course.price.toLocaleString() + ' P' : '✨ 무료 수강';
+                    const isNew = idx < 3 ? '<span class="badge-new">NEW🔥</span>' : ''; // 최근 3개만 NEW 뱃지 부착
+                    
+                    // 가상의 카테고리/강사 할당
+                    const catArr = ['실무/마케팅', '경매/특수물건', '재개발/투자', '세무/법률', '계약실무'];
+                    const mockCat = catArr[idx % catArr.length];
+
+                    html += `
+                    <div class="lecture-card" onclick="location.href='study_detail.html?id=${course.id}'">
+                        <div class="lecture-thumb">
+                            <img src="${imgUrl}" alt="스터디 썸네일 사진" loading="lazy">
+                            ${isNew}
+                            <div class="bookmark-btn">🔖</div>
+                        </div>
+                        <div class="lecture-info">
+                            <div class="lecture-cat">${mockCat}</div>
+                            <h3 class="lecture-title" style="word-break:keep-all;">${course.title}</h3>
+                            <div class="lecture-meta" style="justify-content:space-between; margin-bottom:12px;">
+                                <span class="instructor">공실마스터 직강</span>
+                                <div class="rating">★ 4.9 (${Math.floor(Math.random() * 200 + 10)})</div>
+                            </div>
+                            <div style="font-weight:800; color:#111; font-size:17px; background:#f8fafc; padding:10px 14px; border-radius:8px; display:inline-block;">
+                                ${priceText}
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                });
+
+                grid.innerHTML = html;
+
+            } catch(e) {
+                console.error(e);
+                grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:red;padding:40px;">데이터 통신 오류: ${e.message}</div>`;
+            }
+        }
+
+        // DOM 및 Swiper 배너 초기화
         document.addEventListener('DOMContentLoaded', function() {
+            // 프론트엔드 실시간 강의 로딩 트리거!
+            setTimeout(() => { loadFrontendCourses(); }, 150);
             var swiper = new Swiper('.swiper-main-banner', {
                 loop: true,
                 autoplay: {
