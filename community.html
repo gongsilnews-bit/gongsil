@@ -250,6 +250,10 @@
                 <a href="gongsil" class="nav-tab">공실열람</a>
                 <a href="news" class="nav-tab">뉴스기사</a>
                 <a href="study" class="nav-tab active">공실스터디</a>
+                <button class="btn-global-search" id="btnGlobalSearchToggle" style="background: none; border: none; cursor: pointer; padding: 0 4px; margin-left: 10px; vertical-align: middle;" onclick="window.toggleGlobalSearchPanel()">
+                    <svg id="iconSearchClosed" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <svg id="iconSearchOpened" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff9f1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
             </nav>
         </div>
         <div class="header-right">
@@ -265,10 +269,6 @@
                 <a href="materials" class="study-tab-item">자료실</a>
                 <a href="community" class="study-tab-item active">커뮤니티</a>
                 <a href="my_study" class="study-tab-item">MY스터디</a>
-                <button class="btn-global-search" id="btnGlobalSearchToggle" style="background: none; border: none; cursor: pointer; padding: 0 4px; margin-left: auto; vertical-align: middle;" onclick="window.toggleGlobalSearchPanel()">
-                    <svg id="iconSearchClosed" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <svg id="iconSearchOpened" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff9f1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
             </div>
             <a href="#" class="study-tab-item" style="text-decoration: none; display: flex; align-items: center; gap: 8px;">
                 내 스터디
@@ -278,7 +278,7 @@
     </div>
 
     <!-- 글로벌 검색 입력 패널 (기본 숨김) -->
-    <div id="globalSearchPanel" style="display: none; background-color: #0f141e; width: 100%; padding: 30px 0; text-align: center; position: absolute; top: 110px; left: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+    <div id="globalSearchPanel" style="display: none; background-color: #0f141e; width: 100%; padding: 30px 0; text-align: center; position: absolute; top: 60px; left: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
         <div style="position: relative; display: inline-block; width: 500px; max-width: 90%; vertical-align: middle;">
             <input type="text" id="globalKeywordInput" placeholder="검색어를 입력해주세요" style="width: 100%; padding: 16px 20px; padding-right: 50px; font-size: 16px; border: none; border-radius: 4px; outline: none; box-sizing: border-box;" onkeypress="if(event.key==='Enter') window.executeGlobalSearch()">
             <button onclick="window.executeGlobalSearch()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 5px;">
@@ -347,134 +347,112 @@
                 <hr class="section-divider">
 
                 <!-- 일반 게시글 리스트 -->
-                <div class="community-list">
+                <div class="community-list" style="display: flex; flex-direction: column;">
                     
                     <!-- 게시글 1: 공지 -->
-                    <div class="c-post-row c-post-notice">
-                        <div class="c-post-info">
-                            <div class="c-post-header">
-                                <span class="m-badge b-notice">필독</span>
-                                <span class="c-post-category">공지사항</span>
+                    <div class="c-post-row" style="padding: 24px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; margin-bottom: 24px; cursor: pointer;">
+                        <div class="c-post-header" style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <span style="background: #ef4444; color: #fff; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 4px;">필독</span>
+                            <span style="font-size: 13px; font-weight: 700; color: #64748b;">공지사항</span>
+                        </div>
+                        <h3 style="font-size: 17px; font-weight: 800; color: #0f172a; margin: 0 0 8px 0;">[필독] 커뮤니티 게시물 작성 가이드 및 매너 수칙 안내</h3>
+                        <p style="font-size: 14px; color: #475569; margin: 0 0 16px 0; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">공실뉴스 커뮤니티에 오신 것을 환영합니다. 공인중개사, 분양 상담사 등 모든 회원분들이 서로 배려하며 활동할 수 있도록 몇 가지 아주 중요한 이용 수칙을 안내해 드립니다...</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #94a3b8;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 20px; height: 20px; border-radius: 50%; background: #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; font-weight: 800;">운</div>
+                                <span style="font-weight: 600; color: #334155;">운영자</span>
                             </div>
-                            <h3 class="c-post-title">[필독] 커뮤니티 게시물 작성 가이드 및 매너 수칙 안내</h3>
-                            <p class="c-post-snippet">공실뉴스 커뮤니티에 오신 것을 환영합니다. 공인중개사, 분양 상담사 등 모든 회원분들이 서로 배려하며 활동할 수 있도록 몇 가지 아주 중요한 이용 수칙을 안내해 드립니다...</p>
-                            <div class="m-meta">
-                                <div class="m-author"><div class="avatar-temp">운</div> 운영자</div>
-                                <div class="c-post-stats">
-                                    <span class="stat-item"><svg class="stat-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> 2.4k</span>
-                                    <span class="stat-item stat-red"><svg class="stat-icon stat-red" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> 152</span>
-                                    <span class="stat-item stat-orange"><svg class="stat-icon stat-orange" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> 34</span>
-                                    <span>2024.03.20</span>
-                                </div>
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <span style="display:flex; align-items:center; gap:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> 2.4k</span>
+                                <span style="display:flex; align-items:center; gap:4px; color:#ef4444;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> 152</span>
+                                <span style="display:flex; align-items:center; gap:4px; color:var(--primary);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> 34</span>
+                                <span>2024.03.20</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- 게시글 2 -->
-                    <div class="c-post-row">
-                        <div class="c-post-info">
-                            <div class="m-author" style="margin-bottom:8px;"><div class="avatar-temp">이</div> 이소장 <span class="m-badge b-new" style="margin-left:6px;">NEW</span></div>
-                            <h3 class="c-post-title">일반 임대차에서 중개 보수료 계산 시 주의사항!</h3>
-                            <p class="c-post-snippet">2024년 4월 1일부터 개정된 사항을 반영한 내용입니다. 부동산중개법인 등 유의하시기 바랍니다. 특히 세금계산서 발급 시 주의하셔야 할 점이 여러 가지 있습니다.</p>
-                            <div class="m-meta">
-                                <div class="c-post-stats">
-                                    <span class="stat-item"><svg class="stat-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> 0</span>
-                                    <span class="stat-item stat-orange"><svg class="stat-icon stat-orange" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> 2</span>
+                    <div class="c-post-row" style="padding: 24px 0; border-bottom: 1px solid #e2e8f0; display: flex; gap: 24px; cursor: pointer; transition: background 0.2s;">
+                        <div class="c-post-info" style="flex: 1; min-width: 0;">
+                            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                                <div style="width:36px; height:36px; border-radius:50%; background:#f1f5f9; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:#475569;">이</div>
+                                <div style="display:flex; flex-direction:column; justify-content:center;">
+                                    <div style="font-size:14px; font-weight:700; color:#1e293b; display:flex; align-items:center; gap:6px;">이소장 <span style="font-size:10px; font-weight:800; color:#0ea5e9; background:#e0f2fe; padding:2px 6px; border-radius:4px;">NEW</span></div>
+                                    <div style="font-size:12px; color:#64748b; margin-top:2px;">수익형 부동산 공통의제 · 3시간 전</div>
                                 </div>
-                                <span>3시간 전</span>
+                            </div>
+                            <h3 style="font-size: 17px; font-weight: 700; color: #0f172a; margin: 0 0 8px 0; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;">일반 임대차에서 중개 보수료 계산 시 주의사항!</h3>
+                            <p style="font-size: 15px; color: #475569; margin: 0 0 16px 0; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">2024년 4월 1일부터 개정된 사항을 반영한 내용입니다. 부동산중개법인 등 유의하시기 바랍니다. 특히 세금계산서 발급 시 주의하셔야 할 점이 여러 가지 있습니다.</p>
+                            <div style="display:flex; gap:16px; color:#94a3b8; font-size:13px; align-items:center;">
+                                <span style="display:flex; align-items:center; gap:4px;"><svg style="width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2;" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> 0</span>
+                                <span style="display:flex; align-items:center; gap:4px;"><svg style="width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> 2</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- 게시글 3 -->
-                    <div class="c-post-row">
-                        <div class="c-post-info">
-                            <div class="m-author" style="margin-bottom:8px;"><div class="avatar-temp">박</div> 박수장 <span class="m-badge b-hot" style="margin-left:6px;">BEST</span></div>
-                            <h3 class="c-post-title">원룸 임대차 중개 보수료 계산 시 주의사항!</h3>
-                            <p class="c-post-snippet">2024년 4월 1일부터 개정된 방침을 자세히 보려면 국토부 공식 문건을 참고하세요. 최근 다가구 주택 관리비 산정 방식 변경 건으로 임대인과 마찰이 발생할 수 있습니다.</p>
-                            <div class="m-meta">
-                                <div class="c-post-stats">
-                                    <span class="stat-item"><svg class="stat-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> 85</span>
-                                    <span class="stat-item stat-red"><svg class="stat-icon stat-red" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> 12</span>
-                                    <span class="stat-item stat-orange"><svg class="stat-icon stat-orange" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> 4</span>
+                    <div class="c-post-row" style="padding: 24px 0; border-bottom: 1px solid #e2e8f0; display: flex; gap: 24px; cursor: pointer; transition: background 0.2s;">
+                        <div class="c-post-info" style="flex: 1; min-width: 0;">
+                            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                                <div style="width:36px; height:36px; border-radius:50%; background:#f1f5f9; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:#475569;">박</div>
+                                <div style="display:flex; flex-direction:column; justify-content:center;">
+                                    <div style="font-size:14px; font-weight:700; color:#1e293b; display:flex; align-items:center; gap:6px;">박수장 <span style="font-size:10px; font-weight:800; color:#ef4444; background:#fee2e2; padding:2px 6px; border-radius:4px;">BEST</span></div>
+                                    <div style="font-size:12px; color:#64748b; margin-top:2px;">수익형 부동산 관련 문의 · 5시간 전</div>
                                 </div>
-                                <span>5시간 전</span>
+                            </div>
+                            <h3 style="font-size: 17px; font-weight: 700; color: #0f172a; margin: 0 0 8px 0; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;">원룸 임대차 중개 보수료 계산 시 주의사항!</h3>
+                            <p style="font-size: 15px; color: #475569; margin: 0 0 16px 0; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">2024년 4월 1일부터 개정된 방침을 자세히 보려면 국토부 공식 문건을 참고하세요. 최근 다가구 주택 관리비 산정 방식 변경 건으로 임대인과 마찰이 발생할 수 있습니다.</p>
+                            <div style="display:flex; gap:16px; color:#94a3b8; font-size:13px; align-items:center;">
+                                <span style="display:flex; align-items:center; gap:4px;"><svg style="width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2;" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> 12</span>
+                                <span style="display:flex; align-items:center; gap:4px;"><svg style="width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> 4</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- 이달의 인기글 삽입 -->
-                    <div class="popular-section">
-                        <h3 class="pop-title">이달의 인기글</h3>
-                        <div class="pop-grid">
-                            <div class="pop-item">
-                                <div class="pop-num rank-1">1</div>
-                                <div class="pop-content">
-                                    <div class="pop-text">[꿀팁] 블로그 최적화 노하우, 상위노출 100% 비결 대공개</div>
-                                    <div class="pop-meta"><span>강남김소장</span> <span>👁 14.5k</span> <span>💬 156</span></div>
+                    <div class="popular-section" style="margin: 40px 0; padding-top: 30px; border-top: 2px solid #1e293b;">
+                        <h3 class="pop-title" style="font-size: 18px; font-weight: 800; margin-bottom: 24px; color: #0f172a;">이달의 인기글</h3>
+                        <div class="pop-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px 40px;">
+                            <div class="pop-item" style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer;">
+                                <div style="font-size: 16px; font-weight: 800; width: 18px; text-align: center; color: var(--primary); line-height: 1.2;">1</div>
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-size: 14px; font-weight: 700; color: #334155; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">[꿀팁] 블로그 최적화 노하우, 상위노출 비결 대공개</div>
+                                    <div style="font-size: 12px; color: #94a3b8; display: flex; gap: 8px;"><span>강남김소장</span> <span>👁 14.5k</span> <span>💬 156</span></div>
                                 </div>
                             </div>
-                            <div class="pop-item">
-                                <div class="pop-num rank-2">2</div>
-                                <div class="pop-content">
-                                    <div class="pop-text">초보 중개사 명함 제작할 때 반드시 피해야 할 실수 3가지</div>
-                                    <div class="pop-meta"><span>디자인랩</span> <span>👁 12.1k</span> <span>💬 84</span></div>
+                            <div class="pop-item" style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer;">
+                                <div style="font-size: 16px; font-weight: 800; width: 18px; text-align: center; color: #ef4444; line-height: 1.2;">2</div>
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-size: 14px; font-weight: 700; color: #334155; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">초보 중개사 명함 제작할 때 반드시 피해야 할 실수</div>
+                                    <div style="font-size: 12px; color: #94a3b8; display: flex; gap: 8px;"><span>디자인랩</span> <span>👁 12.1k</span> <span>💬 84</span></div>
                                 </div>
                             </div>
-                            <div class="pop-item">
-                                <div class="pop-num rank-3">3</div>
-                                <div class="pop-content">
-                                    <div class="pop-text">상가 중개 권리금 계약 시 이것만은 꼭 챙기세요</div>
-                                    <div class="pop-meta"><span>권소장</span> <span>👁 9.8k</span> <span>💬 52</span></div>
+                            <div class="pop-item" style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer;">
+                                <div style="font-size: 16px; font-weight: 800; width: 18px; text-align: center; color: #f59e0b; line-height: 1.2;">3</div>
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-size: 14px; font-weight: 700; color: #334155; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">상가 중개 권리금 계약 시 이것만은 꼭 챙기세요</div>
+                                    <div style="font-size: 12px; color: #94a3b8; display: flex; gap: 8px;"><span>권소장</span> <span>👁 9.8k</span> <span>💬 52</span></div>
                                 </div>
                             </div>
-                            <div class="pop-item">
-                                <div class="pop-num">4</div>
-                                <div class="pop-content">
-                                    <div class="pop-text">[질문] 매도인이 갑자기 계약 파기하면 복비는 어떻게 되나요?</div>
-                                    <div class="pop-meta"><span>초보중개사</span> <span>👁 7.2k</span> <span>💬 108</span></div>
+                            <div class="pop-item" style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer;">
+                                <div style="font-size: 16px; font-weight: 800; width: 18px; text-align: center; color: #94a3b8; line-height: 1.2;">4</div>
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-size: 14px; font-weight: 700; color: #334155; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">[질문] 매도인이 갑자기 계약 파기하면 복비는 어떻게 되나요?</div>
+                                    <div style="font-size: 12px; color: #94a3b8; display: flex; gap: 8px;"><span>초보중개사</span> <span>👁 7.2k</span> <span>💬 108</span></div>
                                 </div>
                             </div>
-                            <div class="pop-item">
-                                <div class="pop-num">5</div>
-                                <div class="pop-content">
-                                    <div class="pop-text">가계약 입금 후 단순 변심, 배액배상인가요? (최신 판례)</div>
-                                    <div class="pop-meta"><span>박변호사</span> <span>👁 6.5k</span> <span>💬 47</span></div>
+                            <div class="pop-item" style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer;">
+                                <div style="font-size: 16px; font-weight: 800; width: 18px; text-align: center; color: #94a3b8; line-height: 1.2;">5</div>
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-size: 14px; font-weight: 700; color: #334155; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">가계약 입금 후 단순 변심, 배액배상인가요?</div>
+                                    <div style="font-size: 12px; color: #94a3b8; display: flex; gap: 8px;"><span>박변호사</span> <span>👁 6.5k</span> <span>💬 47</span></div>
                                 </div>
                             </div>
-                            <div class="pop-item">
-                                <div class="pop-num">6</div>
-                                <div class="pop-content">
-                                    <div class="pop-text">요즘 유튜브 쇼츠로 매물 홍보 효력 있나요?</div>
-                                    <div class="pop-meta"><span>마케터진</span> <span>👁 5.9k</span> <span>💬 65</span></div>
-                                </div>
-                            </div>
-                            <div class="pop-item">
-                                <div class="pop-num">7</div>
-                                <div class="pop-content">
-                                    <div class="pop-text">사무실 오픈 위치 선정, 1층 vs 2층 심층 비교 분석</div>
-                                    <div class="pop-meta"><span>창업도우미</span> <span>👁 5.2k</span> <span>💬 31</span></div>
-                                </div>
-                            </div>
-                            <div class="pop-item">
-                                <div class="pop-num">8</div>
-                                <div class="pop-content">
-                                    <div class="pop-text">공동중개 시 상대방이 연락 두절일 때 대처법</div>
-                                    <div class="pop-meta"><span>매너가사람을</span> <span>👁 4.8k</span> <span>💬 72</span></div>
-                                </div>
-                            </div>
-                            <div class="pop-item">
-                                <div class="pop-num">9</div>
-                                <div class="pop-content">
-                                    <div class="pop-text">오늘 처음 계약서 썼습니다! 드디어 첫 개시! 🎉</div>
-                                    <div class="pop-meta"><span>병아리중개사</span> <span>👁 4.1k</span> <span>💬 125</span></div>
-                                </div>
-                            </div>
-                            <div class="pop-item">
-                                <div class="pop-num">10</div>
-                                <div class="pop-content">
-                                    <div class="pop-text">디스코 앱이랑 밸류맵 어떤거 창 띄워놓고 브리핑하시나요?</div>
-                                    <div class="pop-meta"><span>프롭테크</span> <span>👁 3.7k</span> <span>💬 41</span></div>
+                            <div class="pop-item" style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer;">
+                                <div style="font-size: 16px; font-weight: 800; width: 18px; text-align: center; color: #94a3b8; line-height: 1.2;">6</div>
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-size: 14px; font-weight: 700; color: #334155; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">요즘 유튜브 쇼츠로 매물 홍보 효력 있나요?</div>
+                                    <div style="font-size: 12px; color: #94a3b8; display: flex; gap: 8px;"><span>마케터진</span> <span>👁 5.9k</span> <span>💬 65</span></div>
                                 </div>
                             </div>
                         </div>
@@ -482,21 +460,24 @@
                     <!-- 이달의 인기글 끝 -->
 
                     <!-- 게시글 4 (우측 하단 작은 썸네일 포함 형태) -->
-                    <div class="c-post-row">
-                        <div class="c-post-info" style="justify-content:center;">
-                            <div class="m-author" style="margin-bottom:8px;"><div class="avatar-temp" style="background:#0f172a; color:#fff;">I</div> IP Studio Lab <span style="margin-left:8px; font-weight:400; color:#94a3b8; font-size:12px;">2024.03.20</span></div>
-                            <h3 class="c-post-title">유튜브 장비 세팅, 조명이 생명입니다. 직접 구성한 제 사무실 보여드립니다.</h3>
-                            <p class="c-post-snippet">사무실에 기본 조명만 있는데 화질이 구리다면 카메라가 문제가 아닙니다. 무조건 핀조명 2개 놓으세요. 카메라가 안좋아도 스튜디오처럼 연출할 수 있습니다. 자세한 세팅값 공유합니다.</p>
-                            <div class="m-meta">
-                                <div class="c-post-stats">
-                                    <span class="stat-item"><svg class="stat-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> 2,154</span>
-                                    <span class="stat-item stat-red"><svg class="stat-icon stat-red" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> 88</span>
-                                    <span class="stat-item stat-orange"><svg class="stat-icon stat-orange" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> 32</span>
+                    <div class="c-post-row" style="padding: 24px 0; border-bottom: 1px solid #e2e8f0; display: flex; gap: 24px; cursor: pointer; transition: background 0.2s;">
+                        <div class="c-post-info" style="flex: 1; min-width: 0;">
+                            <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                                <div style="width:36px; height:36px; border-radius:50%; background:#0f172a; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:#fff;">I</div>
+                                <div style="display:flex; flex-direction:column; justify-content:center;">
+                                    <div style="font-size:14px; font-weight:700; color:#1e293b; display:flex; align-items:center; gap:6px;">IP Studio Lab</div>
+                                    <div style="font-size:12px; color:#64748b; margin-top:2px;">앱(APP) 자료 · 1일 전</div>
                                 </div>
                             </div>
+                            <h3 style="font-size: 17px; font-weight: 700; color: #0f172a; margin: 0 0 8px 0; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;">유튜브 장비 세팅, 조명이 생명입니다. 직접 구성한 제 사무실 보여드립니다.</h3>
+                            <p style="font-size: 15px; color: #475569; margin: 0 0 16px 0; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">사무실에 기본 조명만 있는데 화질이 구리다면 카메라 문제가 아닙니다. 무조건 핀조명 2개 놓으세요. 카메라가 안좋아도 스튜디오처럼 연출할 수 있습니다.</p>
+                            <div style="display:flex; gap:16px; color:#94a3b8; font-size:13px; align-items:center;">
+                                <span style="display:flex; align-items:center; gap:4px;"><svg style="width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2;" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> 88</span>
+                                <span style="display:flex; align-items:center; gap:4px;"><svg style="width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> 32</span>
+                            </div>
                         </div>
-                        <div class="c-post-thumb" style="margin-top:0;">
-                            <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&q=80&w=400" alt="썸네일">
+                        <div style="width: 140px; height: 96px; border-radius: 8px; overflow: hidden; flex-shrink: 0; align-self: center;">
+                            <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&q=80&w=400" alt="썸네일" style="width: 100%; height: 100%; object-fit: cover;">
                         </div>
                     </div>
                     
