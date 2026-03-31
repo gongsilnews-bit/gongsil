@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>강의 미리보기 - 공실뉴스 Admin</title>
     <link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="base_path.js"></script>
+    <script src="supabase_gongsi_config.js"></script>
     <style>
         :root {
             --primary: #ff9f1c;
@@ -72,11 +74,11 @@
             
             <!-- 상단 관리 툴바 -->
             <div style="display:flex; justify-content:space-between; align-items:center; padding:15px 24px; border-bottom:1px solid #f0f0f0;">
-                <div style="font-weight:800; font-size:16px;">📚 [2026 개정] 노션으로 끝내는 실전 중개 시스템 (가안)</div>
+                <div id="courseTitleDisplay" style="font-weight:800; font-size:16px;">📚 로딩중...</div>
                 <div style="display:flex; gap:8px;">
                     <button class="btn-toolbar" onclick="window.parent.loadPage(null, '스터디관리', 'study_admin.html')">⬅️ 목록</button>
-                    <button class="btn-toolbar" style="color:var(--blue);" onclick="window.parent.loadPage(null, '스터디수정', 'study_write.html')">✏️ 수정</button>
-                    <button class="btn-toolbar" style="color:var(--red);">🗑️ 삭제</button>
+                    <button class="btn-toolbar" style="color:var(--blue);" onclick="goToEdit()">✏️ 수정</button>
+                    <button class="btn-toolbar" style="color:var(--red);" onclick="alert('목록에서 삭제해주세요.')">🗑️ 삭제</button>
                     <button class="btn-toolbar" style="background:var(--primary); color:#fff; border-color:var(--primary);">✅ 승인(공개/판매중)</button>
                 </div>
             </div>
@@ -93,14 +95,13 @@
             <!-- 아이프레임 뷰어 -->
             <div style="padding: 40px; background: #f1f5f9;">
                 <div class="preview-frame" id="previewFrame">
-                    <!-- 실제 학습 페이지를 iframe으로 로드 -->
-                    <iframe src="study_watch.html"></iframe>
+                    <iframe id="playerFrame" src="study_watch.html"></iframe>
                 </div>
             </div>
             
         </div>
 
-        <!-- 우측: 사이드바 로그 기록 (기사 관리와 동일 프레임) -->
+        <!-- 우측: 사이드바 로그 기록 -->
         <div style="width:300px; flex-shrink:0;">
             <div class="sidebar-card">
                 <div class="sidebar-title">📋 강의 서비스 로그 (메모)</div>
@@ -111,34 +112,15 @@
                     </div>
                 </div>
                 <div id="logList" style="margin-top:16px;">
-                    <div style="text-align:center; color:#94a3b8; padding:10px;">등록된 서비스 로그가 없습니다.</div>
+                    <div style="text-align:center; color:#94a3b8; padding:10px;">로그를 불러오는 중입니다...</div>
                 </div>
             </div>
 
-            <div class="sidebar-card">
+            <!-- 강제 숨김 처리 (현재는 로그 메모에 모두 담기므로 별도 이력은 제외 권장) -->
+            <div class="sidebar-card" style="display:none;">
                 <div class="sidebar-title">🕐 강의 최근 변경 이력</div>
                 <div>
-                    <div class="log-item">
-                        <div class="log-num">1</div>
-                        <div>
-                            <div style="font-weight:600; margin-bottom:2px; color:#1e293b;">판매 상태로 변경됨 (공개)</div>
-                            <div style="color:#64748b; font-size:12px;">관리자 | 2026. 03. 31. 14:05</div>
-                        </div>
-                    </div>
-                    <div class="log-item">
-                        <div class="log-num">2</div>
-                        <div>
-                            <div style="font-weight:600; margin-bottom:2px; color:#1e293b;">강의 상세설명 및 영상 링크 추가</div>
-                            <div style="color:#64748b; font-size:12px;">착한임대 | 2026. 03. 31. 11:20</div>
-                        </div>
-                    </div>
-                    <div class="log-item" style="border-bottom:none;">
-                        <div class="log-num">3</div>
-                        <div>
-                            <div style="font-weight:600; margin-bottom:2px; color:#1e293b;">최초 스터디 생성(임시저장)</div>
-                            <div style="color:#64748b; font-size:12px;">착한임대 | 2026. 03. 31. 10:11</div>
-                        </div>
-                    </div>
+                    <!-- 추후 확장용 -->
                 </div>
             </div>
         </div>
@@ -147,6 +129,108 @@
 </div>
 
 <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const courseId = urlParams.get('id');
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        if (!courseId) {
+            document.getElementById('courseTitleDisplay').innerText = `⚠️ 접근 오류: 잘못된 강의 ID입니다.`;
+            return;
+        }
+
+        const sb = window.gongsiClient;
+        if (!sb) return;
+
+        // 1. 코스 기본정보(제목) 불러오기
+        const { data: course, error } = await sb.from('study_courses').select('title').eq('id', courseId).single();
+        if (course) {
+            document.getElementById('courseTitleDisplay').innerText = `📚 ${course.title}`;
+        }
+
+        // 2. Iframe 에 해당 코스 ID 전달 (watch 페이지가 실제 데이터 불러올 때 사용)
+        document.getElementById('playerFrame').src = `study_watch.html?id=${courseId}&preview=true`;
+
+        // 3. 우측 메모 로그 조회
+        loadLogs();
+    });
+
+    function goToEdit() {
+        if(!courseId) return;
+        window.parent.loadPage(null, '강의수정', `study_write.html?id=${courseId}`);
+    }
+
+    async function loadLogs() {
+        if(!courseId) return;
+        const sb = window.gongsiClient;
+        const list = document.getElementById('logList');
+        
+        // 작성자 이름까지 같이 조인해서 가져오기
+        const { data, error } = await sb.from('study_logs')
+            .select(`message, created_at, profiles (username)`)
+            .eq('course_id', courseId)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            list.innerHTML = `<div style="text-align:center; color:red; padding:10px;">로그를 불러오지 못했습니다.</div>`;
+            return;
+        }
+
+        if (!data || data.length === 0) {
+            list.innerHTML = `<div style="text-align:center; color:#94a3b8; padding:10px;">등록된 서비스 로그 메모가 없습니다.</div>`;
+            return;
+        }
+
+        list.innerHTML = data.map((log, idx) => {
+            const dateStr = new Date(log.created_at).toLocaleString('ko-KR', {
+                year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+            });
+            const author = (log.profiles && log.profiles.username) ? log.profiles.username : '관리자';
+            
+            return `
+            <div class="log-item">
+                <div class="log-num" style="color:#475569;">${data.length - idx}</div>
+                <div>
+                    <div style="font-weight:600; margin-bottom:4px; line-height:1.4;">${log.message.replace(/\n/g, '<br>')}</div>
+                    <div style="color:#64748b; font-size:12px;">${author} | ${dateStr}</div>
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+
+    async function addLog() {
+        if(!courseId) return alert("강의 정보가 없습니다.");
+        const input = document.getElementById('logMemoInput');
+        const msg = input.value.trim();
+        if(!msg) return alert("메모 내용을 입력하세요.");
+
+        const sb = window.gongsiClient;
+        const ud = JSON.parse(localStorage.getItem('gongsil_user') || '{}');
+        const authorId = ud.profile ? ud.profile.id : null;
+
+        const btn = event.currentTarget;
+        const originalText = btn.innerText;
+        btn.innerText = "등록중...";
+        btn.disabled = true;
+
+        const { error } = await sb.from('study_logs').insert([{
+            course_id: courseId,
+            author_id: authorId,
+            message: msg
+        }]);
+
+        btn.innerText = originalText;
+        btn.disabled = false;
+
+        if (error) {
+            alert("로그 메모 등록 중 오류가 발생했습니다: " + error.message);
+        } else {
+            input.value = "";
+            loadLogs(); // 등록 직후 목록 재로딩 (실시간)
+        }
+    }
+
+    // 디바이스 목업 변환 버튼 동작
     function setDevice(type) {
         ['pc','tablet','mobile'].forEach(d => {
             const btn = document.getElementById('dev' + d.toUpperCase().replace('TABLET','TB').replace('MOBILE','MB').replace('PC','PC'));
@@ -163,28 +247,6 @@
 
         const frame = document.getElementById('previewFrame');
         frame.className = 'preview-frame ' + (type !== 'pc' ? type : '');
-    }
-
-    let memoryLogs = [];
-    function addLog() {
-        const input = document.getElementById('logMemoInput');
-        if(!input.value.trim()) return alert("메모 내용을 입력하세요.");
-        memoryLogs.unshift({
-            msg: input.value.trim(),
-            date: new Date().toLocaleString()
-        });
-        input.value = "";
-        
-        const list = document.getElementById('logList');
-        list.innerHTML = memoryLogs.map((log, idx) => `
-            <div class="log-item">
-                <div class="log-num" style="color:#475569;">${memoryLogs.length - idx}</div>
-                <div>
-                    <div style="font-weight:600; margin-bottom:2px;">${log.msg.replace(/\n/g, '<br>')}</div>
-                    <div style="color:#64748b; font-size:12px;">관리자 | ${log.date}</div>
-                </div>
-            </div>
-        `).join('');
     }
 </script>
 
