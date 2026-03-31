@@ -229,29 +229,7 @@
                 </tr>
             </thead>
             <tbody id="studyTableBody">
-                <!-- 더미 데이터로 기사관리와 똑같이 보이게 랜더링 (추후 Supabase 연동) -->
-                <tr>
-                  <td><input type="checkbox" class="row-check"></td>
-                  <td><span class="badge-status status-published">판매중</span></td>
-                  <td class="cell-title" onclick="window.parent.loadPage(null, '강의상세보기', 'study_view.html')" style="cursor:pointer;">[2026 개정] 노션으로 끝내는 실전 시스템: 템플릿 제공</td>
-                  <td class="cell-price">195,000 P</td>
-                  <td class="date-text">2026-03-31 15:30</td>
-                  <td style="white-space:nowrap;">
-                      <button class="btn-edit" onclick="window.parent.loadPage(null, '강의수정', 'study_write.html')">수정</button>
-                      <button class="btn-delete">삭제</button>
-                  </td>
-                </tr>
-                <tr>
-                  <td><input type="checkbox" class="row-check"></td>
-                  <td><span class="badge-status status-draft">임시저장</span></td>
-                  <td class="cell-title" onclick="window.parent.loadPage(null, '강의상세보기', 'study_view.html')" style="cursor:pointer;">상가/토지 중개 실무 마스터 클래스 (가안)</td>
-                  <td class="cell-price">비공개</td>
-                  <td class="date-text">2026-03-30 09:22</td>
-                  <td style="white-space:nowrap;">
-                      <button class="btn-edit" onclick="window.parent.loadPage(null, '강의수정', 'study_write.html')">수정</button>
-                      <button class="btn-delete">삭제</button>
-                  </td>
-                </tr>
+                <tr><td colspan="6" style="text-align:center; padding: 50px 0; color:#9ca3af;">데이터를 불러오는 중입니다...</td></tr>
             </tbody>
         </table>
     </div>
@@ -270,6 +248,98 @@
     // 전체 선택/토글
     function toggleAll(chk) {
         document.querySelectorAll('.row-check').forEach(function(c){ c.checked = chk.checked; });
+    }
+
+    // 🌟 Supabase 연동: 실제 강의 데이터 불러오기 🌟
+    document.addEventListener("DOMContentLoaded", () => {
+        loadCourses();
+    });
+
+    async function loadCourses() {
+        const sb = window.gongsiClient;
+        if (!sb) {
+            document.getElementById('studyTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 40px; color:red;">[오류] 데이터베이스(Supabase) 설정이 연결되지 않았습니다.</td></tr>`;
+            return;
+        }
+
+        try {
+            // DB 조회 (가장 최근에 만든 강의가 맨 위로 오게 내림차순 정렬)
+            const { data, error } = await sb.from('study_courses').select('*').order('created_at', { ascending: false });
+            if (error) throw error;
+
+            const tbody = document.getElementById('studyTableBody');
+            
+            if (!data || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 50px 0; color:#64748b; font-weight:600;">등록된 스터디 강의가 없습니다.<br><br><span style="font-weight:400; font-size:13px;">상단의 [+ 새 강의 등록] 버튼을 눌러보세요.</span></td></tr>`;
+                
+                // 건수 업데이트
+                document.getElementById('countTotal').innerText = `총 0건`;
+                return;
+            }
+
+            let html = '';
+            data.forEach(course => {
+                // 날짜 포맷 (예: 2026. 03. 31. 오후 3:30)
+                const dateText = new Date(course.created_at).toLocaleString('ko-KR', {
+                    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+                });
+
+                // 상태 표시 배지
+                let badgeHtml = '';
+                if(course.status === 'published') badgeHtml = '<span class="badge-status status-published">판매중</span>';
+                else if(course.status === 'draft') badgeHtml = '<span class="badge-status status-draft">임시저장</span>';
+                else if(course.status === 'pending') badgeHtml = '<span class="badge-status" style="background:#3b82f6;">승인대기</span>';
+                else badgeHtml = '<span class="badge-status status-hidden">숨김처리</span>';
+
+                // URL 연동 시 강의 ID를 파라미터로 붙여 나중에 해당 글만 불러오도록 세팅
+                const viewUrl = `study_view.html?id=${course.id}`;
+                const editUrl = `study_write.html?id=${course.id}`;
+                const priceText = course.price > 0 ? course.price.toLocaleString() + ' P' : '무료강의';
+
+                html += `
+                    <tr>
+                      <td onclick="event.stopPropagation()"><input type="checkbox" class="row-check" value="${course.id}"></td>
+                      <td>${badgeHtml}</td>
+                      <td class="cell-title" onclick="window.parent.loadPage(null, '강의상세보기', '${viewUrl}')" style="cursor:pointer; font-weight:700;">
+                        ${course.title}
+                      </td>
+                      <td class="cell-price">${priceText}</td>
+                      <td class="date-text" style="font-size:12px;">${dateText}</td>
+                      <td style="white-space:nowrap;" onclick="event.stopPropagation()">
+                          <button class="btn-edit" onclick="window.parent.loadPage(null, '강의수정', '${editUrl}')">수정</button>
+                          <button class="btn-delete" onclick="deleteCourse('${course.id}')">삭제</button>
+                      </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+
+            // 총 N건 숫자 연동
+            const countHeader = document.querySelector('.card-header .count-info span');
+            if(countHeader) {
+                countHeader.innerText = `총 ${data.length}건`;
+            }
+
+        } catch (e) {
+            console.error("데이터 로드 실패", e);
+            document.getElementById('studyTableBody').innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 40px; color:red;">데이터 통신 중 오류가 발생했습니다.<br>${e.message}</td></tr>`;
+        }
+    }
+
+    // 🌟 완전 삭제(Delete) 로직 추가
+    async function deleteCourse(id) {
+        if(!confirm("⚠️ 경고: 정말로 이 강의를 삭제하시겠습니까?\\n(해당 강의에 등록된 목차, 영상 주소, 첨부파일 등 모든 정보가 함께 영구삭제되며 복구할 수 없습니다.)")) return;
+        
+        const sb = window.gongsiClient;
+        const { error } = await sb.from('study_courses').delete().eq('id', id);
+        
+        if(error) {
+            alert("삭제 중 서버 통신 에러가 발생했습니다: " + error.message);
+        } else {
+            alert("강의가 목록에서 완전히 삭제되었습니다.");
+            loadCourses(); // 목록 새로고침
+        }
     }
 </script>
 
