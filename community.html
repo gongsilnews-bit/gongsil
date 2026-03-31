@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공실뉴스 - 스터디 커뮤니티</title>
+    <!-- 기본 스타일 -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #FF7B00;       
+            --primary-dark: #E65C00;
+            --accent-orange: #FF7B00; 
+            --text-main: #1f2937;     
+            --text-sub: #6b7280;      
+            --bg-gray: #f8fafc;       
+            --border: #e2e8f0;
+        }
+
+        html, body {
+            margin: 0; padding: 0; background-color: #ffffff;
+            font-family: 'Pretendard', sans-serif; color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* 스터디 공통 네비게이션 (헤더 아래) */
+        .study-nav-bar {
+            background: #fff; border-bottom: 1px solid var(--border);
+            z-index: 50; position: relative;
+        }
+        .study-tier1 {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; max-width: 1240px; margin: 0 auto;
+        }
+        .study-tab-item {
+            font-size: 16px; font-weight: 700; color: #475569;
+            cursor: pointer; padding: 18px 4px; position: relative;
+            text-decoration: none; transition: color 0.2s;
+        }
+        .study-tab-item:hover { color: var(--primary); }
+        .study-tab-item.active { color: var(--primary); }
+        .study-tab-item.active::after {
+            content: ''; position: absolute; bottom: 0; left: 0;
+            width: 100%; height: 3px; background: var(--primary);
+        }
+
+        /* 최상단 라운드 필터 (풀사이즈 테두리 바) */
+        .study-filter-bar {
+            background: #fff; border-bottom: 1px solid #e0e0e0;
+        }
+        .study-filter-row {
+            display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+            max-width: 1240px; margin: 0 auto; padding: 10px 20px;
+        }
+        .t-filter {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 6px 14px; border-radius: 20px; border: 1px solid #ccc;
+            background: #fff; color: #333; font-size: 13px; font-weight: 500;
+            cursor: pointer; transition: all 0.2s; white-space: nowrap; font-family: inherit;
+        }
+        .t-filter:hover { background: #f9fafb; border-color: #999; color: #333; }
+        .t-filter.active {
+            background: #fff8f1; border-color: var(--primary); color: var(--primary); font-weight: 700;
+        }
+        .chk-icon { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; display: none; }
+        .t-filter.active .chk-icon { display: block; }
+
+        /* 커뮤니티 메인 컨테이너 */
+        .materials-container {
+            max-width: 1240px; margin: 40px auto 100px; padding: 0 20px;
+        }
+        
+        /* 2-단 레이아웃 (좌측 사이드바, 우측 컨텐츠) */
+        .materials-layout {
+            display: flex; align-items: flex-start; gap: 40px;
+        }
+
+        /* 좌측 사이드바 메뉴 */
+        .m-sidebar {
+            width: 220px; flex-shrink: 0; position: sticky; top: 20px;
+        }
+        .side-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #1f2937;
+        }
+        .side-title { font-size: 18px; font-weight: 800; color: var(--text-main); margin: 0; }
+        .side-search-icon {
+            cursor: pointer; color: var(--text-sub); transition: 0.2s;
+            display: flex; align-items: center; justify-content: center;
+            padding: 4px; border-radius: 4px;
+        }
+        .side-search-icon:hover { color: var(--primary); background: rgba(255, 123, 0, 0.1); }
+        .side-search-box {
+            overflow: hidden; transition: max-height 0.3s ease, margin-bottom 0.3s ease, opacity 0.3s ease;
+            max-height: 0; opacity: 0; margin-bottom: 0;
+            display: flex; gap: 6px;
+        }
+        .side-search-box.open {
+            max-height: 50px; opacity: 1; margin-bottom: 16px;
+        }
+        .side-search-input {
+            flex: 1; background: #fff; border: 1px solid var(--border); border-radius: 6px;
+            padding: 8px 12px; font-size: 14px; outline: none; min-width: 0;
+        }
+        .side-search-input:focus { border-color: var(--primary); }
+        .side-search-submit {
+            background: var(--text-main); color: #fff; border: none; border-radius: 6px;
+            padding: 0 12px; font-size: 13px; font-weight: bold; cursor: pointer;
+        }
+
+        .side-menu { list-style: none; padding: 0; margin: 0; }
+        .side-menu li {
+            font-size: 15px; font-weight: 600; color: var(--text-sub);
+            padding: 14px 16px; border-radius: 8px; cursor: pointer;
+            transition: 0.2s ease; margin-bottom: 4px; display: flex; justify-content: space-between;
+        }
+        .side-menu li:hover { background: var(--bg-gray); color: var(--text-main); }
+        .side-menu li.active { background: var(--primary); color: #fff; font-weight: 700; box-shadow: 0 4px 12px rgba(255, 123, 0, 0.2); }
+        .side-menu li.active::after { content: '>'; font-weight:800; }
+
+        /* 우측 메인 컨텐츠 영역 */
+        .m-content { flex: 1; min-width: 0; }
+
+        .top10-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+        }
+        .top10-title { font-size: 20px; font-weight: 800; color: var(--text-main); margin: 0; }
+        .btn-write-post {
+            background: var(--primary); color: #fff; border: none; border-radius: 8px;
+            padding: 12px 24px; font-size: 15px; font-weight: 700; cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s; display: flex; align-items: center; gap: 6px;
+            box-shadow: 0 4px 12px rgba(255, 123, 0, 0.2);
+        }
+        .btn-write-post:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(255, 123, 0, 0.3); }
+
+        .section-divider { border: 0; height: 1px; background: var(--border); margin: 0 0 30px 0; }
+
+        /* 커뮤니티 리스트형 게시판 (Rich List Style) */
+        .community-list { display: flex; flex-direction: column; gap: 24px; }
+        .c-post-row {
+            display: flex; justify-content: space-between; gap: 30px;
+            padding: 24px; background: #fff; border: 1px solid var(--border);
+            border-radius: 12px; cursor: pointer; transition: all 0.3s ease;
+        }
+        .c-post-row:hover {
+            border-color: #cbd5e1; transform: translateY(-4px);
+            box-shadow: 0 16px 30px rgba(0, 0, 0, 0.05);
+        }
+        
+        .c-post-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        
+        .c-post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .m-badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 800; letter-spacing: 0.5px; }
+        .b-notice { background: #ef4444; color: #fff; }
+        .b-hot { background: #fee2e2; color: #ef4444; }
+        .b-new { background: #e0f2fe; color: #0284c7; }
+        .c-post-category { font-size: 13px; font-weight: 700; color: var(--text-sub); }
+
+        .c-post-title {
+            font-size: 18px; font-weight: 800; color: var(--text-main);
+            margin: 0 0 10px 0; line-height: 1.4;
+            display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .c-post-snippet {
+            font-size: 15px; color: #475569; line-height: 1.6; margin: 0 0 16px 0;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+
+        .m-meta {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: auto; font-size: 13px; color: var(--text-sub);
+        }
+        .m-author { display: flex; align-items: center; gap: 6px; font-weight: 600; color: #334155; }
+        .avatar-temp { width: 24px; height: 24px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        
+        .c-post-stats { display: flex; align-items: center; gap: 14px; font-size: 13px; color: #94a3b8; font-weight: 600; }
+        .stat-item { display: flex; align-items: center; gap: 4px; }
+        .stat-icon { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; }
+        .stat-red { color: #ef4444; }
+        .stat-orange { color: var(--primary); }
+
+        .c-post-thumb {
+            width: 160px; height: 110px; flex-shrink: 0; overflow: hidden; border-radius: 8px;
+            background: #f1f5f9; display: flex; align-items: center; justify-content: center;
+        }
+        .c-post-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+        .c-post-row:hover .c-post-thumb img { transform: scale(1.05); }
+
+        /* 페이징 */
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 50px; }
+        .page-btn {
+            width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+            border-radius: 6px; border: 1px solid var(--border); background: #fff;
+            color: var(--text-sub); font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s;
+        }
+        .page-btn:hover { background: var(--bg-gray); color: var(--text-main); }
+        .page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+        /* 반응형 */
+        @media (max-width: 1024px) {
+            .materials-layout { flex-direction: column; }
+            .m-sidebar { width: 100%; position: static; margin-bottom: 20px; }
+            .side-menu { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+            .side-menu li { white-space: nowrap; margin-bottom: 0; }
+            .side-menu li.active::after { display: none; }
+        }
+        @media (max-width: 768px) {
+            .c-post-row { flex-direction: column-reverse; gap: 16px; }
+            .c-post-thumb { width: 100%; height: auto; aspect-ratio: 16 / 9; }
+            .c-post-snippet { -webkit-line-clamp: 3; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 공통 헤더 -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo-group">
+                <a href="index.html" class="logo-img-link">
+                    <img src="logo.png" alt="공실뉴스" style="height: 28px;">
+                </a>
+            </div>
+            <nav class="nav">
+                <a href="news.html" class="nav-tab">뉴스기사</a>
+                <a href="gongsil.html" class="nav-tab">공실열람</a>
+                <a href="study.html" class="nav-tab active">공실스터디</a>
+            </nav>
+        </div>
+        <div class="header-right">
+            <a href="#" class="btn-login">구글 로그인</a>
+        </div>
+    </header>
+
+    <!-- 스터디 네비게이션 -->
+    <div class="study-nav-bar">
+        <div class="study-tier1">
+            <div style="display: flex; gap: 24px;">
+                <a href="study.html" class="study-tab-item">스터디</a>
+                <a href="materials.html" class="study-tab-item">자료실</a>
+                <a href="community.html" class="study-tab-item active">커뮤니티</a>
+                <a href="#" class="study-tab-item">MY관심강의</a>
+            </div>
+            <a href="#" class="study-tab-item" style="text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                내 스터디
+                <div style="width:28px; height:28px; border-radius:50%; background:#e2e8f0; display:flex; align-items:center; justify-content:center;">👤</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- 2차 메뉴 필터바 (풀 사이즈 라인) -->
+    <div class="study-filter-bar">
+        <div class="study-filter-row">
+            <button class="t-filter active">
+                <svg class="chk-icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> 자유게시판
+            </button>
+            <button class="t-filter">질문/답변</button>
+            <button class="t-filter">스터디원 모집</button>
+            <button class="t-filter">합격/수강 후기</button>
+            <button class="t-filter">공지사항</button>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="materials-container">
+        
+        <!-- 레이아웃 시작 (사이드바 + 콘텐츠) -->
+        <div class="materials-layout">
+            
+            <!-- 좌측 사이드바 -->
+            <aside class="m-sidebar">
+                <div class="side-header">
+                    <h3 class="side-title">커뮤니티 메뉴</h3>
+                    <div class="side-search-icon" onclick="toggleSideSearch()" title="게시글 검색">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    </div>
+                </div>
+                <!-- 검색 입력창 (기본 숨김) -->
+                <div class="side-search-box" id="sideSearchBox">
+                    <input type="text" class="side-search-input" placeholder="검색어 입력">
+                    <button class="side-search-submit">검색</button>
+                </div>
+                <ul class="side-menu">
+                    <li class="active">최신 글보기</li>
+                    <li>🔥 인기(베스트)</li>
+                    <li>꿀팁 카테고리</li>
+                    <li>고민상담</li>
+                    <li>나의 활동내역</li>
+                </ul>
+            </aside>
+
+            <!-- 우측 메인 컨텐츠 -->
+            <main class="m-content">
+                
+                <!-- 상단 타이틀 및 글쓰기 버튼 -->
+                <div class="top10-header">
+                    <h2 class="top10-title">최신 게시글</h2>
+                    <button class="btn-write-post">📝 새 글 쓰기</button>
+                </div>
+
+                <hr class="section-divider">
+
+                <!-- 일반 게시글 리스트 -->
+                <div class="community-list">
+                    
+                    <!-- 게시글 1: 공지 -->
+                    <div class="c-post-row" style="background:#f8fafc; border-color:#e2e8f0;">
+                        <div class="c-post-info">
+                            <div class="c-post-header">
+                                <span class="m-badge b-notice">필독</span>
+                                <span class="c-post-category">공지사항</span>
+                            </div>
+                            <h3 class="c-post-title">[필독] 커뮤니티 이용 가이드 및 매너 수칙 안내</h3>
+                            <p class="c-post-snippet">공실뉴스 커뮤니티에 오신 것을 환영합니다! 공인중개사, 분양 상담사, 마케터 등 모든 회원분들이 깨끗하고 쾌적하게 소통할 수 있도록 몇 가지 아주 중요한 이용 수칙을 안내해 드립니다...</p>
+                            <div class="m-meta">
+                                <div class="m-author"><div class="avatar-temp">운</div> 운영자</div>
+                                <div class="c-post-stats">
+                                    <span class="stat-item"><svg class="stat-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> 2.4k</span>
+                                    <span class="stat-item stat-red"><svg class="stat-icon stat-red" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> 152</span>
+                                    <span class="stat-item stat-orange"><svg class="stat-icon stat-orange" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> 34</span>
+                                    <span>2026.03.20</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 게시글 2 -->
+                    <div class="c-post-row">
+                        <div class="c-post-info">
+                            <div class="c-post-header">
+                                <span class="m-badge b-new">NEW</span>
+                                <span class="c-post-category">꿀팁 카테고리</span>
+                            </div>
+                            <h3 class="c-post-title">초보 공인중개사 블로그 세팅 꿀팁 대방출합니다 🚀</h3>
+                            <p class="c-post-snippet">블로그 처음 시작하시는 분들 막막하시죠? 처음에 어떻게 세팅해야 상위노출에 유리한지 제 경험담 위주로 정리해봤습니다. 가장 중요한 건 카테고리 설정과 스킨 디자인입니다.</p>
+                            <div class="m-meta">
+                                <div class="m-author"><div class="avatar-temp">열</div> 열정부장</div>
+                                <div class="c-post-stats">
+                                    <span class="stat-item"><svg class="stat-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> 1,024</span>
+                                    <span class="stat-item"><svg class="stat-icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> 56</span>
+                                    <span class="stat-item"><svg class="stat-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> 18</span>
+                                    <span>3시간 전</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="c-post-thumb">
+                            <img src="https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?auto=format&fit=crop&q=80&w=400" alt="썸네일">
+                        </div>
+                    </div>
+
+                    <!-- 게시글 3 -->
+                    <div class="c-post-row">
+                        <div class="c-post-info">
+                            <div class="c-post-header">
+                                <span class="m-badge b-hot">인기</span>
+                                <span class="c-post-category">고민상담</span>
+                            </div>
+                            <h3 class="c-post-title">유튜브 촬영장비 가성비로 세팅하는 법 (마이크/조명)</h3>
+                            <p class="c-post-snippet">오즈모 포켓3를 많이들 쓰시던데, 스마트폰으로도 충분할까요? 현재 제가 사용 중인 스마트폰+핀마이크 가성비 조합을 공유합니다. 생각보다 화질보다 음질이 훨씬 중요하더라구요.</p>
+                            <div class="m-meta">
+                                <div class="m-author"><div class="avatar-temp">김</div> 김소장</div>
+                                <div class="c-post-stats">
+                                    <span class="stat-item"><svg class="stat-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> 3,421</span>
+                                    <span class="stat-item stat-red"><svg class="stat-icon stat-red" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> 112</span>
+                                    <span class="stat-item stat-orange"><svg class="stat-icon stat-orange" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> 45</span>
+                                    <span>2일 전</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="c-post-thumb">
+                            <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&q=80&w=400" alt="썸네일">
+                        </div>
+                    </div>
+
+                    <!-- 게시글 4 -->
+                    <div class="c-post-row">
+                        <div class="c-post-info">
+                            <div class="c-post-header">
+                                <span class="c-post-category">스터디원 모집</span>
+                            </div>
+                            <h3 class="c-post-title">[강남/서초] 주말 부동산 경매/공매 오전반 스터디 모집합니다 (4/6명)</h3>
+                            <p class="c-post-snippet">강남역 인근에서 매주 토요일 오전 10시에 진행하는 경매 실전 분석 스터디입니다. 현재 초보 2명, 중급 2명 구성되어 있으며 열정 넘치는 2분만 더 모시고자 합니다.</p>
+                            <div class="m-meta">
+                                <div class="m-author"><div class="avatar-temp">P</div> Park매니저</div>
+                                <div class="c-post-stats">
+                                    <span class="stat-item"><svg class="stat-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> 452</span>
+                                    <span class="stat-item"><svg class="stat-icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> 12</span>
+                                    <span class="stat-item stat-orange"><svg class="stat-icon stat-orange" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> 5</span>
+                                    <span>3일 전</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div> <!-- community-list ends -->
+
+                <!-- 하단 페이징 -->
+                <div class="pagination">
+                    <button class="page-btn">←</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">4</button>
+                    <button class="page-btn">5</button>
+                    <button class="page-btn">→</button>
+                </div>
+
+            </main>
+        </div>
+    </div> <!-- container ends -->
+
+    <script>
+        // 최상단 둥근 필터 활성화
+        document.querySelectorAll('.t-filter').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.t-filter').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // 좌측 사이드바 탭 활성화
+        document.querySelectorAll('.side-menu li').forEach(li => {
+            li.addEventListener('click', function() {
+                document.querySelectorAll('.side-menu li').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // 좌측 사이드바 검색 토글
+        function toggleSideSearch() {
+            document.getElementById('sideSearchBox').classList.toggle('open');
+        }
+    </script>
+</body>
+</html>
