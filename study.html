@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>공실뉴스 - 공실스터디</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Swiper CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
     <!-- Supabase & Auth Logic -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="base_path.js"></script>
@@ -188,6 +191,163 @@
             gap: 4px;
             color: #ff9f1c; /* 별점은 노란색 유지 */
         }
+
+        /* ----- 새롭게 추가되는 디자인 영역 ----- */
+        /* Hero Section (Banner + Pictograms) */
+        .hero-section {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 32px;
+            height: 280px; /* 고정 높이 */
+        }
+        .hero-banner-wrapper {
+            flex: 1; /* 가변 넓이 */
+            border-radius: 16px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            position: relative;
+        }
+        .swiper-main-banner {
+            width: 100%;
+            height: 100%;
+        }
+        .swiper-main-banner .swiper-slide {
+            display: flex;
+            align-items: center;
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 40px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .swiper-main-banner .swiper-slide::after {
+            content:''; position:absolute; top:0; left:0; right:0; bottom:0;
+            background: linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 100%);
+        }
+        .banner-text-content {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+        }
+        .banner-badge {
+            display: inline-block;
+            background: var(--study-green);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+        .banner-title {
+            font-size: 26px;
+            font-weight: 800;
+            margin: 0 0 10px 0;
+            line-height: 1.3;
+        }
+        .banner-desc {
+            font-size: 15px;
+            opacity: 0.9;
+        }
+        .swiper-button-next, .swiper-button-prev { color: #fff; transform: scale(0.6); }
+        .swiper-pagination-bullet { background: #fff; opacity: 0.5; }
+        .swiper-pagination-bullet-active { opacity: 1; background: var(--study-green); }
+
+        /* Pictogram Categories */
+        .hero-categories {
+            width: 480px; /* 픽토그램 영역 고정 넓이 */
+            flex-shrink: 0;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 16px 10px;
+            align-content: center;
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+        }
+        .cat-icon-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #333;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .cat-icon-link:hover {
+            transform: translateY(-3px);
+        }
+        .icon-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 8px;
+            transition: background 0.3s;
+        }
+        .cat-icon-link:hover .icon-circle {
+            background: #fff7ed;
+        }
+        .cat-icon-text {
+            font-size: 12px;
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.2;
+            word-break: keep-all;
+            color: #475569;
+        }
+
+        /* Text Category Bar */
+        .text-category-bar {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding-bottom: 12px;
+            margin-bottom: 40px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .text-category-bar::-webkit-scrollbar { display: none; } /* 숨기기 */
+        .text-cat-link {
+            font-size: 15px;
+            font-weight: 700;
+            color: #64748b;
+            text-decoration: none;
+            padding: 8px 4px;
+            white-space: nowrap;
+            position: relative;
+            transition: color 0.2s;
+        }
+        .text-cat-link:hover {
+            color: #0f172a;
+        }
+        .text-cat-link.active {
+            color: #0f172a;
+        }
+        .text-cat-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #0f172a;
+        }
+
+        /* 반응형 */
+        @media (max-width: 1024px) {
+            .hero-section { flex-direction: column; height: auto; }
+            .hero-categories { width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -251,7 +411,76 @@
     </div>
 
     <main class="study-container">
-        <!-- 상단 특집 섹션 (더미) -->
+        
+        <!-- 0. 메인 배너 및 픽토그램 카테고리 -->
+        <div class="hero-section">
+            <!-- 롤링 프로모션 배너 (Swiper) -->
+            <div class="hero-banner-wrapper">
+                <div class="swiper swiper-main-banner">
+                    <div class="swiper-wrapper">
+                        <!-- 배너 1 -->
+                        <div class="swiper-slide" style="background-image: url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=1000');">
+                            <div class="banner-text-content">
+                                <span class="banner-badge">단독 런칭</span>
+                                <h2 class="banner-title">상위 1% 공인중개사의<br>마음을 훔치는 클로징 기술</h2>
+                                <p class="banner-desc">가계약금 입금을 이끌어내는 마법의 스크립트 특강</p>
+                            </div>
+                        </div>
+                        <!-- 배너 2 -->
+                        <div class="swiper-slide" style="background-image: url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=1000');">
+                            <div class="banner-text-content">
+                                <span class="banner-badge" style="background:#ef4444;">실무 마스터</span>
+                                <h2 class="banner-title">세무사가 직접 푸는<br>2026 양도소득세 절세법</h2>
+                                <p class="banner-desc">법인 설립부터 증여 플랜까지, 절세 특강</p>
+                            </div>
+                        </div>
+                        <!-- 배너 3 -->
+                        <div class="swiper-slide" style="background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1000');">
+                            <div class="banner-text-content">
+                                <span class="banner-badge" style="background:#8b5cf6;">건물주 비밀</span>
+                                <h2 class="banner-title">공실률 0%에 도전하는<br>꼬마빌딩 밸류업 노하우</h2>
+                                <p class="banner-desc">하자 보수부터 우량 임차인 유치까지</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="swiper-pagination"></div>
+                    <div class="swiper-button-prev"></div>
+                    <div class="swiper-button-next"></div>
+                </div>
+            </div>
+
+            <!-- 우측 픽토그램 카테고리 (2줄 x 5열) -->
+            <div class="hero-categories">
+                <a href="#" class="cat-icon-link"><div class="icon-circle">🏢</div><span class="cat-icon-text">상가/토지<br>중개 실무</span></a>
+                <a href="#" class="cat-icon-link"><div class="icon-circle">📸</div><span class="cat-icon-text">마케팅<br>블로그/SNS</span></a>
+                <a href="#" class="cat-icon-link"><div class="icon-circle">✍️</div><span class="cat-icon-text">계약/클로징<br>심리전</span></a>
+                <a href="#" class="cat-icon-link"><div class="icon-circle">🏚️</div><span class="cat-icon-text">꼬마빌딩<br>성공사례</span></a>
+                <a href="#" class="cat-icon-link"><div class="icon-circle">⚖️</div><span class="cat-icon-text">세무/절세<br>완벽 해설</span></a>
+                <a href="#" class="cat-icon-link"><div class="icon-circle">🔨</div><span class="cat-icon-text">경매/특수<br>권리분석</span></a>
+                <a href="#" class="cat-icon-link"><div class="icon-circle">😡</div><span class="cat-icon-text">명도/소송<br>분쟁 해결</span></a>
+                <a href="#" class="cat-icon-link"><div class="icon-circle">🛏️</div><span class="cat-icon-text">공간 대여업<br>에어비앤비</span></a>
+                <a href="#" class="cat-icon-link"><div class="icon-circle">🛠️</div><span class="cat-icon-text">건물 관리<br>건축/하자</span></a>
+                <a href="#" class="cat-icon-link"><div class="icon-circle">🏗️</div><span class="cat-icon-text">재개발<br>특수 투자</span></a>
+            </div>
+        </div>
+
+        <!-- 텍스트 카테고리 메뉴바 -->
+        <div class="text-category-bar">
+            <a href="#" class="text-cat-link active">전체</a>
+            <a href="#" class="text-cat-link">급매추천</a>
+            <a href="#" class="text-cat-link">아파트추천</a>
+            <a href="#" class="text-cat-link">사진영상</a>
+            <a href="#" class="text-cat-link">경매</a>
+            <a href="#" class="text-cat-link">세무</a>
+            <a href="#" class="text-cat-link">법률</a>
+            <a href="#" class="text-cat-link">에어비앤비</a>
+            <a href="#" class="text-cat-link">감정평가</a>
+            <a href="#" class="text-cat-link">인테리어팁</a>
+            <a href="#" class="text-cat-link">DB모집강의</a>
+            <a href="#" class="text-cat-link">빌딩투자</a>
+        </div>
+
+        <!-- 기존 인기 섹션 -->
         <div class="section-header">
             <h2 class="section-title">2026 대비, 라이브 무료 특강 🔥</h2>
             <a href="#" class="view-all">전체보기 〉</a>
@@ -396,11 +625,39 @@
             }
         };
 
-        // 간단한 탭 클릭 이벤트
+        // 간단한 탭 클릭 이벤트 (텍스트 카테고리)
+        document.querySelectorAll('.text-cat-link').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.text-cat-link').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+
+        // 2차 메뉴 클릭 이벤트
         document.querySelectorAll('.study-tab-item').forEach(item => {
             item.addEventListener('click', () => {
                 document.querySelectorAll('.study-tab-item').forEach(el => el.classList.remove('active'));
                 item.classList.add('active');
+            });
+        });
+
+        // Swiper 배너 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            var swiper = new Swiper('.swiper-main-banner', {
+                loop: true,
+                autoplay: {
+                    delay: 4000,
+                    disableOnInteraction: false,
+                },
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true,
+                },
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
             });
         });
     </script>
