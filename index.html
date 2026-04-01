@@ -769,6 +769,11 @@
                     ]
                 });
 
+                // Redirect to the gongsil page when a cluster is clicked
+                kakao.maps.event.addListener(clusterer, 'clusterclick', function(cluster) {
+                    window.location.href = 'gongsil/';
+                });
+
                 // Fetch Properties from Supabase, Geocode, and add to Clusterer
                 try {
                     if (window.gongsiClient) {
