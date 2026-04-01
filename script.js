@@ -635,7 +635,13 @@ if (typeof kakao === 'undefined') {
                     count++;
                 }
             });
-            sidebarTitle.innerHTML = `현재 지도기사 <span style="color:#ff9f1c; margin-left:4px;">${count}</span>개`;
+            
+            let catName = '현재';
+            const selectEl = document.querySelector('.news-select-filter');
+            if (selectEl) {
+                catName = selectEl.options[selectEl.selectedIndex].text;
+            }
+            sidebarTitle.innerHTML = `${catName} 지도기사 <span style="color:#ff9f1c; margin-left:4px;">${count}</span>개`;
         };
 
         window.toggleMapSearch = function() {
@@ -909,7 +915,12 @@ async function loadNews(category) {
             if (document.body.classList.contains('portal-mode')) {
                 sidebarTitle.textContent = category === '우리동네부동산' ? '우리동네부동산' : category;
             } else {
-                sidebarTitle.innerHTML = `현재 지도기사 <span style="color:#ff9f1c; margin-left:4px;">0</span>개`;
+                let catName = '현재';
+                const selectEl = document.querySelector('.news-select-filter');
+                if (selectEl) {
+                    catName = selectEl.options[selectEl.selectedIndex].text;
+                }
+                sidebarTitle.innerHTML = `${catName} 지도기사 <span style="color:#ff9f1c; margin-left:4px;">0</span>개`;
             }
         }
 
@@ -939,7 +950,7 @@ async function loadNews(category) {
             const COLUMN_SUBS = NEWS_NAV_CONFIG['column'].subs;
             
             if (category === '우리동네부동산') {
-                dbCategory = '공실뉴스';
+                dbCategory = '우리동네부동산';
             } else if (COLUMN_SUBS.includes(category)) {
                 dbCategory = '전체기사'; 
             }
