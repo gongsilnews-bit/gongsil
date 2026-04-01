@@ -35,8 +35,14 @@ content = header_html + """
             display: flex;
             gap: 20px;
             border-bottom: 1px solid #eee;
-            padding: 24px 0;
+            padding: 24px 10px;
             align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-radius: 8px;
+        }
+        .an-card:hover {
+            background: #f9f9f9;
         }
         .an-img {
             width: 160px;
@@ -276,18 +282,17 @@ content = header_html + """
             
             const card = document.createElement('div');
             card.className = 'an-card';
+            const detailUrl = `news_read.html?article_id=${news.id}`; 
+            card.onclick = () => window.location.href = detailUrl;
             
             const imgHtml = news.image_url ? `<img src="${news.image_url}" class="an-img" onerror="this.src='https://via.placeholder.com/160x100?text=News'">` : `<div class="an-img" style="display:flex;align-items:center;justify-content:center;color:#ccc;font-size:12px;">NO IMAGE</div>`;
-            
-            // 상세 이동 시, news.html?article_id=X 활용 (혹은 별도 detail URL 있다면 구조 변경)
-            const detailUrl = `news.html?article_id=${news.id}`; 
             
             const categoryBadge = news.section1 ? `[${news.section1}${news.section2 ? ' > '+news.section2 : ''}]` : '';
             
             card.innerHTML = `
                 ${imgHtml}
                 <div class="an-body">
-                    <div class="an-title" onclick="window.location.href='${detailUrl}'">${news.title}</div>
+                    <div class="an-title">${news.title}</div>
                     <div class="an-desc">${news.subtitle || news.content?.replace(/<[^>]+>/g, '').substring(0, 150) || ''}</div>
                     <div class="an-meta"><span style="color:#1e56a0; font-weight:bold; margin-right:8px;">${categoryBadge}</span> ${dateStr} · ${news.reporter_name || '공실뉴스'}</div>
                 </div>
@@ -331,7 +336,7 @@ content = header_html + """
         if(error || !data) return;
         
         c.innerHTML = data.map((item, i) => `
-            <li class="pop-item" onclick="window.location.href='news.html?article_id=${item.id}'">
+            <li class="pop-item" onclick="window.location.href='news_read.html?article_id=${item.id}'">
                 <span class="pop-ranking">${i+1}</span>
                 <span class="pop-title">${item.title}</span>
             </li>
