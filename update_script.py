@@ -1,12 +1,12 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>공실뉴스 첫페이지 샘플</title>
-    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <style>
+import os
+import re
+
+html_path = 'c:/Users/user/Desktop/test/index.html'
+
+with open(html_path, 'r', encoding='utf-8') as f:
+    html = f.read()
+
+new_style = '''<style>
     :root {
         --primary: #1a2b4c; /* Dark blue from Hankyung style */
         --brand: #ff9f1c; /* Orange accent */
@@ -237,9 +237,11 @@
     /* Footer */
     .g-footer { background: #fff; padding: 40px 0; font-size: 14px; color: #777; border-top: 1px solid #eee; line-height: 1.6; }
     .f-links { margin-bottom: 20px; display: flex; gap: 20px; font-weight: bold; color: #444; }
-</style>
-</head>
-<body>
+</style>'''
+
+html = re.sub(r'<style>.*?</style>', new_style, html, flags=re.DOTALL)
+
+new_body = '''<body>
     <!-- Top Strip (Login) -->
     <div class="top-strip">
         <div class="container top-strip-inner">
@@ -479,129 +481,9 @@
             </div>
         </div>
     </footer>
+'''
 
-    <!-- Supabase & Auth Logic -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="base_path.js"></script>
-    <script src="supabase_gongsi_config.js"></script>
-    <script type="module" src="supabase_auth.js"></script>
+html = re.sub(r'<body.*?>.*?<!-- Supabase & Auth Logic -->', new_body + '\n    <!-- Supabase & Auth Logic -->', html, flags=re.DOTALL|re.IGNORECASE)
 
-    <!-- 공실챗봇 스크립트 로드 -->
-    <script src="gongsil_chatbot.js?v=20260331"></script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            if (typeof supabase === 'undefined' || typeof SUPABASE_URL === 'undefined') return;
-
-            const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            
-            // 뉴스 데이터 로드 (최신 3건)
-            const loadNews = async () => {
-                const { data: newsItems, error } = await sb
-                    .from('articles')
-                    .select(`
-                        id, title, created_at, section1, section2,
-                        article_media ( url, is_representative, sort_order )
-                    `)
-                    .in('status', ['published', 'approve'])
-                    .order('created_at', { ascending: false })
-                    .limit(3);
-
-                if (!error && newsItems && newsItems.length > 0) {
-                    const grid = document.querySelector('.articles-grid');
-                    if (grid) {
-                        grid.innerHTML = ''; // 기본 컨텐츠 지우기
-                        
-                        newsItems.forEach((news, idx) => {
-                            let thumbUrl = 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
-                            if (news.article_media && news.article_media.length > 0) {
-                                const repIndex = news.article_media.findIndex(m => m.is_representative);
-                                if (repIndex !== -1) {
-                                    thumbUrl = news.article_media[repIndex].url;
-                                } else {
-                                    thumbUrl = news.article_media[0].url;
-                                }
-                            }
-
-                            const isLarge = idx === 0 ? 'large' : '';
-                            const badgeStr = news.section1 || '뉴스';
-                            const dtStr = new Date(news.created_at).toISOString().slice(0, 16).replace('T', ' ');
-
-                            let html = `
-                                <a href="news.html?article_id=${news.id}" class="article-card ${isLarge}">
-                                    <div class="ac-img"><img src="${thumbUrl}" alt="뉴스 썸네일" onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'"></div>
-                                    <div class="ac-content">
-                                        ${idx === 0 ? `<span class="ac-badge">핫이슈</span>` : `<span class="ac-badge" style="border:none; background:#f0f0f0; color:#555;">${badgeStr}</span>`}
-                                        <div class="ac-title">${news.title}</div>
-                                        <div class="ac-date">${dtStr}</div>
-                                    </div>
-                                </a>
-                            `;
-                            grid.insertAdjacentHTML('beforeend', html);
-                        });
-
-                        // 4번째 고정 링크 (부동산 동향 리포트 접속)
-                        grid.insertAdjacentHTML('beforeend', `
-                            <a href="news" class="article-card">
-                                <div class="ac-content" style="justify-content: center; align-items: center; border: 1px dashed #ccc; background:#fafafa; height:100%;">
-                                    <div style="font-size: 28px; color:#ddd; margin-bottom:12px;">📰</div>
-                                    <div style="font-weight:bold; color:#777; text-align:center;">부동산 동향 리포트<br>보러가기 ></div>
-                                </div>
-                            </a>
-                        `);
-                    }
-                }
-            };
-            
-            // 공지사항 데이터 로드 (section1이 공지사항이거나 제목에 [안내] 등 포함)
-            const loadNotices = async () => {
-                const { data: notices, error } = await sb
-                    .from('articles')
-                    .select('id, title, created_at')
-                    .or('section1.eq.공지사항,title.ilike.%[안내]%')
-                    .in('status', ['published', 'approve'])
-                    .order('created_at', { ascending: false })
-                    .limit(3);
-
-                if (!error && notices && notices.length > 0) {
-                    const listContainer = document.querySelector('.notice-list');
-                    if (listContainer) {
-                        listContainer.innerHTML = '';
-                        notices.forEach(notice => {
-                            const dtStr = new Date(notice.created_at).toISOString().slice(0, 10);
-                            const html = `
-                                <li>
-                                    <a href="news.html?article_id=${notice.id}" class="notice-item">
-                                        <span class="ni-title">${notice.title}</span> 
-                                        <span class="ni-date">${dtStr}</span>
-                                    </a>
-                                </li>
-                            `;
-                            listContainer.insertAdjacentHTML('beforeend', html);
-                        });
-                    }
-                }
-            };
-
-            loadNews();
-            loadNotices();
-        });
-    </script>
-    <!-- 공실 스크립트 연결 -->
-    <script src="base_path.js"></script>
-    <script type="module" src="supabase_gongsi_config.js"></script>
-    <script type="module" src="supabase_auth.js"></script>
-    <!-- 스크롤 시 상단 메뉴 나타내기 -->
-    <script>
-        window.addEventListener('scroll', function() {
-            var stickyHeader = document.getElementById('stickyHeader');
-            // 스크롤이 일정량 (예: 250px) 이상 내려가면 sticky header 표시
-            if (window.scrollY > 250) {
-                stickyHeader.classList.add('show');
-            } else {
-                stickyHeader.classList.remove('show');
-            }
-        });
-    </script>
-</body>
-</html>
+with open(html_path, 'w', encoding='utf-8') as f:
+    f.write(html)
