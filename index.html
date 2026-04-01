@@ -83,15 +83,38 @@
 
         /* 2. Main Header */
         .header {
-            background: #ffffff;
+            background: rgba(255, 255, 255, 1);
             border-bottom: 2px solid #111111;
             padding-top: 24px;
+            position: sticky;
+            top: -1px;
+            z-index: 99999;
+            transition: all 0.5s cubic-bezier(0.68, -0.2, 0.265, 1.55);
+        }
+        .header.is-sticky {
+            padding-top: 10px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border-bottom: 1px solid rgba(0,0,0,0.1);
         }
         .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 24px;
+            transition: all 0.5s cubic-bezier(0.68, -0.2, 0.265, 1.55);
+        }
+        .header.is-sticky .header-top {
+            margin-bottom: 12px;
+        }
+        .header img.ht-logo {
+            height: 50px;
+            transition: all 0.5s cubic-bezier(0.68, -0.2, 0.265, 1.55);
+        }
+        .header.is-sticky img.ht-logo {
+            height: 32px;
         }
         .ht-left, .ht-right { flex: 1; }
         .ht-right { display: flex; justify-content: flex-end; }
@@ -107,6 +130,10 @@
         
         .header-bottom {
             padding-bottom: 16px;
+            transition: all 0.5s cubic-bezier(0.68, -0.2, 0.265, 1.55);
+        }
+        .header.is-sticky .header-bottom {
+            padding-bottom: 10px;
         }
         .gnb-new {
             display: flex;
@@ -365,7 +392,7 @@
             <div class="header-top">
                 <div class="ht-left"></div>
                 <div class="ht-center">
-                    <img src="logo.png" alt="부동산 정보채널 공실뉴스" style="height: 50px;" onerror="this.src='https://via.placeholder.com/200x50?text=GONGSIL+NEWS'">
+                    <img src="logo.png" class="ht-logo" alt="부동산 정보채널 공실뉴스" onerror="this.src='https://via.placeholder.com/200x50?text=GONGSIL+NEWS'">
                 </div>
                 <div class="ht-right">
                     <div class="txt-banner-container" id="txt-banner-container" style="position: relative; display: inline-block;">
@@ -1024,6 +1051,16 @@
                 startTicker();
                 dropdown.style.display = 'none';
             });
+        });
+
+        // Sticky Header scroll detection
+        document.addEventListener("scroll", () => {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 40) {
+                header.classList.add('is-sticky');
+            } else {
+                header.classList.remove('is-sticky');
+            }
         });
     </script>
 </body>
