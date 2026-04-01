@@ -368,7 +368,14 @@
                     <img src="logo.png" alt="부동산 정보채널 공실뉴스" style="height: 50px;" onerror="this.src='https://via.placeholder.com/200x50?text=GONGSIL+NEWS'">
                 </div>
                 <div class="ht-right">
-                    <a href="#" class="free-banner">부동산 누구나 무료!</a>
+                    <div class="txt-banner-wrap" style="height: 24px; overflow: hidden; position: relative; display: inline-flex; justify-content: flex-end; align-items: center; width: 100%;">
+                        <ul id="txt-banner-list" style="list-style: none; margin: 0; padding: 0; text-align: right; width: 100%;">
+                            <li style="height: 24px; display: flex; align-items: center; justify-content: flex-end;"><a href="#" class="free-banner">AI 전계부터, 한경ALICE</a></li>
+                            <li style="height: 24px; display: flex; align-items: center; justify-content: flex-end;"><a href="#" class="free-banner">국내 최대 투자 축제, KIW</a></li>
+                            <li style="height: 24px; display: flex; align-items: center; justify-content: flex-end;"><a href="#" class="free-banner">한경지수, KEDI 오픈</a></li>
+                            <li style="height: 24px; display: flex; align-items: center; justify-content: flex-end;"><a href="#" class="free-banner">두뇌를 깨울 시간, ALICE Q</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             <div class="header-bottom">
@@ -954,6 +961,37 @@
                     console.error('Failed to load properties for map:', err);
                 }
             });
+        });
+    </script>
+    <script>
+        // Text Banner Ticker Animation
+        document.addEventListener("DOMContentLoaded", function() {
+            const bannerList = document.getElementById('txt-banner-list');
+            if (!bannerList) return;
+            const items = bannerList.querySelectorAll('li');
+            if (items.length <= 1) return;
+            
+            let idx = 0;
+            const itemHeight = 24; 
+            
+            // clone first item and append
+            const firstClone = items[0].cloneNode(true);
+            bannerList.appendChild(firstClone);
+            const totalItems = items.length + 1;
+            
+            setInterval(() => {
+                idx++;
+                bannerList.style.transition = 'transform 0.5s ease-in-out';
+                bannerList.style.transform = `translateY(-${idx * itemHeight}px)`;
+                
+                if (idx === totalItems - 1) {
+                    setTimeout(() => {
+                        bannerList.style.transition = 'none';
+                        bannerList.style.transform = `translateY(0)`;
+                        idx = 0;
+                    }, 500); // 0.5s wait to match transition time
+                }
+            }, 3000);
         });
     </script>
 </body>
