@@ -588,55 +588,13 @@
 </head>
 
 <body>
-    <!-- 헤더 -->
-    <header class="header">
-        <div class="header-left">
-            <div class="logo-group">
-                <a href="./" class="logo-img-link">
-                    <img src="logo.png" alt="공실뉴스" style="height: 28px;">
-                </a>
-            </div>
-            <nav class="nav">
-                <!-- 탭 버튼 -->
-                <a href="gongsil" class="nav-tab active">공실열람</a>
-                <a href="news" class="nav-tab">뉴스기사</a>
-                <a href="study" class="nav-tab">공실스터디</a>
-                <button class="btn-global-search" id="btnGlobalSearchToggle" style="background: none; border: none; cursor: pointer; padding: 0 4px; margin-left: 10px; vertical-align: middle;" onclick="window.toggleGlobalSearchPanel()">
-                    <svg id="iconSearchClosed" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <svg id="iconSearchOpened" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-            </nav>
-        </div>
-        <div class="header-right" style="display: flex; align-items: center;">
-            <a href="#" id="headerLoginBtn" class="btn-login">구글 로그인</a>
-            <div id="userProfile" style="display: none; align-items: center; gap: 8px;">
-                <span id="userNameDisplay" style="font-size: 14px; font-weight: bold; color: #333;"></span>
-                <span id="userRoleBadge" style="font-size: 11px; padding: 3px 6px; border-radius: 4px; background: #f0f0f0; color: #555;">로딩중</span>
-                <a href="#" id="headerLogoutBtn" class="btn-login" style="background:#666; color:white; border:none;">로그아웃</a>
-            </div>
-            <!-- 공실등록 버튼 -->
-            <a href="user_admin.html?page=register" id="btnRegProperty" class="btn-login" style="background:#1a73e8; color:#fff; border:none; margin-right:6px; font-weight:bold;">공실등록</a>
-            <a href="https://smartstore.naver.com/mygongsil/products/10361563253" target="_blank" class="btn-biz">중개사무소 가입 및 상품문의 &gt;</a>
-        </div>
-    </header>
-
-    <!-- 글로벌 검색 입력 패널 (기본 숨김) -->
-    <div id="globalSearchPanel" style="display: none; background-color: #0f141e; width: 100%; padding: 30px 0; text-align: center; position: absolute; top: 60px; left: 0; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
-        <div style="position: relative; display: inline-block; width: 500px; max-width: 90%; vertical-align: middle;">
-            <input type="text" id="globalKeywordInput" placeholder="검색어를 입력해주세요" style="width: 100%; padding: 16px 20px; padding-right: 50px; font-size: 16px; border: none; border-radius: 4px; outline: none; box-sizing: border-box;" onkeypress="if(event.key==='Enter') window.executeGlobalSearch()">
-            <button onclick="window.executeGlobalSearch()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 5px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            </button>
-        </div>
-        <button onclick="window.toggleGlobalSearchPanel()" style="background: none; border: none; cursor: pointer; vertical-align: middle; margin-left: 15px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-    </div>
-
     <!-- 상단 전체 화면 필터 영역 (네이버 부동산 스타일) -->
-    <div class="top-filter-bar">
+    <div class="top-filter-bar" style="margin-top: 0; position: relative;">
         <!-- 1. 메인 물건 정보 탭 -->
-        <div class="top-row">
+        <div class="top-row" style="align-items: center;">
+            <a href="../" class="logo-img-link" style="margin-right: 15px; display:inline-flex; align-items:center;">
+                <img src="../logo.png" alt="공실뉴스" style="height: 24px;">
+            </a>
             <button class="top-tab active" onclick="selectCategory('apart')">아파트·오피스텔</button>
             <button class="top-tab" onclick="selectCategory('villa')">빌라·주택</button>
             <button class="top-tab" onclick="selectCategory('one')">원룸·투룸</button>
