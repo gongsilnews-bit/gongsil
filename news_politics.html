@@ -508,8 +508,14 @@
             display: flex;
             gap: 20px;
             border-bottom: 1px solid #eee;
-            padding: 24px 0;
+            padding: 24px 10px;
             align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-radius: 8px;
+        }
+        .an-card:hover {
+            background: #f9f9f9;
         }
         .an-img {
             width: 160px;
@@ -750,18 +756,17 @@
             
             const card = document.createElement('div');
             card.className = 'an-card';
+            const detailUrl = `news_read.html?article_id=${news.id}`; 
+            card.onclick = () => window.location.href = detailUrl;
             
             const imgHtml = news.image_url ? `<img src="${news.image_url}" class="an-img" onerror="this.src='https://via.placeholder.com/160x100?text=News'">` : `<div class="an-img" style="display:flex;align-items:center;justify-content:center;color:#ccc;font-size:12px;">NO IMAGE</div>`;
-            
-            // 상세 이동 시, news.html?article_id=X 활용 (혹은 별도 detail URL 있다면 구조 변경)
-            const detailUrl = `news.html?article_id=${news.id}`; 
             
             const categoryBadge = news.section1 ? `[${news.section1}${news.section2 ? ' > '+news.section2 : ''}]` : '';
             
             card.innerHTML = `
                 ${imgHtml}
                 <div class="an-body">
-                    <div class="an-title" onclick="window.location.href='${detailUrl}'">${news.title}</div>
+                    <div class="an-title">${news.title}</div>
                     <div class="an-desc">${news.subtitle || news.content?.replace(/<[^>]+>/g, '').substring(0, 150) || ''}</div>
                     <div class="an-meta"><span style="color:#1e56a0; font-weight:bold; margin-right:8px;">${categoryBadge}</span> ${dateStr} · ${news.reporter_name || '공실뉴스'}</div>
                 </div>
@@ -806,7 +811,7 @@
         if(error || !data) return;
         
         c.innerHTML = data.map((item, i) => `
-            <li class="pop-item" onclick="window.location.href='news.html?article_id=${item.id}'">
+            <li class="pop-item" onclick="window.location.href='news_read.html?article_id=${item.id}'">
                 <span class="pop-ranking">${i+1}</span>
                 <span class="pop-title">${item.title}</span>
             </li>
@@ -816,114 +821,32 @@
     // 3. 우측 사이드바: 추천공실 매물리스트
     //    매물 클릭 시 공실열람으로 이동
     async function loadRecommendSidebarProps() {
-        const sb = window.gongsiClient || window.supabaseClient;
-        if(!sb) return;
-        
+        // 임시 샘플 표출 (실제 DB 연결할 경우 maps_apart 테이블 등에서 추출)
         const container = document.getElementById('recommendPropSidebarContainer');
+        const cdnBase = 'https://raw.githubusercontent.com/gongsilnews-bit/gongsilnews-bit.github.io/main';
         
-        // Fetch up to 4 recent properties that might be interesting
-        const { data, error } = await sb.from('properties')
-            .select('*')
-            .eq('status', '매물')
-            .order('created_at', { ascending: false })
-            .limit(4);
-            
-        if (error || !data || data.length === 0) {
-            container.innerHTML = '<div style="padding:10px; color:#999; text-align:center;">추천 공실이 없습니다.</div>';
-            return;
-        }
+        const sampleProps = [
+            { title: "서초대로오피스텔 101동 101호", price: "매매 10억", meta: "서초동 · 면적 84㎡(25.4평)<br>동 3개, 욕실 2개, 엘리베이터, 주차가능", badge: "공동중개", img: cdnBase + "/images/dummy1.jpg" },
+            { title: "강남대로빌딩 301호", price: "월세 1억/500", meta: "역삼동 · 면적 150㎡(45평)<br>사무실용도, 접근성 우수", badge: "수수료조율", img: cdnBase + "/images/dummy2.jpg" },
+            { title: "논현빌라 201동 101호", price: "전세 5억", meta: "논현동 · 면적 59㎡(18평)<br>신축투룸, 풀옵션", badge: "추천", img: cdnBase + "/images/dummy3.jpg" },
+            { title: "목동신시가지 7단지 701동", price: "매매 15억", meta: "목동 · 면적 134㎡(40평)<br>대형평수, 학군우수", badge: "급매", img: cdnBase + "/images/dummy4.jpg" }
+        ];
         
-        container.innerHTML = data.map(item => {
-            const title = item.title || item.address || '부동산 매물';
-            const price = `${item.trade_type || '매매'} ${item.trade_type === '월세' ? (item.deposit || 0) + '/' + (item.rent_fee || 0) : (item.price || 0) + '만'}`;
-            const meta = `${item.region1 || ''} ${item.region2 || ''} · 면적 ${item.area_exclusive || 0}㎡<br>${item.category || ''}`;
-            const badge = item.is_hot ? "추천" : "신규";
-            // Photo URL logic
-            let imgUrl = 'https://via.placeholder.com/80?text=NoImg';
-            if (item.photos && item.photos.length > 0) {
-                imgUrl = 'https://oagiznhdhhpsbllzdxhn.supabase.co/storage/v1/object/public/property-photos/' + item.photos[0];
-            } else if (item.agent_id) {
-                 // Try looking up if they have uploaded photos, but for now fallback
-                 imgUrl = 'https://via.placeholder.com/80?text=매물';
-            }
-            
-            return `
-            <div class="prop-item" onclick="window.location.href='gongsil/index.html?view_id=${item.id}'">
+        container.innerHTML = sampleProps.map(item => `
+            <div class="prop-item" onclick="window.location.href='gongsil/index.html'">
                 <div class="prop-info">
-                    <div class="prop-title" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width: 190px;">${title}</div>
-                    <div class="prop-price">${price}</div>
-                    <div class="prop-meta">${meta}</div>
-                    <span class="prop-badge">${badge}</span>
+                    <div class="prop-title">${item.title}</div>
+                    <div class="prop-price">${item.price}</div>
+                    <div class="prop-meta">${item.meta}</div>
+                    <span class="prop-badge">${item.badge}</span>
                 </div>
                 <div class="prop-img-wrapper">
-                    <img src="${imgUrl}" class="prop-img" onerror="this.src='https://via.placeholder.com/80?text=NO+IMG'">
+                    <img src="${item.img}" class="prop-img" onerror="this.src='https://via.placeholder.com/80?text=NoImg'">
                 </div>
             </div>
-            `;
-        }).join('');
+        `).join('');
     }
     
-    </script>
-    <script src="script.js"></script>
-    <script>
-        // Text Banner Ticker Animation & Dropdown
-        document.addEventListener("DOMContentLoaded", function() {
-            const container = document.getElementById('txt-banner-container');
-            const bannerList = document.getElementById('txt-banner-list');
-            const dropdown = document.querySelector('.txt-dropdown');
-            if (!bannerList || !container || !dropdown) return;
-            
-            const items = bannerList.querySelectorAll('li');
-            if (items.length <= 1) return;
-            
-            let idx = 0;
-            const itemHeight = 24; 
-            
-            // clone first item and append
-            const firstClone = items[0].cloneNode(true);
-            bannerList.appendChild(firstClone);
-            const totalItems = items.length + 1;
-            
-            let tickerInterval;
-            
-            function startTicker() {
-                tickerInterval = setInterval(() => {
-                    idx++;
-                    bannerList.style.transition = 'transform 0.5s ease-in-out';
-                    bannerList.style.transform = `translateY(-${idx * itemHeight}px)`;
-                    
-                    if (idx === totalItems - 1) {
-                        setTimeout(() => {
-                            bannerList.style.transition = 'none';
-                            bannerList.style.transform = `translateY(0)`;
-                            idx = 0;
-                        }, 500); // 0.5s wait to match transition time
-                    }
-                }, 3000);
-            }
-            
-            startTicker();
-            
-            container.addEventListener('mouseenter', () => {
-                clearInterval(tickerInterval);
-                dropdown.style.display = 'block';
-            });
-            
-            container.addEventListener('mouseleave', () => {
-                startTicker();
-                dropdown.style.display = 'none';
-            });
-        });
-
-        // Sticky Header scroll detection
-        document.addEventListener("scroll", () => {
-            const header = document.querySelector('.header');
-            if (window.scrollY > 40) {
-                header.classList.add('is-sticky');
-            } else {
-                header.classList.remove('is-sticky');
-            }
-        });
     </script>
 </body>
 </html>
