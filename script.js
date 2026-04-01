@@ -1398,8 +1398,13 @@ window.showNewsDetail = async function(news) {
     const pubDate = news.pub_date || news.created_at;
     const category = news.section1 || news.category || '전체기사';
     const section2  = news.section2 ? ' > ' + news.section2 : '';
-
-    document.getElementById('detailCategory').innerText = `뉴스/칼럼 > ${category}${section2}`;
+    
+    let displayBreadcrumb = `뉴스/칼럼 > ${category}${section2}`;
+    if (news.section1 === '우리동네부동산') {
+        displayBreadcrumb = news.section2 || news.section1;
+    }
+    
+    document.getElementById('detailCategory').innerText = displayBreadcrumb;
     document.getElementById('detailTitle').innerText = news.title || '(제목 없음)';
     const stickyReadTitle = document.getElementById('stickyReadTitle');
     if(stickyReadTitle) stickyReadTitle.innerText = news.title || '(제목 없음)';
@@ -1609,7 +1614,11 @@ window.showNewsDetail = async function(news) {
     
     // 많이 본 뉴스 연동
     if (typeof window.loadPopularNews === 'function') {
-        window.loadPopularNews(category);
+        let popCat = category;
+        if (news.section1 === '우리동네부동산' && news.section2) {
+            popCat = news.section2;
+        }
+        window.loadPopularNews(popCat);
     }
 
     // 등록 부동산 매물 연동
