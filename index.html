@@ -407,7 +407,7 @@
                 <div id="map" style="position: absolute; top:0; left:0; width: 100%; height: 100%; display: block;"></div>
                 
                 <!-- Property List Overlay -->
-                <div id="property-list-overlay" style="display: none; position: absolute; top: 20px; left: 20px; width: 340px; background: #fff; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); z-index: 99999; max-height: calc(100% - 40px); overflow-y: auto;">
+                <div id="property-list-overlay" style="display: block; position: absolute; top: 20px; left: 20px; width: 340px; background: #fff; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); z-index: 99999; max-height: calc(100% - 40px); overflow-y: auto;">
                     <div style="padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: #fff; z-index: 999999; border-radius: 12px 12px 0 0;">
                         <h3 style="margin:0; font-size: 17px; color: var(--brand-blue); display: flex; align-items: center;">
                             우리동네공실 
@@ -788,19 +788,13 @@
                     ]
                 });
 
-                // Redirect to the gongsil page when a cluster is clicked
-                kakao.maps.event.addListener(clusterer, 'clusterclick', function(cluster) {
+                window.renderPropertyList = function(markersToRender) {
                     try {
-                        const markers = cluster.getMarkers();
                         const overlay = document.getElementById('property-list-overlay');
                         const content = document.getElementById('property-list-content');
                         
-                        if (!overlay || !content) {
-                            alert("오버레이 패널을 찾을 수 없습니다.");
-                            return;
-                        }
-
-                        content.innerHTML = ''; // clear old list
+                        if (!overlay || !content) return;
+                        content.innerHTML = '';
                         
                         function formatMoney(n) {
                             if (!n) return '0';
@@ -814,7 +808,7 @@
                         }
 
                         let validCount = 0;
-                        markers.forEach(m => {
+                        markersToRender.forEach(m => {
                             try {
                                 const p = m.propertyData;
                                 if (!p) return;
@@ -872,9 +866,13 @@
                         
                         overlay.style.display = 'block';
                     } catch (e) {
-                        console.error('Cluster click error:', e);
-                        alert("리스트를 불러오는 중 오류가 발생했습니다: " + e.message);
+                        console.error('List rendering error:', e);
                     }
+                };
+
+                // Redirect to the gongsil page when a cluster is clicked
+                kakao.maps.event.addListener(clusterer, 'clusterclick', function(cluster) {
+                    window.renderPropertyList(cluster.getMarkers());
                 });
 
                 // Fetch Properties from Supabase, Geocode, and add to Clusterer
@@ -922,6 +920,8 @@
                                 if (completed === data.length) {
                                     if (markers.length > 0) {
                                         clusterer.addMarkers(markers);
+                                        // Render initial property list logic using all markers
+                                        window.renderPropertyList(markers);
                                         // Delay setBounds to ensure map acts on it properly
                                         setTimeout(() => mapInstance.setBounds(bounds), 300);
                                     }
