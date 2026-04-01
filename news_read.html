@@ -600,6 +600,43 @@
                     </div>
                 </div>
                 
+                <!-- 댓글 및 푸터 영역 -->
+                <div id="articleFooterArea" style="margin-top: 40px; display: none;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #ccc; border-bottom:1px solid #ccc; padding:15px 0; margin-bottom:50px; font-size:15px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span id="footerReporter" style="font-weight:800; color:#111;">공실뉴스</span>
+                        </div>
+                        <div style="color:#888; font-size:13px;">
+                            저작권자 © 공실뉴스 무단전재 및 재배포 금지
+                        </div>
+                    </div>
+
+                    <div class="comments-section" style="margin-bottom: 60px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <div style="font-size:22px; font-weight:800;" id="portalCommentCount">0개의 댓글</div>
+                            <div style="font-size:14px; color:#555; cursor:pointer;">내 댓글 〉</div>
+                        </div>
+                        
+                        <div style="border:1px solid #ddd; border-radius:6px; padding:15px; margin-bottom:30px; background:#fff;">
+                            <div style="font-weight:bold; margin-bottom:12px; color:#333; font-size:14px;" id="commentUserName">로그인이 필요합니다</div>
+                            <textarea id="commentInput" placeholder="댓글을 남겨보세요" style="width:100%; height:80px; border:none; resize:none; font-family:inherit; font-size:15px; outline:none; background:transparent;"></textarea>
+                            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #eee; padding-top:12px; margin-top:8px;">
+                                <div style="font-size:13px; color:#999; display:flex; align-items:center; gap:16px;">
+                                    <span><span style="font-weight:bold; color:#111;" id="commentLength">0</span> / 400</span>
+                                    <label style="cursor:pointer; display:flex; align-items:center; gap:4px; color:#555;">
+                                        <input type="checkbox" id="isSecretComment" style="accent-color:#ff9f1c;"> 비밀댓글
+                                    </label>
+                                </div>
+                                <button style="background:#f59e0b; color:#fff; border:none; border-radius:4px; padding:8px 24px; font-weight:bold; cursor:pointer; font-size:14px;" onclick="window.submitReadComment()">등록</button>
+                            </div>
+                        </div>
+
+                        <div id="portalCommentList">
+                            <div style="padding:20px; text-align:center; color:#999; font-size:14px;">첫 댓글을 남겨보세요.</div>
+                        </div>
+                    </div>
+                </div>
+
                 <div style="margin-top: 60px; padding-top: 20px; border-top: 1px solid #ccc; text-align: center;">
                     <button onclick="window.history.back()" style="padding: 10px 40px; background: #f4f6fa; border: 1px solid #ddd; border-radius: 4px; font-weight: bold; cursor: pointer; color: #333; font-size: 15px;">목록으로 돌아가기</button>
                 </div>
@@ -682,7 +719,9 @@
         const categoryBadge = news.section1 ? `[${news.section1}${news.section2 ? ' > '+news.section2 : ''}]` : '전체뉴스';
         document.getElementById('detailCategory').innerText = categoryBadge;
         document.getElementById('detailTitle').innerText = news.title;
-        document.getElementById('detailAuthor').innerText = news.reporter_name || '공실뉴스';
+        const authorStr = news.reporter_name || '공실뉴스';
+        document.getElementById('detailAuthor').innerText = authorStr;
+        if(document.getElementById('footerReporter')) document.getElementById('footerReporter').innerText = authorStr;
         
         const dateStr = new Date(news.created_at).toLocaleString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'});
         document.getElementById('detailDate').innerText = '입력 ' + dateStr;
@@ -696,7 +735,6 @@
             contentHtml += `<b style="margin-top:0;">${news.subtitle}</b>`;
         }
         
-        // 원문 HTML을 최대한 존중하며 문단 분리
         if (news.content && news.content.includes('<p>')) {
              contentHtml += `${news.content}`;
         } else if (news.content) {
@@ -706,7 +744,10 @@
              });
         }
         document.getElementById('detailBody').innerHTML = contentHtml;
-        
+        document.getElementById('articleFooterArea').style.display = 'block';
+        window.currentArticleId = articleId;
+        window.loadReadComments(articleId);
+
         // GNB 네비게이션 활성화
         const menuLinks = document.querySelectorAll('.gnb-new a');
         let matched = false;
@@ -729,6 +770,121 @@
                 }
             });
         }
+    }
+    
+    // 댓글 관련 기능 추가
+    window.loadReadComments = async function(articleId) {
+        if (!articleId) return;
+        const sb = window.gongsiClient || window.supabaseClient;
+        if (!sb) return;
+        
+        document.getElementById('portalCommentCount').innerText = '0개의 댓글';
+        const listEl = document.getElementById('portalCommentList');
+        if (listEl) listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#999; font-size:14px;">댓글을 불러오는 중...</div>';
+        
+        const { data: comments, error } = await sb.from('comments').select('*').eq('article_id', articleId).order('created_at', { ascending: false });
+        if (error) {
+            if (listEl) listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#e11d48; font-size:14px;">댓글을 불러올 수 없습니다.</div>';
+            return;
+        }
+        
+        const { data: sessionData } = await sb.auth.getSession();
+        const currentUserId = sessionData?.session?.user?.id;
+        
+        if(currentUserId) {
+            const ud = JSON.parse(localStorage.getItem('gongsil_user') || '{}');
+            document.getElementById('commentUserName').innerText = (ud.profile?.name || ud.email?.split('@')[0] || '사용자') + '님';
+        } else {
+            document.getElementById('commentUserName').innerText = '로그인이 필요합니다';
+        }
+        
+        document.getElementById('portalCommentCount').innerText = (comments ? comments.length : 0) + '개의 댓글';
+        
+        if (!comments || comments.length === 0) {
+            if (listEl) listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#999; font-size:14px;">첫 댓글을 남겨보세요.</div>';
+            return;
+        }
+        
+        listEl.innerHTML = comments.map(c => {
+            const name = c.user_name || '사용자';
+            const firstChar = name.charAt(0);
+            const cd = new Date(c.created_at);
+            const dateStr = cd.getFullYear() + '.' + (cd.getMonth()+1).toString().padStart(2,'0') + '.' + cd.getDate().toString().padStart(2,'0');
+            const isMine = currentUserId && (currentUserId === c.user_id);
+            
+            let displayContent = c.content;
+            let isSecretLabel = '';
+            if (c.is_secret) {
+                isSecretLabel = '<span style="color:#ef4444; font-size:13px; font-weight:bold; margin-right:6px;">[비밀댓글]</span>';
+                if (!isMine) {
+                    displayContent = '<span style="color:#aaa;">방문자와 작성자만 볼 수 있는 비밀댓글입니다. 🔒</span>';
+                }
+            }
+            
+            return `
+                <div style="display:flex; gap:14px; margin-bottom:20px; border-bottom:1px solid #f2f4f7; padding-bottom:20px;">
+                    <div style="width:42px; height:42px; border-radius:50%; border:2px solid #333; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:bold; font-size:16px;">
+                        ${firstChar}
+                    </div>
+                    <div style="flex:1;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                            <div style="display:flex; align-items:center; font-size:13px;">
+                                <span style="font-weight:bold; color:#111;">${name}</span>
+                                <span style="color:#ddd; margin: 0 8px;">|</span>
+                                <span style="color:#999;">${dateStr}</span>
+                            </div>
+                        </div>
+                        <div style="font-size:15px; color:#222; line-height:1.6; margin-bottom:12px; white-space:pre-wrap; word-break:break-all;">${isSecretLabel}${displayContent}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    };
+    
+    window.submitReadComment = async function() {
+        const sb = window.gongsiClient || window.supabaseClient;
+        if (!sb || !window.currentArticleId) return;
+        
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session || !session.user) {
+            alert('로그인이 필요한 서비스입니다.');
+            return;
+        }
+        
+        const ud = JSON.parse(localStorage.getItem('gongsil_user') || '{}');
+        const userName = ud.profile?.name || (ud.email ? ud.email.split('@')[0] : '사용자');
+        const inputEl = document.getElementById('commentInput');
+        const content = inputEl ? inputEl.value.trim() : '';
+        if (!content) {
+            alert('댓글 내용을 입력하세요.');
+            return;
+        }
+        
+        const isSecret = document.getElementById('isSecretComment')?.checked || false;
+        
+        const { error } = await sb.from('comments').insert([{
+            article_id: window.currentArticleId,
+            user_id: session.user.id,
+            user_name: userName,
+            content: content,
+            is_secret: isSecret
+        }]);
+        
+        if (error) {
+            alert('댓글 작성 실패: ' + error.message);
+            return;
+        }
+        
+        inputEl.value = '';
+        window.loadReadComments(window.currentArticleId);
+    };
+    
+    const cInput = document.getElementById('commentInput');
+    if(cInput) {
+        cInput.addEventListener('input', function() {
+            const lenEl = document.getElementById('commentLength');
+            if(lenEl) lenEl.innerText = this.value.length;
+        });
     }
     
     window.addEventListener('scroll', () => {
