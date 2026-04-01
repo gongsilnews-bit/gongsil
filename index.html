@@ -110,7 +110,7 @@
         }
         .gnb-new {
             display: flex;
-            gap: 30px;
+            justify-content: space-between;
             font-size: 16px;
             font-weight: 800;
             color: #222;
@@ -361,7 +361,7 @@
 
     <!-- 2. Main Header -->
     <header class="header">
-        <div class="container">
+        <div class="container px-20">
             <div class="header-top">
                 <div class="ht-left"></div>
                 <div class="ht-center">
@@ -405,6 +405,11 @@
             <!-- Left: Map Image (Replaced with Real Kakao Map) -->
             <div class="hero-left" style="display: flex; margin-top: 0; flex: 2.8; position: relative; min-height: 480px; padding: 0;">
                 <div id="map" style="position: absolute; top:0; left:0; width: 100%; height: 100%; display: block;"></div>
+                
+                <button class="map-btn" style="z-index: 99999; cursor: pointer; display: flex; align-items: center; gap: 6px; border: none;" onclick="window.moveToCurrentLocation()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    현위치에서 재검색
+                </button>
                 
                 <!-- Property List Overlay -->
                 <div id="property-list-overlay" style="display: block; position: absolute; top: 15px; left: 15px; width: 280px; background: #fff; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); z-index: 99999; max-height: calc(100% - 30px); overflow-y: auto;">
@@ -753,12 +758,29 @@
             if (!container || typeof kakao === 'undefined') return;
 
             kakao.maps.load(async function() {
-                // Kakao Map Init
+                // Kakao Map Init (Set to Gangnam/Seocho as default)
                 const options = {
-                    center: new kakao.maps.LatLng(37.5665, 126.9780), 
-                    level: 8
+                    center: new kakao.maps.LatLng(37.498095, 127.027610), 
+                    level: 6
                 };
-                const mapInstance = new kakao.maps.Map(container, options);
+                window.mapInstance = new kakao.maps.Map(container, options);
+                const mapInstance = window.mapInstance;
+
+                // Move to Current Location Script
+                window.moveToCurrentLocation = function() {
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(function(position) {
+                            const lat = position.coords.latitude;
+                            const lon = position.coords.longitude;
+                            mapInstance.setCenter(new kakao.maps.LatLng(lat, lon));
+                            mapInstance.setLevel(5); // zoom in nicely
+                        }, function(error) {
+                            alert("현위치를 가져올 수 없습니다. 위치 정보 제공에 동의해주세요.");
+                        });
+                    } else {
+                        alert("이 브라우저에서는 위치 정보를 지원하지 않습니다.");
+                    }
+                };
 
                 // Clusterer Setup
                 const clusterer = new kakao.maps.MarkerClusterer({
@@ -921,8 +943,7 @@
                                         clusterer.addMarkers(markers);
                                         // Render initial property list logic using all markers
                                         window.renderPropertyList(markers);
-                                        // Delay setBounds to ensure map acts on it properly
-                                        setTimeout(() => mapInstance.setBounds(bounds), 300);
+                                        // User requested default view at Gangnam, so do not setBounds
                                     }
                                 }
                             }
