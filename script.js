@@ -994,7 +994,7 @@ async function loadNews(category) {
                 _source: 'articles',
                 title: a.title,
                 description: a.subtitle || (a.content ? a.content.replace(/<[^>]+>/g, '').substring(0, 100) : ''),
-                category: a.section1 || '공실뉴스',
+                category: (a.section1 === '우리동네부동산' && a.section2) ? a.section2 : (a.section1 || '공실뉴스'),
                 author: a.reporter_name || '공실뉴스',
                 pub_date: a.created_at,
                 view_count: a.view_count || 0,
