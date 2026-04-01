@@ -579,7 +579,9 @@ window.selectSubTab = function(el) {
 
 // 2. 카카오 SDK 로드 및 초기화
 if (typeof kakao === 'undefined') {
-    alert("❌ 카카오 지도를 불러오지 못했습니다!\nKakao Developers 도메인 설정을 확인해주세요.");
+    if (document.getElementById('map')) {
+        console.warn("❌ 카카오 지도를 불러오지 못했습니다! Kakao Developers 도메인 설정을 확인해주세요.");
+    }
 } else {
     kakao.maps.load(async () => {
         const mapObj = initMap();
