@@ -573,6 +573,7 @@
     </style>
 
     <main class="container px-20 relative">
+        <div id="scrollIndicator" style="position:fixed; top:0; left:0; height:4px; background:#f97316; z-index:999999; width:0%; transition:width 0.1s;"></div>
         <div class="news-layout">
             <!-- 좌측 본문 영역 (1200px 레이아웃의 좌측 본문) -->
             <div class="news-read-area">
@@ -729,6 +730,68 @@
             });
         }
     }
+    
+    window.addEventListener('scroll', () => {
+        const docHeight = document.body.scrollHeight - window.innerHeight;
+        const scrollPos = window.scrollY;
+        const scrollPercent = docHeight > 0 ? (scrollPos / docHeight) * 100 : 0;
+        const indicator = document.getElementById('scrollIndicator');
+        if(indicator) indicator.style.width = scrollPercent + '%';
+        
+        // Sticky Header scroll detection
+        const header = document.querySelector('.header');
+        if (header) {
+            if (window.scrollY > 40) {
+                header.classList.add('is-sticky');
+            } else {
+                header.classList.remove('is-sticky');
+            }
+        }
+    });
+
+    // Text Banner Ticker Animation & Dropdown
+    document.addEventListener("DOMContentLoaded", function() {
+        const container = document.getElementById('txt-banner-container');
+        const bannerList = document.getElementById('txt-banner-list');
+        const dropdown = document.querySelector('.txt-dropdown');
+        if (!bannerList || !container || !dropdown) return;
+        
+        const items = bannerList.querySelectorAll('li');
+        if (items.length <= 1) return;
+        
+        let idx = 0;
+        const itemHeight = 24; 
+        
+        const firstClone = items[0].cloneNode(true);
+        bannerList.appendChild(firstClone);
+        const totalItems = items.length + 1;
+        
+        let tickerInterval;
+        function startTicker() {
+            tickerInterval = setInterval(() => {
+                idx++;
+                bannerList.style.transition = 'transform 0.5s ease-in-out';
+                bannerList.style.transform = `translateY(-${idx * itemHeight}px)`;
+                if (idx === totalItems - 1) {
+                    setTimeout(() => {
+                        bannerList.style.transition = 'none';
+                        bannerList.style.transform = `translateY(0)`;
+                        idx = 0;
+                    }, 500);
+                }
+            }, 3000);
+        }
+        startTicker();
+        
+        container.addEventListener('mouseenter', () => {
+            clearInterval(tickerInterval);
+            dropdown.style.display = 'block';
+        });
+        container.addEventListener('mouseleave', () => {
+            startTicker();
+            dropdown.style.display = 'none';
+        });
+    });
     
     window.shareUrl = function() {
         navigator.clipboard.writeText(window.location.href).then(() => {
