@@ -1415,6 +1415,19 @@ window.showNewsDetail = async function(news) {
     document.getElementById('detailDate').innerText = `입력 ${new Date(pubDate).toLocaleString('ko-KR')}`;
     document.getElementById('detailViews').innerText = `조회수 ${news.view_count || 0}`;
 
+    const btnViewOriginal = document.getElementById('btnViewOriginal');
+    if (btnViewOriginal) {
+        if (news._source === 'articles' || news.article_type) {
+            btnViewOriginal.href = `news_read.html?article_id=${news.id}`;
+            btnViewOriginal.style.display = 'inline-block';
+        } else if (news.link) {
+            btnViewOriginal.href = news.link;
+            btnViewOriginal.style.display = 'inline-block';
+        } else {
+            btnViewOriginal.style.display = 'none';
+        }
+    }
+
     const bodyContainer = document.getElementById('detailBody');
     bodyContainer.innerHTML = '<div style="padding:40px;text-align:center;color:#aaa;">본문을 불러오는 중...</div>';
     detailView.style.display = 'block';
