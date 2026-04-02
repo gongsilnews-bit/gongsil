@@ -115,10 +115,42 @@ content = header_html + """
                         <span id="detailViews">조회수 0</span>
                     </div>
                     <div class="meta-stats" style="display: flex; gap: 16px; align-items: center;">
-                        <span style="cursor:pointer; color:#888; transition:color 0.2s;" onmouseover="this.style.color='#ff9f1c'" onmouseout="this.style.color='#888'" title="공유하기" onclick="window.shareUrl()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg></span>
+                        <!-- 찜하기 -->
+                        <span id="btnScrap" style="cursor:pointer; color:#888; transition:color 0.2s;" onmouseover="this.style.color='#ff9f1c'" onmouseout="if(!this.dataset.scrapped) this.style.color='#888'" title="찜하기" onclick="window.toggleScrap()">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        </span>
+                        <!-- 공유하기 -->
+                        <span style="cursor:pointer; color:#888; transition:color 0.2s;" onmouseover="this.style.color='#ff9f1c'" onmouseout="this.style.color='#888'" title="공유하기" onclick="window.shareUrl()">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                        </span>
+                        <!-- 글자 크기 조절 버튼 -->
+                        <span style="cursor:pointer; color:#888; transition:color 0.2s; font-size:14px; font-weight:700; display:flex; align-items:baseline; gap:1px; letter-spacing:-1px;" onmouseover="this.style.color='#111'" onmouseout="this.style.color='#888'" title="글자 크기" onclick="document.getElementById('fontSizeModal').style.display='flex'">
+                            <span style="font-size:13px;">가</span><span style="font-size:17px;">가</span>
+                        </span>
+                        <!-- 프린트 -->
+                        <span style="cursor:pointer; color:#888; transition:color 0.2s;" onmouseover="this.style.color='#111'" onmouseout="this.style.color='#888'" title="기사 인쇄" onclick="window.print()">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                        </span>
                     </div>
                 </div>
                 
+                <!-- 글자 크기 조절 모달 -->
+                <div id="fontSizeModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:99999; align-items:center; justify-content:center;" onclick="if(event.target===this)this.style.display='none'">
+                    <div style="background:#fff; border-radius:16px; padding:36px 40px; width:380px; position:relative; box-shadow:0 10px 40px rgba(0,0,0,0.2);">
+                        <button onclick="document.getElementById('fontSizeModal').style.display='none'" style="position:absolute; top:14px; right:16px; background:none; border:none; font-size:22px; cursor:pointer; color:#888;">&#10005;</button>
+                        <div style="margin-bottom:28px;">
+                            <div style="font-size:16px; font-weight:700; color:#111; margin-bottom:14px; text-align:center;">글자크기</div>
+                            <input type="range" id="fontSizeSlider" min="13" max="24" value="17" style="width:100%; accent-color:#111; height:4px; cursor:pointer;" oninput="applyReadingStyle()">
+                            <div style="display:flex; justify-content:space-between; font-size:12px; color:#aaa; margin-top:6px;"><span>가</span><span style="font-size:16px;">가</span></div>
+                        </div>
+                        <div>
+                            <div style="font-size:16px; font-weight:700; color:#111; margin-bottom:14px; text-align:center;">글자행간</div>
+                            <input type="range" id="lineHeightSlider" min="140" max="240" value="180" style="width:100%; accent-color:#111; height:4px; cursor:pointer;" oninput="applyReadingStyle()">
+                            <div style="display:flex; justify-content:space-between; font-size:12px; color:#aaa; margin-top:6px;"><span>좀잇게</span><span>넓게</span></div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="article-body" id="detailBody">
                     <div style="padding: 100px 0; text-align: center; color:#888;">
                         <svg class="animate-spin" style="animation: spin 1s linear infinite; margin: 0 auto 10px;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>
@@ -413,6 +445,36 @@ content = header_html + """
         });
     }
     
+    // 글자 크기 / 행간 실시간 적용
+    window.applyReadingStyle = function() {
+        const sz  = document.getElementById('fontSizeSlider').value;
+        const lh  = document.getElementById('lineHeightSlider').value;
+        const body = document.getElementById('detailBody');
+        if(body) {
+            body.style.fontSize   = sz + 'px';
+            body.style.lineHeight = (lh / 100).toFixed(2);
+        }
+    };
+    window.applyReadingStyle = applyReadingStyle;
+
+    // 찜하기 토글
+    window.toggleScrap = function() {
+        const btn = document.getElementById('btnScrap');
+        if(!btn) return;
+        const isScrapped = btn.dataset.scrapped === '1';
+        if(isScrapped) {
+            btn.dataset.scrapped = '';
+            btn.style.color = '#888';
+            btn.querySelector('svg polygon, svg path') && (btn.querySelector('svg').style.fill = 'none');
+            btn.querySelector('svg').style.fill = 'none';
+        } else {
+            btn.dataset.scrapped = '1';
+            btn.style.color = '#ff9f1c';
+            btn.querySelector('svg').style.fill = '#ff9f1c';
+            btn.querySelector('svg').style.stroke = '#ff9f1c';
+        }
+    };
+
     window.addEventListener('scroll', () => {
         const docHeight = document.body.scrollHeight - window.innerHeight;
         const scrollPos = window.scrollY;
