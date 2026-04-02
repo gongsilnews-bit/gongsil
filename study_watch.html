@@ -475,6 +475,11 @@
                 };
             }
 
+            // 시청 기록 세션 저장 (뒤로가기 시 팝업 띄우기 용도)
+            if(courseId) {
+                sessionStorage.setItem('just_watched_' + courseId, '1');
+            }
+
             const sb = window.gongsiClient;
             if(!sb) return;
 

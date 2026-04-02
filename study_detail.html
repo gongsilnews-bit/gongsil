@@ -1508,8 +1508,10 @@
 
                 if (curriContainer) curriContainer.innerHTML = curriHtml;
                 
-                // 4. 후기 팝업 자동 트리거 (ask_review 파라미터 감지)
-                if(urlParams.get('ask_review') === '1') {
+                // 4. 후기 팝업 자동 트리거 (ask_review 파라미터 감지 혹은 세션 스토리지 읽기)
+                if(urlParams.get('ask_review') === '1' || sessionStorage.getItem('just_watched_' + courseId) === '1') {
+                    // 세션의 경우 한 번 띄웠으면 바로 지워줍니다.
+                    sessionStorage.removeItem('just_watched_' + courseId);
                     openReviewModal();
                 }
 
