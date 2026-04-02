@@ -1013,38 +1013,53 @@
         `;
     };
 
-    // 설정 저장하기 (회원 전용)
     window.saveReadingPref = async function() {
-        const sb = window.gongsiClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null) || window.supabaseClient;
-        if (!sb) return;
-        const { data: { session } } = await sb.auth.getSession();
-        if (!session || !session.user) {
-            window.showToast('회원가입 또는 로그인을 하시면 나만의 글자 크기를 저장할 수 있습니다!', 'login.html');
-            return;
+        try {
+            const sb = window.gongsiClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null) || window.supabaseClient;
+            if (!sb) {
+                window.showToast('오류: 데이터베이스에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
+                return;
+            }
+            const { data, error } = await sb.auth.getSession();
+            if (error) throw error;
+            const session = data?.session;
+            
+            if (!session || !session.user) {
+                window.showToast('🚨 회원가입 또는 로그인을 하시면 나만의 글자 크기를 저장할 수 있습니다!', 'login.html');
+                return;
+            }
+            const sz = document.getElementById('fontSizeSlider').value;
+            const lh = document.getElementById('lineHeightSlider').value;
+            localStorage.setItem('gongsil_reading_pref', JSON.stringify({ sz: sz, lh: lh }));
+            window.showToast('✔️ 나만의 글자 설정이 성공적으로 저장되었습니다.');
+            document.getElementById('fontSizeModal').style.display = 'none';
+        } catch (e) {
+            window.showToast('저장 중 오류 발생: ' + (e.message || e));
+            console.error('saveReadingPref error:', e);
         }
-        const sz = document.getElementById('fontSizeSlider').value;
-        const lh = document.getElementById('lineHeightSlider').value;
-        localStorage.setItem('gongsil_reading_pref', JSON.stringify({ sz: sz, lh: lh }));
-        window.showToast('✔️ 나만의 글자 설정이 성공적으로 저장되었습니다.');
-        document.getElementById('fontSizeModal').style.display = 'none';
     };
 
     // 저장된 설정 불러오기
     window.loadReadingPref = async function() {
-        const prefStr = localStorage.getItem('gongsil_reading_pref');
-        if (!prefStr) return;
-        const sb = window.gongsiClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null) || window.supabaseClient;
-        if (!sb) return;
-        const { data: { session } } = await sb.auth.getSession();
-        if (session && session.user) {
-            try {
+        try {
+            const prefStr = localStorage.getItem('gongsil_reading_pref');
+            if (!prefStr) return;
+            const sb = window.gongsiClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null) || window.supabaseClient;
+            if (!sb) return;
+            const { data, error } = await sb.auth.getSession();
+            if (error) throw error;
+            const session = data?.session;
+            
+            if (session && session.user) {
                 const pref = JSON.parse(prefStr);
                 const sSlider = document.getElementById('fontSizeSlider');
                 const lSlider = document.getElementById('lineHeightSlider');
                 if (sSlider && pref.sz) sSlider.value = pref.sz;
                 if (lSlider && pref.lh) lSlider.value = pref.lh;
                 window.applyReadingStyle();
-            } catch(e){}
+            }
+        } catch (e) {
+            console.error('loadReadingPref error:', e);
         }
     };
 
