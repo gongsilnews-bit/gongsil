@@ -430,7 +430,6 @@ function _gongsiAuthInit(supabase) {
                         submitBtn.textContent = '공실뉴스 시작하기 ✨';
                         reqInputs.forEach(i => {
                             i.required = false;
-                            i.value = '';
                         });
                     }
                 });
