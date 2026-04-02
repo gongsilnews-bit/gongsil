@@ -194,18 +194,6 @@
         <button class="tab-btn" onclick="switchTab('write')">✏️ 새 강의 등록</button>
     </div>
 
-<!-- 미리보기 오버레이 -->
-<div class="preview-overlay" id="previewOverlay" onclick="closePreview(event)">
-    <div class="preview-panel" onclick="event.stopPropagation()">
-        <div class="preview-header">
-            <h3>👁️ 강의 미리보기</h3>
-            <button class="btn-preview-close" onclick="closePreview()">✕</button>
-        </div>
-        <div class="preview-iframe-wrap">
-            <iframe id="previewFrame" src="about:blank"></iframe>
-        </div>
-    </div>
-</div>
 
     <!-- ===== 목록 탭 ===== -->
     <div class="tab-panel active" id="tabList">
@@ -513,19 +501,17 @@
         });
     }
 
-    // ── 미리보기 ──
+    // ── 미리보기 (부모 프레임에 로드) ──
     function openPreview(id) {
-        const frame = document.getElementById('previewFrame');
-        frame.src = `../study_view.html?id=${id}&preview=1`;
-        document.getElementById('previewOverlay').classList.add('open');
+        // admin/index.html의 mainFrame에 직접 로드
+        const parent = window.parent;
+        if (parent && parent.document.getElementById('mainFrame')) {
+            parent.document.getElementById('mainFrame').src =
+                '../study_view.html?id=' + id + '&t=' + Date.now();
+            const titleEl = parent.document.getElementById('contentTitle');
+            if (titleEl) titleEl.textContent = '강의 미리보기';
+        }
     }
-    function closePreview(e) {
-        if (e && e.target !== document.getElementById('previewOverlay')) return;
-        document.getElementById('previewOverlay').classList.remove('open');
-        document.getElementById('previewFrame').src = 'about:blank';
-    }
-    // ESC 키로 닫기
-    document.addEventListener('keydown', e => { if(e.key==='Escape') { document.getElementById('previewOverlay').classList.remove('open'); document.getElementById('previewFrame').src='about:blank'; } });
 
     // ── 수정 폼 열기 ──
     async function openEdit(id) {
