@@ -1008,12 +1008,8 @@
             <!-- 상단 이미지 스와이퍼 (사진 4~5장 롤링) -->
             <div class="swiper swiper-container">
                 <div class="swiper-wrapper">
-                    <!-- 더미 사진들 -->
-                    <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&q=80&w=1000" alt="강의사진 1"></div>
-                    <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=1000" alt="강의사진 2"></div>
-                    <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=1000" alt="강의사진 3"></div>
-                    <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&q=80&w=1000" alt="강의사진 4"></div>
-                    <div class="swiper-slide"><img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=1000" alt="강의사진 5"></div>
+                    <!-- 불러오기 전까지 빈 공간 -->
+                    <div class="swiper-slide" style="background:#e2e8f0; display:flex; justify-content:center; align-items:center; color:#94a3b8;">이미지 불러오는 중...</div>
                 </div>
                 <!-- 네비게이션 버튼 -->
                 <div class="swiper-button-next"></div>
@@ -1023,16 +1019,14 @@
 
             <!-- 강사 및 평가 요약 -->
             <div class="tutor-summary-bar">
-                <div class="tutor-avatar">
-                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&h=100" alt="강사 프로필">
-                </div>
+                <div class="tutor-avatar" style="background:#e2e8f0;"></div>
                 <div>
-                    <div class="tutor-name">김프로 강사</div>
-                    <div class="tutor-desc">부동산 실전 노션 활용법 / 업무 자동화 전문가</div>
+                    <div class="tutor-name" style="color:#94a3b8;">강사 정보 불러오는 중...</div>
+                    <div class="tutor-desc"></div>
                 </div>
                 <div class="score-info">
-                    <span class="star">★ 4.9</span>
-                    <span style="color:#888; font-weight:normal;">(124개의 수강평)</span>
+                    <span class="star"></span>
+                    <span style="color:#888; font-weight:normal;"></span>
                 </div>
             </div>
 
@@ -1045,10 +1039,7 @@
             </div>
 
             <!-- 리뉴얼 배너 (스크린샷 참고) -->
-            <div class="notice-banner">
-                <h3>리뉴얼 클래스 안내</h3>
-                <p>해당 클래스는 기존 콘텐츠에서 전체 강의 중 약 30%가 재구성되어 신규 챕터가 추가될 예정입니다.<br>강의를 수강하시면 새롭게 업데이트되는 양식을 함께 사용할 수 있습니다.</p>
-            </div>
+            <div class="notice-banner" style="display:none;"></div>
 
             <!-- 클래스 소개 -->
             <section id="section-intro" class="detail-section">
@@ -1073,37 +1064,7 @@
             </section>
 
             <!-- 크리에이터 영역 -->
-            <section id="section-tutor" class="detail-section" style="padding-top:40px;">
-                <h3>크리에이터</h3>
-                <div class="tutor-card">
-                    <div class="tutor-card-header">
-                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&h=100" alt="강사 프로필">
-                        <div class="tutor-card-name">Peter Kim</div>
-                        <a href="#" class="btn-tutor-home">
-                            <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                            크리에이터 홈
-                        </a>
-                    </div>
-                    <div class="tutor-card-content" id="tutorContent">
-                        <ul>
-                            <li>現 프로솔브 대표</li>
-                            <li>現 경험수집잡화점 대표</li>
-                            <li>現 노션 전문 강사</li>
-                            <li>現 노션 공식 앰버서더</li>
-                            <li>前 IT 회사 엔지니어 및 마케터</li>
-                            <li>저서로는 &lt;시작노트&gt;, &lt;한 권으로 끝내는 노션&gt;가 있습니다.</li>
-                        </ul>
-                        <p class="tutor-card-desc">늘 어떻게 살 것인가를 고민합니다. 그래서 오늘도 기본으로 돌아갑니다. 우리 삶에 기본은 무엇일까요? 전...</p>
-                    </div>
-                    <!-- 더보기 오버레이 -->
-                    <div class="intro-more-overlay" id="tutorMoreOverlay" style="margin-top: -100px; height: 100px; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1) 70%);">
-                        <button class="btn-intro-more" onclick="expandTutor()">
-                            <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                            더보기
-                        </button>
-                    </div>
-                </div>
-            </section>
+            <section id="section-tutor" class="detail-section" style="padding-top:40px; display:none;">
 
             <!-- 후기 영역 -->
             <section id="section-review" class="detail-section" style="padding-top:40px; min-height:80vh;">
