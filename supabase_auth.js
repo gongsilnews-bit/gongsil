@@ -36,7 +36,10 @@ function _gongsiAuthInit(supabase) {
             const redirectUrl = window.location.origin + redirectPath + window.location.search;
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
-                options: { redirectTo: redirectUrl }
+                options: {
+                    redirectTo: redirectUrl,
+                    queryParams: { prompt: 'select_account' }
+                }
             });
             if (error) {
                 console.error("로그인 에러:", error);
