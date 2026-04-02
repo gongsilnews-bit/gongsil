@@ -50,6 +50,13 @@ async function handleAuthStateChange(user) {
 window.handleLoginClick = async function(e) {
     if(e) e.preventDefault();
     console.log("Login button clicked! Redirecting to OAuth...");
+    
+    // 로컬 파일에서 실행 시 경고창 띄우기
+    if (window.location.protocol === 'file:') {
+        alert("구글 로그인 보안 정책상 로컬 파일(file:///)에서는 동작하지 않습니다.\n깃허브 페이지 인터넷 주소(https://gongsilnews-bit.github.io/index.html)로 직접 접속해서 테스트해 주세요!");
+        return;
+    }
+
     try {
         let redirectPath = window.location.pathname;
         if (redirectPath !== '/' && !redirectPath.endsWith('.html') && !redirectPath.endsWith('/')) {
@@ -69,6 +76,7 @@ window.handleLoginClick = async function(e) {
         }
     } catch(err) {
         console.error("Critical login error:", err);
+        alert("로그인 요청 중 충돌 오류가 발생했습니다: " + err.message + "\n인터넷 창에서 실행 중인지 확인하세요.");
     }
 };
 
