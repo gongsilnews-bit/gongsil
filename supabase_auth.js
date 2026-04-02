@@ -192,45 +192,45 @@ function _gongsiAuthInit(supabase) {
         if (!modal) {
             const style = document.createElement('style');
             style.innerHTML = `
-                .greg-modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); display:flex; justify-content:center; align-items:flex-start; padding:40px 20px; box-sizing:border-box; overflow-y:auto; z-index:9999999; }
-                .greg-box { background:#fff; border-radius:16px; width:100%; max-width:480px; box-shadow:0 10px 40px rgba(0,0,0,0.2); position:relative; padding:40px; animation: gregPopup 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); margin-bottom: 40px; }
+                .greg-modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); display:flex; justify-content:center; align-items:flex-start; padding:20px 16px; box-sizing:border-box; overflow-y:auto; z-index:9999999; }
+                .greg-box { background:#fff; border-radius:14px; width:100%; max-width:440px; box-shadow:0 10px 40px rgba(0,0,0,0.2); position:relative; padding:28px 28px 24px; animation: gregPopup 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); margin-bottom: 20px; }
                 @keyframes gregPopup { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
-                .greg-header { text-align:center; margin-bottom:30px; }
-                .greg-header h2 { font-size:22px; font-weight:800; color:#111; margin:0 0 8px 0; }
-                .greg-header p { font-size:14px; color:#666; margin:0; }
-                .greg-label { display:block; font-size:13px; font-weight:700; color:#444; margin-bottom:6px; }
-                .greg-input { width:100%; padding:12px; border:1.5px solid #ddd; border-radius:8px; font-size:14px; margin-bottom:15px; box-sizing:border-box; transition:border 0.2s; background:#fdfdfd; font-family:inherit;}
+                .greg-header { text-align:center; margin-bottom:20px; }
+                .greg-header h2 { font-size:18px; font-weight:800; color:#111; margin:0 0 6px 0; }
+                .greg-header p { font-size:12px; color:#666; margin:0; }
+                .greg-label { display:block; font-size:12px; font-weight:700; color:#444; margin-bottom:4px; }
+                .greg-input { width:100%; padding:9px 10px; border:1.5px solid #ddd; border-radius:7px; font-size:13px; margin-bottom:11px; box-sizing:border-box; transition:border 0.2s; background:#fdfdfd; font-family:inherit;}
                 .greg-input:focus { outline:none; border-color:#1e56a0; background:#fff; box-shadow:0 0 0 3px rgba(30,86,160,0.1); }
                 .greg-input[readonly] { background:#f1f5f9; color:#666; }
-                .greg-roles { display:flex; gap:10px; margin-bottom:20px; }
-                .greg-role-btn { flex:1; padding:14px; border:2px solid #eee; border-radius:10px; background:#fff; cursor:pointer; text-align:center; transition:all 0.2s; }
-                .greg-role-btn span { display:block; font-size:13px; font-weight:800; color:#666; margin-top:4px; }
+                .greg-roles { display:flex; gap:8px; margin-bottom:16px; }
+                .greg-role-btn { flex:1; padding:10px; border:2px solid #eee; border-radius:8px; background:#fff; cursor:pointer; text-align:center; transition:all 0.2s; }
+                .greg-role-btn span { display:block; font-size:12px; font-weight:800; color:#666; margin-top:3px; }
                 .greg-role-btn.active { border-color:#1e56a0; background:#f4f6fa; }
                 .greg-role-btn.active span { color:#1e56a0; }
-                #gregRealtorFields { display:none; background:#f8f9fa; border:1px solid #e0e0e0; padding:20px; border-radius:12px; margin-bottom:20px; }
-                .greg-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+                #gregRealtorFields { display:none; background:#f8f9fa; border:1px solid #e0e0e0; padding:14px; border-radius:10px; margin-bottom:16px; }
+                .greg-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
                 .greg-full { grid-column:span 2; }
                 .greg-row { display:flex; gap:8px; margin-bottom:8px; }
-                .greg-btn-sm { padding:0 12px; background:#333; color:#fff; border:none; border-radius:6px; font-size:13px; cursor:pointer; font-weight:bold; white-space:nowrap;}
-                .greg-file-box { border:1.5px dashed #ccc; padding:15px; border-radius:8px; text-align:center; cursor:pointer; position:relative; background:#fff; margin-bottom:12px; transition:border 0.2s;}
+                .greg-btn-sm { padding:0 10px; background:#333; color:#fff; border:none; border-radius:6px; font-size:12px; cursor:pointer; font-weight:bold; white-space:nowrap;}
+                .greg-file-box { border:1.5px dashed #ccc; padding:10px; border-radius:8px; text-align:center; cursor:pointer; position:relative; background:#fff; margin-bottom:10px; transition:border 0.2s;}
                 .greg-file-box:hover { border-color:#1e56a0; }
                 .greg-file-box input { position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; }
-                .greg-file-msg { font-size:12px; color:#888; pointer-events:none; }
-                .greg-terms { border-top:1px solid #eee; padding-top:20px; margin-bottom:25px; }
-                .greg-term-item { display:flex; gap:8px; margin-bottom:6px; font-size:13px; color:#555; cursor:pointer; align-items:flex-start; }
-                .greg-term-item input { width:16px; height:16px; accent-color:#1e56a0; cursor:pointer; margin-top:0px; flex-shrink:0; }
+                .greg-file-msg { font-size:11px; color:#888; pointer-events:none; }
+                .greg-terms { border-top:1px solid #eee; padding-top:14px; margin-bottom:18px; }
+                .greg-term-item { display:flex; gap:7px; margin-bottom:5px; font-size:12px; color:#555; cursor:pointer; align-items:flex-start; }
+                .greg-term-item input { width:15px; height:15px; accent-color:#1e56a0; cursor:pointer; margin-top:1px; flex-shrink:0; }
                 .greg-term-item-label { flex:1; }
-                .greg-term-toggle { background:none; border:none; cursor:pointer; font-size:11px; color:#1e56a0; padding:2px 6px; flex-shrink:0; transition:transform 0.25s; line-height:1; border:1px solid #cde; border-radius:4px; }
+                .greg-term-toggle { background:none; border:1px solid #cde; cursor:pointer; font-size:10px; color:#1e56a0; padding:1px 5px; flex-shrink:0; transition:transform 0.25s; line-height:1.4; border-radius:3px; }
                 .greg-term-toggle.open { transform:rotate(180deg); }
-                .greg-term-box { max-height:0; overflow:hidden; font-size:12px; color:#666; background:#f9f9f9; padding:0 12px; border:0px solid #ddd; border-radius:6px; margin:0 0 4px 30px; line-height:1.6; transition:max-height 0.35s ease, padding 0.25s ease, border-width 0.1s; }
-                .greg-term-box.open { max-height:160px; overflow-y:auto; padding:12px; border:1px solid #ddd; margin-bottom:12px; }
-                .greg-term-box::-webkit-scrollbar { width:6px; }
+                .greg-term-box { max-height:0; overflow:hidden; font-size:11px; color:#666; background:#f9f9f9; padding:0 10px; border:0px solid #ddd; border-radius:5px; margin:0 0 3px 26px; line-height:1.6; transition:max-height 0.35s ease, padding 0.25s ease, border-width 0.1s; }
+                .greg-term-box.open { max-height:140px; overflow-y:auto; padding:10px; border:1px solid #ddd; margin-bottom:10px; }
+                .greg-term-box::-webkit-scrollbar { width:5px; }
                 .greg-term-box::-webkit-scrollbar-thumb { background:#ccc; border-radius:3px; }
-                .greg-submit { width:100%; padding:15px; background:#1e56a0; color:#fff; border:none; border-radius:10px; font-size:16px; font-weight:bold; cursor:pointer; transition:background 0.2s; box-shadow:0 4px 12px rgba(30,86,160,0.3); font-family:inherit;}
+                .greg-submit { width:100%; padding:12px; background:#1e56a0; color:#fff; border:none; border-radius:9px; font-size:14px; font-weight:bold; cursor:pointer; transition:background 0.2s; box-shadow:0 4px 12px rgba(30,86,160,0.3); font-family:inherit;}
                 .greg-submit:hover { background:#16427d; }
                 .greg-submit:disabled { background:#ccc; cursor:not-allowed; box-shadow:none; }
-                .greg-loader { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); z-index:10; display:none; flex-direction:column; justify-content:center; align-items:center; border-radius:16px; }
-                .greg-spinner { width:40px; height:40px; border:4px solid #f3f3f3; border-top:4px solid #1e56a0; border-radius:50%; animation:gregSpin 1s linear infinite; margin-bottom:15px; }
+                .greg-loader { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); z-index:10; display:none; flex-direction:column; justify-content:center; align-items:center; border-radius:14px; }
+                .greg-spinner { width:36px; height:36px; border:3px solid #f3f3f3; border-top:3px solid #1e56a0; border-radius:50%; animation:gregSpin 1s linear infinite; margin-bottom:12px; }
                 @keyframes gregSpin { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }
             `;
             document.head.appendChild(style);
@@ -328,11 +328,11 @@ function _gongsiAuthInit(supabase) {
                         </div>
 
                         <div class="greg-terms">
-                            <label class="greg-term-item" style="border-bottom:2px solid #1e56a0; padding-bottom:12px; margin-bottom:16px; font-size:15px; font-weight:800; color:#111;">
+                            <label class="greg-term-item" style="border-bottom:2px solid #1e56a0; padding-bottom:10px; margin-bottom:12px; font-size:13px; font-weight:800; color:#111;">
                                 <input type="checkbox" id="gregChkAll" style="width:20px; height:20px;">
                                 <div>
                                     모두 동의합니다.<br>
-                                    <span style="font-size:12.5px; font-weight:normal; color:#666; margin-top:6px; display:block;">약관, 개인정보 수집 및 이용 안내, 제3자 정보제공, 서비스 홍보 및 마케팅 활용에 모두 동의.</span>
+                                    <span style="font-size:11px; font-weight:normal; color:#666; margin-top:4px; display:block;">약관, 개인정보 수집 및 이용 안내, 제3자 정보제공, 서비스 홍보 및 마케팅 활용에 모두 동의.</span>
                                 </div>
                             </label>
 
@@ -386,7 +386,7 @@ function _gongsiAuthInit(supabase) {
                                 <input type="checkbox" class="greg-chk-ind" id="gregChk4">
                                 <span class="greg-term-item-label"><strong>[선택]</strong> 이벤트 등 프로모션 알림 메일 수신</span>
                             </label>
-                        </div><br>이 약관은 온라인을 통해 공시함으로써 효력을 발생합니다.<br>회사는 불가피한 변경의 사유가 있을 때 약관을 임의로 변경할 권한을 가지며 변경된 약관은 온라인을 통해 공지됨으로써 효력이 발생됩니다.<br>회원은 변경된 약관에 동의하지 않을 경우 탈퇴를 요청할 수 있으며 변경된 약관의 효력발생일 이후에도 계속적으로 서비스를 이용하는 경우에는 회원이 약관의 변경 사항에 동의한 것으로 봅니다.<br><br>
+                        </div>
 
                         <button type="submit" id="gregSubmitBtn" class="greg-submit">공실뉴스 시작하기 ✨</button>
                     </form>
