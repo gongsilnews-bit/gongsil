@@ -317,7 +317,10 @@
             overflow: hidden;
             padding: 20px 0;
             position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
         }
+        .ticker-wrap:hover { background: #f9f9f9; }
         .ticker {
             display: inline-flex;
             font-size: 16px;
@@ -607,7 +610,7 @@
             <a href="market_dashboard.html" class="ticker-label">
                 실시간 부동산 지수 <i class="fa-solid fa-chevron-right" style="font-size:12px; margin-left:8px;"></i>
             </a>
-            <div class="ticker-wrap">
+            <div class="ticker-wrap" onclick="window.location.href='market_dashboard.html'" title="클릭하면 전국데이터지수 대시보드로 이동합니다">
                 <div class="ticker" id="market-ticker">
                     <!-- JS will populate heavily duplicated items for seamless loop -->
                 </div>
