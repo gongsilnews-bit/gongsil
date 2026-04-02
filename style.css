@@ -290,7 +290,7 @@ body {
 }
 
 .news-card.active {
-    background-color: #fff8e6;
+    background-color: #eaf4ff;
     border-left: 4px solid var(--primary-color);
 }
 
