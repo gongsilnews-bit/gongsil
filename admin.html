@@ -6,6 +6,7 @@
     <title>공실관리 - 공실뉴스 Admin</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=435d3602201a49ea712e5f5a36fe6efc&libraries=services&autoload=false"></script>
     <style>
         :root {
             --primary-color: #ff9f1c;
@@ -801,6 +802,33 @@
                     progressDiv.style.display = 'none';
                     return;
                 }
+
+                // ✅ 등록 전 자동 좌표 변환 (geocoding)
+                progressDiv.innerText = `주소 → 좌표 변환 중... (0/${insertRows.length})`;
+                await new Promise(resolve => {
+                    kakao.maps.load(async () => {
+                        const geocoder = new kakao.maps.services.Geocoder();
+                        let done = 0;
+                        for (const row of insertRows) {
+                            const addr = `${row.sido || ''} ${row.sigungu || ''} ${row.dong || ''}`.trim();
+                            if (addr) {
+                                await new Promise(res => {
+                                    geocoder.addressSearch(addr, (result, status) => {
+                                        if (status === kakao.maps.services.Status.OK) {
+                                            row.lat = parseFloat(result[0].y);
+                                            row.lng = parseFloat(result[0].x);
+                                        }
+                                        res();
+                                    });
+                                });
+                            }
+                            done++;
+                            progressDiv.innerText = `주소 → 좌표 변환 중... (${done}/${insertRows.length})`;
+                            await new Promise(r => setTimeout(r, 80)); // API 속도 제한 방지
+                        }
+                        resolve();
+                    });
+                });
 
                 progressDiv.innerText = `총 ${insertRows.length}개의 매물을 데이터베이스에 등록 중입니다...`;
 
