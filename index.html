@@ -1013,6 +1013,7 @@
                                                 <span style="font-size:11px; font-weight:bold; color:#ff5a5f; border:1px solid #ff5a5f; background:#fff; padding:2px 4px; border-radius:2px;">${
                                                     (function(pf="") {
                                                         if (!pf) return '공동중개';
+                                                        pf = String(pf);
                                                         if (pf.includes('100')) return '수수료100%';
                                                         if (pf.includes('50')) return '수수료50%';
                                                         if (pf.includes('25')) return '수수료25%';
