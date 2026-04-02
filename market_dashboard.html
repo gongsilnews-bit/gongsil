@@ -99,7 +99,6 @@
         <div class="header-row">
             <div>
                 <h1>
-                    <img src="logo.png" style="height:32px;" onerror="this.style.display='none'">
                     부동산 시장 종합 분석
                 </h1>
                 <p>전국 지역별 매매·전세 가격지수 일간 트렌드 (중개사 전용 패널)</p>
@@ -114,9 +113,6 @@
             <label><i class="fa-solid fa-map-location-dot"></i> 지역 선택</label>
             <div>
                 <select id="select-region-1"></select>
-            </div>
-            <div>
-                <select id="select-region-2"></select>
             </div>
             <span class="region-hint">* 선택 지역의 지수를 전국·수도권·서울과 비교합니다</span>
         </div>
@@ -221,13 +217,10 @@
 
     // ── 드롭다운 초기화 ─────────────────────────────────────────────
     const sel1 = document.getElementById('select-region-1');
-    const sel2 = document.getElementById('select-region-2');
     regionsAll.forEach(reg => {
         sel1.add(new Option(reg, reg));
-        sel2.add(new Option(reg, reg));
     });
     sel1.value = '부산';
-    sel2.value = '대구';
 
     // ── 전국 카드 초기화 ─────────────────────────────────────────────
     document.getElementById('sum-sale-nat').innerHTML = `${lastVal(saleData['전국'])} ${changeHTML(saleData['전국'])}`;
@@ -243,7 +236,6 @@
                 { label: '수도권', data: saleData['수도권'], borderColor: '#bbdefb',  backgroundColor: 'transparent', borderWidth: 2, tension: 0.4 },
                 { label: '서울',   data: saleData['서울'],   borderColor: '#0A2540',  backgroundColor: 'rgba(10,37,64,.1)', borderWidth: 2, fill: true, tension: 0.4 },
                 { label: '부산',   data: saleData['부산'],   borderColor: '#d32f2f',  backgroundColor: 'transparent', borderWidth: 2, borderDash: [5,5], tension: 0.4 },
-                { label: '대구',   data: saleData['대구'],   borderColor: '#1976d2',  backgroundColor: 'transparent', borderWidth: 2, borderDash: [5,5], tension: 0.4 },
             ]
         },
         options: {
@@ -297,7 +289,6 @@
     // ── 업데이트 로직 ────────────────────────────────────────────────
     const updateDashboard = () => {
         const r1 = sel1.value;
-        const r2 = sel2.value;
 
         // Cards 3 & 4
         document.getElementById('label-reg1').textContent = r1;
@@ -305,15 +296,13 @@
         document.getElementById('sum-reg1-sale').innerHTML = `${lastVal(saleData[r1])} ${changeHTML(saleData[r1])}`;
         document.getElementById('sum-reg1-rent').innerHTML = `${lastVal(rentData[r1])} ${changeHTML(rentData[r1])}`;
 
-        // 선 그래프 datasets 3,4 갱신
+        // 선 그래프 datasets 3 갱신 (선택 지역 1개)
         lineChart.data.datasets[3].label = r1;
         lineChart.data.datasets[3].data  = saleData[r1];
-        lineChart.data.datasets[4].label = r2;
-        lineChart.data.datasets[4].data  = saleData[r2];
         lineChart.update();
 
         // 막대 그래프
-        const compareRegions = [...new Set(['전국', '수도권', '서울', r1, r2])];
+        const compareRegions = [...new Set(['전국', '수도권', '서울', r1])];
         barChart.data.labels = compareRegions;
         barChart.data.datasets[0].data = compareRegions.map(r => lastVal(saleData[r]));
         barChart.data.datasets[1].data = compareRegions.map(r => lastVal(rentData[r]));
@@ -321,7 +310,6 @@
     };
 
     sel1.addEventListener('change', updateDashboard);
-    sel2.addEventListener('change', updateDashboard);
     updateDashboard(); // 초기 실행
 </script>
 </body>
