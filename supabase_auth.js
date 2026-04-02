@@ -595,12 +595,37 @@ function _gongsiAuthInit(supabase) {
                     const { error: inErr } = await supabase.from('members').insert([memberData]);
                     if (inErr) throw inErr;
 
-                    offLoad();
-
                     if (role === 'realtor') {
-                        alert("가입 신청이 완료되었습니다! 관리자 승인(최대 24시간) 후 부동산 회원 권한이 부여됩니다.");
+                        setLoad("국세청 및 국토부 API를 통해 부동산 인증을 진행 중입니다...");
+                        try {
+                            const params = {
+                                memberId: user.id,
+                                bizRegNo: memberData.biz_reg_no || "",
+                                brokerRegNo: memberData.company_reg_no || "",
+                                companyName: memberData.company_name || ""
+                            };
+                            
+                            const { data, error: fnErr } = await supabase.functions.invoke('verify-realtor', {
+                                body: params
+                            });
+                            
+                            if (fnErr) console.warn("인증 함수 오류:", fnErr);
+                            
+                            offLoad();
+                            
+                            if (data && data.status === 'auto_verified') {
+                                alert(data.message);
+                            } else {
+                                alert(data?.message || "가입 신청 완료! 일부 확인이 필요한 항목이 있어, 관리자 검토 후(최대 24시간) 권한이 부여됩니다.");
+                            }
+                        } catch(e) {
+                            console.error("인증 처리 중 오류:", e);
+                            offLoad();
+                            alert("가입 신청 완료! 관리자 승인 후 권한이 부여됩니다.");
+                        }
                     } else {
-                        alert("반갑습니다! 공실뉴스 가입이 완료되었습니다.");
+                        offLoad();
+                        alert("반갑습니다! 공실뉴스 일반 회원 가입이 완료되었습니다.");
                     }
 
                     modal.style.display = 'none';

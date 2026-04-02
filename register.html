@@ -1354,10 +1354,20 @@
             if (session) {
                 const { data: member } = await supabase
                     .from('members')
-                    .select('role')
+                    .select('role, verification_status')
                     .eq('id', session.user.id)
                     .single();
-                if (member) role = member.role;
+                if (member) {
+                    role = member.role;
+                    if (role === 'realtor') {
+                        const vs = member.verification_status;
+                        if (vs !== 'approved' && vs !== 'auto_verified') {
+                            alert('부동산 회원 인증이 완료되어야 공실 등록이 가능합니다.\\n[마이페이지 > 정보수정]에서 필수 정보를 입력해주세요.');
+                            window.location.href = 'profile_edit.html';
+                            return;
+                        }
+                    }
+                }
             }
 
             const container = document.getElementById('brokerageBtns');

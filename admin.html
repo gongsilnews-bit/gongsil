@@ -730,6 +730,16 @@
                 const userRole = profile ? profile.role : 'general';
                 const authorName = profile ? profile.name : '';
                 const authorPhone = profile ? profile.phone : '';
+                
+                if (userRole === 'realtor') {
+                    const vs = profile.verification_status;
+                    if (vs !== 'approved' && vs !== 'auto_verified') {
+                        alert('부동산 회원 인증이 완료되어야 공실 등록이 가능합니다.\\n[마이페이지 > 정보수정]에서 필수 정보를 입력해주세요.');
+                        progressDiv.style.display = 'none';
+                        document.getElementById('excelFileInput').value = '';
+                        return;
+                    }
+                }
 
                 const insertRows = [];
                 // 1번째 줄(index 0)은 헤더이므로 1부터 시작
