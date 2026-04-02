@@ -144,9 +144,12 @@ content = header_html + """
                             <div style="display:flex; justify-content:space-between; font-size:12px; color:#aaa; margin-top:6px;"><span>가</span><span style="font-size:16px;">가</span></div>
                         </div>
                         <div>
-                            <div style="font-size:16px; font-weight:700; color:#111; margin-bottom:14px; text-align:center;">글자행간</div>
+                            <div class="font-size:16px; font-weight:700; color:#111; margin-bottom:14px; text-align:center;">글자행간</div>
                             <input type="range" id="lineHeightSlider" min="140" max="240" value="180" style="width:100%; accent-color:#111; height:4px; cursor:pointer;" oninput="applyReadingStyle()">
-                            <div style="display:flex; justify-content:space-between; font-size:12px; color:#aaa; margin-top:6px;"><span>좀잇게</span><span>넓게</span></div>
+                            <div style="display:flex; justify-content:space-between; font-size:12px; color:#aaa; margin-top:6px;"><span>좁게</span><span>넓게</span></div>
+                        </div>
+                        <div style="margin-top:25px; text-align:center;">
+                            <button onclick="window.saveReadingPref()" style="background:#ff9f1c; color:#fff; border:none; padding:10px 24px; border-radius:6px; font-weight:bold; font-size:14px; cursor:pointer;" onmouseover="this.style.background='#d97706'" onmouseout="this.style.background='#ff9f1c'">설정 저장하기</button>
                         </div>
                     </div>
                 </div>
@@ -247,6 +250,9 @@ content = header_html + """
     
     <script>
     document.addEventListener('DOMContentLoaded', async () => {
+        if (typeof window.loadReadingPref === 'function') {
+            await window.loadReadingPref();
+        }
         await loadArticle();
         await loadPopularSidebarNews();
         await loadRecommendSidebarProps();
@@ -465,6 +471,42 @@ content = header_html + """
                 line-height: ${(lh / 100).toFixed(2)} !important;
             }
         `;
+    };
+
+    // 설정 저장하기 (회원 전용)
+    window.saveReadingPref = async function() {
+        const sb = window.gongsiClient || window.supabaseClient;
+        if (!sb) return;
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session || !session.user) {
+            alert('회원가입 또는 로그인을 하시면 나만의 글자 크기를 저장할 수 있습니다!');
+            // window.location.href = 'login.html'; // 주석 해제 시 로그인 페이지로 이동
+            return;
+        }
+        const sz = document.getElementById('fontSizeSlider').value;
+        const lh = document.getElementById('lineHeightSlider').value;
+        localStorage.setItem('gongsil_reading_pref', JSON.stringify({ sz: sz, lh: lh }));
+        alert('나만의 글자 설정이 성공적으로 저장되었습니다.');
+        document.getElementById('fontSizeModal').style.display = 'none';
+    };
+
+    // 저장된 설정 불러오기
+    window.loadReadingPref = async function() {
+        const prefStr = localStorage.getItem('gongsil_reading_pref');
+        if (!prefStr) return;
+        const sb = window.gongsiClient || window.supabaseClient;
+        if (!sb) return;
+        const { data: { session } } = await sb.auth.getSession();
+        if (session && session.user) {
+            try {
+                const pref = JSON.parse(prefStr);
+                const sSlider = document.getElementById('fontSizeSlider');
+                const lSlider = document.getElementById('lineHeightSlider');
+                if (sSlider && pref.sz) sSlider.value = pref.sz;
+                if (lSlider && pref.lh) lSlider.value = pref.lh;
+                window.applyReadingStyle();
+            } catch(e){}
+        }
     };
 
     // 찜하기 토글
