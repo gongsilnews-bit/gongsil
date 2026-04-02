@@ -251,10 +251,6 @@
             </div>
             <div class="form-row">
                 <div class="form-group" style="flex:1;">
-                    <label>강사명</label>
-                    <input type="text" id="fInstructor" placeholder="예: 공실강사">
-                </div>
-                <div class="form-group" style="flex:1;">
                     <label>공개 상태 <span class="req">*</span></label>
                     <select id="fStatus">
                         <option value="published">판매중 (즉시공개)</option>
@@ -480,7 +476,6 @@
             document.getElementById('fTitle').value = data.title||'';
             document.getElementById('fPrice').value = data.price||0;
             document.getElementById('fDescription').value = data.description||'';
-            document.getElementById('fInstructor').value = data.instructor||'';
             document.getElementById('fStatus').value = data.status||'draft';
             document.getElementById('writeFormTitle').textContent = '강의 수정';
             document.getElementById('submitBtn').textContent = '✅ 강의 수정 완료';
@@ -502,7 +497,6 @@
         document.getElementById('fTitle').value = '';
         document.getElementById('fPrice').value = '';
         document.getElementById('fDescription').value = '';
-        document.getElementById('fInstructor').value = '';
         document.getElementById('fStatus').value = 'published';
         document.getElementById('writeFormTitle').textContent = '새 강의 등록';
         document.getElementById('submitBtn').textContent = '✅ 강의 등록 완료';
@@ -596,7 +590,6 @@
         const title = document.getElementById('fTitle').value.trim();
         const price = parseInt(document.getElementById('fPrice').value)||0;
         const description = document.getElementById('fDescription').value.trim();
-        const instructor = document.getElementById('fInstructor').value.trim();
         const status = forcedStatus || document.getElementById('fStatus').value;
 
         if(!title) { alert('강의명을 입력해주세요.'); return; }
@@ -622,7 +615,7 @@
                     }
                 }
 
-                const payload = { title, price, description, instructor, status };
+                const payload = { title, price, description, status };
                 if(thumbnailUrls.length > 0) payload.thumbnail_urls = thumbnailUrls;
 
                 let courseId;
