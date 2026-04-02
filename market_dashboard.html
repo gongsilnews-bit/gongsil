@@ -27,14 +27,14 @@
         body { margin: 0; background-color: var(--brand-light); color: var(--text-main); line-height: 1.6; }
         
         .topbar { background: #fff; padding: 15px 30px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;}
-        .topbar .logo { font-size: 24px; font-weight: 800; color: var(--brand-blue); text-decoration: none; display: flex; align-items: center; gap: 10px;}
+        .topbar .logo { font-size: 20px; font-weight: 800; color: var(--brand-blue); text-decoration: none; display: flex; align-items: center; gap: 10px;}
         .topbar .logo i { color: var(--brand-accent); }
         .back-btn { padding: 8px 16px; background: var(--brand-blue); color: #fff; text-decoration: none; border-radius: 4px; font-size: 14px; font-weight: 600; transition: 0.2s;}
         .back-btn:hover { background: #000; }
 
         .dashboard-container { max-width: 1400px; margin: 40px auto; padding: 0 20px; }
         .dashboard-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; }
-        .dashboard-header h1 { font-size: 32px; font-weight: 800; margin: 0; color: #111; }
+        .dashboard-header h1 { font-size: 32px; font-weight: 800; margin: 0; color: #111; display:flex; align-items:center; gap:10px;}
         .dashboard-header p { margin: 5px 0 0; color: var(--text-muted); font-size: 16px; }
         .last-update { font-size: 14px; color: #888; background: #fff; padding: 6px 12px; border-radius: 20px; border: 1px solid #ddd; }
 
@@ -80,14 +80,17 @@
 <body>
 
     <div class="topbar">
-        <a href="index.html" class="logo"><i class="fa-solid fa-chart-pie"></i> 전국데이터지수 대시보드</a>
+        <a href="index.html" class="logo">
+            <img src="logo.png" style="height:30px; margin-right:5px;" alt="공실뉴스" onerror="this.style.display='none'"> 
+            <span>전국데이터지수 대시보드</span>
+        </a>
         <a href="index.html" class="back-btn">메인으로 돌아가기</a>
     </div>
 
     <div class="dashboard-container">
         <div class="dashboard-header">
             <div>
-                <h1>부동산 시장 종합 분석</h1>
+                <h1><img src="logo.png" style="height:35px;" onerror="this.style.display='none'"> 부동산 시장 종합 분석</h1>
                 <p>전국 지역별 매매 및 전세 가격지수 일간 트렌드 (중개사용 패널)</p>
             </div>
             <div class="last-update">
@@ -123,16 +126,8 @@
                 <div class="chart-header">
                     <h2 class="chart-title">30일 매매지수 트렌드 (선택비교)</h2>
                     <div class="chart-filters">
-                        <select id="chart-region-1">
-                            <option value="서울">서울</option>
-                            <option value="전국">전국</option>
-                            <option value="수도권">수도권</option>
-                        </select>
-                        <select id="chart-region-2">
-                            <option value="부산">부산</option>
-                            <option value="대구">대구</option>
-                            <option value="지방">지방</option>
-                        </select>
+                        <select id="chart-region-1"></select>
+                        <select id="chart-region-2"></select>
                     </div>
                 </div>
                 <div class="canvas-container">
@@ -141,10 +136,10 @@
             </div>
             <div class="chart-box">
                 <div class="chart-header">
-                    <h2 class="chart-title">전세 vs 매매 (전국)</h2>
+                    <h2 class="chart-title">매매지수 기준 비교현황</h2>
                 </div>
                 <div class="canvas-container">
-                    <canvas id="radarChart"></canvas>
+                    <canvas id="barChart"></canvas>
                 </div>
             </div>
         </div>
@@ -170,7 +165,9 @@
 
     <!-- 로직 스크립트: 테스트용 더미 시계열 데이터를 우선 구축 -->
     <script>
-        // 1. 임의의 30일치 시계열 데이터 생성기 (Supabase 연결 전까지 UI를 완벽히 띄우기 위함)
+        const regionsAll = ['전국', '수도권', '지방', '서울', '경기', '인천', '부산', '대구', '광주', '대전', '울산', '세종', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주'];
+        
+        // 1. 임의의 30일치 시계열 데이터 생성기
         const generateDummyHistory = (base, volatility) => {
             let data = [];
             let current = base;
@@ -179,19 +176,30 @@
                 date.setDate(date.getDate() - i);
                 const dStr = date.toISOString().split('T')[0];
                 current = current + (Math.random() * volatility * 2 - volatility);
-                data.push({ x: dStr, y: current.toFixed(2) });
+                data.push({ x: dStr, y: parseFloat(current.toFixed(2)) });
             }
             return data;
         };
 
-        const regionData = {
-            '서울': generateDummyHistory(102.0, 0.2),
-            '전국': generateDummyHistory(99.8, 0.1),
-            '수도권': generateDummyHistory(101.5, 0.15),
-            '부산': generateDummyHistory(96.0, 0.12),
-            '대구': generateDummyHistory(90.5, 0.18),
-            '지방': generateDummyHistory(92.0, 0.08)
-        };
+        const regionData = {};
+        const regionCurrent = {};
+        
+        regionsAll.forEach((reg, index) => {
+            const base = 100 - (index * 0.5) + (Math.random() * 5);
+            const history = generateDummyHistory(base, 0.15);
+            regionData[reg] = history;
+            regionCurrent[reg] = history[history.length-1].y;
+        });
+
+        // Populate selects
+        const select1 = document.getElementById('chart-region-1');
+        const select2 = document.getElementById('chart-region-2');
+        regionsAll.forEach(reg => {
+            select1.add(new Option(reg, reg));
+            select2.add(new Option(reg, reg));
+        });
+        select1.value = '서울';
+        select2.value = '대구'; // Default
 
         // 2. 메인 트렌드 차트 (Chart.js)
         const ctxMain = document.getElementById('mainTrendChart').getContext('2d');
@@ -209,8 +217,8 @@
                         tension: 0.4
                     },
                     {
-                        label: '부산',
-                        data: regionData['부산'],
+                        label: '대구',
+                        data: regionData['대구'],
                         borderColor: '#1976d2',
                         backgroundColor: 'transparent',
                         borderWidth: 2,
@@ -226,50 +234,78 @@
                 plugins: { legend: { position: 'top' } },
                 scales: {
                     x: { type: 'category', labels: regionData['서울'].map(d=>d.x) },
-                    y: { min: 85, max: 110 }
+                    y: { min: 80, max: 110 }
                 }
             }
         });
 
-        // 지역 필터 체인지 이벤트
-        document.getElementById('chart-region-1').addEventListener('change', (e) => {
-            const reg = e.target.value;
-            mainChart.data.datasets[0].label = reg;
-            mainChart.data.datasets[0].data = regionData[reg];
-            mainChart.update();
-        });
-        document.getElementById('chart-region-2').addEventListener('change', (e) => {
-            const reg = e.target.value;
-            mainChart.data.datasets[1].label = reg;
-            mainChart.data.datasets[1].data = regionData[reg];
-            mainChart.update();
-        });
-
-        // 3. 미니 막대 차트 (전세 vs 매매)
-        const ctxRadar = document.getElementById('radarChart').getContext('2d');
-        new Chart(ctxRadar, {
+        // 3. 우측 막대 차트 생성
+        const ctxBar = document.getElementById('barChart').getContext('2d');
+        const barChart = new Chart(ctxBar, {
             type: 'bar',
             data: {
-                labels: ['전국', '수도권', '서울', '부산', '대구', '광주'],
+                labels: ['전국', '수도권', '서울', select1.value, select2.value],
                 datasets: [{
                     label: '현지수',
-                    data: [99.8, 101.5, 102.4, 95.2, 90.1, 98.5],
-                    backgroundColor: ['#e0e0e0', '#bbdefb', '#0A2540', '#cfd8dc', '#ffcdd2', '#c8e6c9'],
+                    data: [regionCurrent['전국'], regionCurrent['수도권'], regionCurrent['서울'], regionCurrent[select1.value], regionCurrent[select2.value]],
+                    backgroundColor: ['#e0e0e0', '#bbdefb', '#0A2540', '#ffcdd2', '#c8e6c9'],
                     borderRadius: 4
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: {legend:{display:false}} }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: {legend:{display:false}},
+                scales: {
+                    y: { min: 80 }
+                }
+            }
         });
+
+        // 차트 업데이트 로직
+        const updateAllCharts = () => {
+            const reg1 = select1.value;
+            const reg2 = select2.value;
+            
+            // 선 그래프 업데이트
+            mainChart.data.datasets[0].label = reg1;
+            mainChart.data.datasets[0].data = regionData[reg1];
+            mainChart.data.datasets[1].label = reg2;
+            mainChart.data.datasets[1].data = regionData[reg2];
+            mainChart.update();
+
+            // 막대 그래프 업데이트 
+            // 중복되는 이름이 있을 수 있으므로 Set 사용
+            const baseLabels = ['전국', '수도권', '서울'];
+            const labels = [...new Set([...baseLabels, reg1, reg2])];
+            
+            barChart.data.labels = labels;
+            barChart.data.datasets[0].data = labels.map(reg => regionCurrent[reg]);
+            
+            // 동적 컬러 부여
+            const colors = labels.map(reg => {
+                if(reg === '전국') return '#e0e0e0';
+                if(reg === '수도권') return '#bbdefb';
+                if(reg === '서울') return '#0A2540';
+                if(reg === reg1) return '#ffcdd2';
+                return '#c8e6c9';
+            });
+            barChart.data.datasets[0].backgroundColor = colors;
+            barChart.update();
+        };
+
+        // 지역 필터 체인지 이벤트 바인딩
+        select1.addEventListener('change', updateAllCharts);
+        select2.addEventListener('change', updateAllCharts);
 
         // 4. 데이터 테이블 생성
         const tableBody = document.getElementById('table-body');
-        const regions = ['전국', '수도권', '서울', '인천', '경기', '부산', '대구', '광주', '대전', '울산', '세종'];
-        
         let trs = '';
-        regions.forEach(reg => {
-            const val = (Math.random() * 20 + 85).toFixed(1);
-            const isUp = Math.random() > 0.5;
-            const chg = (Math.random() * 0.5).toFixed(2);
+        regionsAll.forEach(reg => {
+            const val = parseFloat(regionCurrent[reg]).toFixed(1);
+            const pastValue = regionData[reg][regionData[reg].length-2].y;
+            const isUp = val > pastValue;
+            const chg = Math.abs(val - pastValue).toFixed(2);
             
             trs += `
             <tr>
