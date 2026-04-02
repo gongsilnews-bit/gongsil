@@ -79,6 +79,40 @@
         .btn-approve { border: 1px solid #bbf7d0; background: #f0fdf4; color: #15803d; }
         .btn-reject { border: 1px solid #fde68a; background: #fffbeb; color: #92400e; }
         .btn-delete { border: 1px solid #fecaca; background: #fff; color: #dc2626; }
+        .btn-preview { border: 1px solid #bae6fd; background: #f0f9ff; color: #0369a1; }
+
+        /* 미리보기 패널 */
+        .preview-overlay {
+            display: none;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 9999;
+            align-items: center; justify-content: center;
+        }
+        .preview-overlay.open { display: flex; }
+        .preview-panel {
+            background: #fff;
+            width: 92vw; max-width: 1100px;
+            height: 88vh;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex; flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .preview-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 20px;
+            background: #111827; color: #fff;
+            flex-shrink: 0;
+        }
+        .preview-header h3 { margin: 0; font-size: 15px; font-weight: 700; }
+        .btn-preview-close {
+            background: rgba(255,255,255,0.15); border: none; color: #fff;
+            width: 32px; height: 32px; border-radius: 6px;
+            font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .btn-preview-close:hover { background: rgba(255,255,255,0.25); }
+        .preview-iframe-wrap { flex: 1; position: relative; }
+        .preview-iframe-wrap iframe { position: absolute; top:0; left:0; width:100%; height:100%; border:none; }
 
         /* 페이지네이션 */
         .pagination { display: flex; justify-content: center; margin-top: 28px; gap: 4px; }
@@ -160,6 +194,19 @@
         <button class="tab-btn" onclick="switchTab('write')">✏️ 새 강의 등록</button>
     </div>
 
+<!-- 미리보기 오버레이 -->
+<div class="preview-overlay" id="previewOverlay" onclick="closePreview(event)">
+    <div class="preview-panel" onclick="event.stopPropagation()">
+        <div class="preview-header">
+            <h3>👁️ 강의 미리보기</h3>
+            <button class="btn-preview-close" onclick="closePreview()">✕</button>
+        </div>
+        <div class="preview-iframe-wrap">
+            <iframe id="previewFrame" src="about:blank"></iframe>
+        </div>
+    </div>
+</div>
+
     <!-- ===== 목록 탭 ===== -->
     <div class="tab-panel active" id="tabList">
         <div class="card-header">
@@ -204,7 +251,7 @@
                         <th>강의명</th>
                         <th style="width:120px;">수강료</th>
                         <th style="width:120px;">등록일</th>
-                        <th style="width:160px;">관리</th>
+                        <th style="width:190px;">관리</th>
                     </tr>
                 </thead>
                 <tbody id="studyTableBody">
@@ -437,6 +484,7 @@
                         <td style="font-size:12px;color:#9ca3af;">${date}</td>
                         <td onclick="event.stopPropagation()" style="white-space:nowrap;">
                             ${approveBtn}
+                            <button class="btn-sm btn-preview" onclick="openPreview('${c.id}')">미리보기</button>
                             <button class="btn-sm btn-edit" onclick="openEdit('${c.id}')">수정</button>
                             <button class="btn-sm btn-delete" onclick="deleteCourse('${c.id}')">삭제</button>
                         </td>
@@ -465,6 +513,20 @@
             await loadCourses(); await loadCounts();
         });
     }
+
+    // ── 미리보기 ──
+    function openPreview(id) {
+        const frame = document.getElementById('previewFrame');
+        frame.src = `../study_view.html?id=${id}&preview=1`;
+        document.getElementById('previewOverlay').classList.add('open');
+    }
+    function closePreview(e) {
+        if (e && e.target !== document.getElementById('previewOverlay')) return;
+        document.getElementById('previewOverlay').classList.remove('open');
+        document.getElementById('previewFrame').src = 'about:blank';
+    }
+    // ESC 키로 닫기
+    document.addEventListener('keydown', e => { if(e.key==='Escape') { document.getElementById('previewOverlay').classList.remove('open'); document.getElementById('previewFrame').src='about:blank'; } });
 
     // ── 수정 폼 열기 ──
     async function openEdit(id) {
