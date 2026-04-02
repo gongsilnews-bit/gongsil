@@ -1872,6 +1872,10 @@
                     window.switchDetailTab(targetTab);
                 }
 
+                if (typeof window.fetchApartmentPublicData === 'function') {
+                    window.fetchApartmentPublicData(p);
+                }
+
                 detailView.style.display = 'flex';
             };
 
