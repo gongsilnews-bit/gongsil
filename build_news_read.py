@@ -149,12 +149,29 @@ content = header_html + """
                             <div style="display:flex; justify-content:space-between; font-size:12px; color:#aaa; margin-top:6px;"><span>좁게</span><span>넓게</span></div>
                         </div>
                         <div style="margin-top:25px; text-align:center;">
-                            <button onclick="window.saveReadingPref()" style="background:#ff9f1c; color:#fff; border:none; padding:10px 24px; border-radius:6px; font-weight:bold; font-size:14px; cursor:pointer;" onmouseover="this.style.background='#d97706'" onmouseout="this.style.background='#ff9f1c'">설정 저장하기</button>
+                            <button onclick="window.handleLoginClick(); window.saveReadingPref()" style="background:#ff9f1c; color:#fff; border:none; padding:10px 24px; border-radius:6px; font-weight:bold; font-size:14px; cursor:pointer;" onmouseover="this.style.background='#d97706'" onmouseout="this.style.background='#ff9f1c'">설정 저장하기</button>
                         </div>
                     </div>
                 </div>
 
                 <div class="article-body" id="detailBody">
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <div class="save-btn" id="saveArticleBtn" style="cursor:pointer;" title="이 기사 저장하기">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="saved-icon"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                        </div>
+                        <div class="tts-btn" style="cursor:pointer; display:flex; align-items:center;" onclick="window.toggleTTS()" id="ttsBtn" title="음성으로 듣기">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="ttsIcon"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                        </div>
+                        <div class="share-btn" style="cursor:pointer;" onclick="shareArticle()" title="공유하기">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                        </div>
+                        <div class="font-size-btn" style="cursor:pointer;" onclick="document.getElementById('fontSizeModal').style.display='flex'" title="글자크기/행간 설정">
+                            <span style="font-size:16px; font-weight:700; color:#555;">가가</span>
+                        </div>
+                        <div class="print-btn" style="cursor:pointer;" onclick="window.print()" title="인쇄하기">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                        </div>
+                    </div>
                     <div style="padding: 100px 0; text-align: center; color:#888;">
                         <svg class="animate-spin" style="animation: spin 1s linear infinite; margin: 0 auto 10px;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>
                         로딩 중...
@@ -488,8 +505,7 @@ content = header_html + """
             if (!session || !session.user) {
                 window.showToast('🚨 회원가입 또는 로그인을 하시면 나만의 글자 크기를 저장할 수 있습니다!', null, 'top: 50%; transform: translate(-50%, -50%); margin-top: 45px;');
                 setTimeout(() => {
-                    const loginBtn = document.getElementById('headerLoginBtn');
-                    if (loginBtn) loginBtn.click();
+                    if (window.handleLoginClick) window.handleLoginClick();
                 }, 1500);
                 return;
             }
@@ -501,6 +517,48 @@ content = header_html + """
         } catch (e) {
             window.showToast('저장 중 오류 발생: ' + (e.message || e), null, 'top: 50%; transform: translate(-50%, -50%); margin-top: 45px;');
             console.error('saveReadingPref error:', e);
+        }
+    };
+
+    // TTS 기능
+    window.isTTSPlaying = false;
+    window.toggleTTS = function() {
+        if (!window.speechSynthesis) {
+            window.showToast('현재 브라우저에서는 음성 듣기를 지원하지 않습니다.');
+            return;
+        }
+        if (window.isTTSPlaying) {
+            window.speechSynthesis.cancel();
+            window.isTTSPlaying = false;
+            document.getElementById('ttsIcon').style.stroke = '#555';
+            document.getElementById('ttsIcon').style.fill = 'none';
+        } else {
+            const title = document.querySelector('.article-title')?.innerText || '';
+            let content = '';
+            const bodyEl = document.getElementById('articleBody');
+            if (bodyEl) {
+                content = Array.from(bodyEl.querySelectorAll('p, div, span, h1, h2, h3'))
+                    .filter(el => el.innerText.trim() !== '')
+                    .map(el => el.innerText.trim())
+                    .join(' ');
+            }
+            if(!content) content = document.body.innerText;
+            
+            const msg = new SpeechSynthesisUtterance(title + "...... " + content);
+            msg.lang = 'ko-KR';
+            msg.rate = 1.0;
+            msg.pitch = 1.0;
+            msg.onend = function() {
+                window.isTTSPlaying = false;
+                if(document.getElementById('ttsIcon')) {
+                    document.getElementById('ttsIcon').style.stroke = '#555';
+                    document.getElementById('ttsIcon').style.fill = 'none';
+                }
+            };
+            window.speechSynthesis.speak(msg);
+            window.isTTSPlaying = true;
+            document.getElementById('ttsIcon').style.stroke = '#1a73e8';
+            document.getElementById('ttsIcon').style.fill = 'rgba(26, 115, 232, 0.1)';
         }
     };
 

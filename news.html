@@ -1008,8 +1008,7 @@
                 if (!session || !session.user) {
                     window.showToast('🚨 회원가입 또는 로그인을 하시면 나만의 글자 크기를 저장할 수 있습니다!', null, 'top: 50%; transform: translate(-50%, -50%); margin-top: 45px;');
                     setTimeout(() => {
-                        const loginBtn = document.getElementById('headerLoginBtn');
-                        if (loginBtn) loginBtn.click();
+                        if (window.handleLoginClick) window.handleLoginClick();
                     }, 1500);
                     return;
                 }
@@ -1021,6 +1020,48 @@
             } catch (e) {
                 window.showToast('저장 중 오류 발생: ' + (e.message || e), null, 'top: 50%; transform: translate(-50%, -50%); margin-top: 45px;');
                 console.error('saveReadingPref error:', e);
+            }
+        };
+
+        // TTS 기능
+        window.isTTSPlaying = false;
+        window.toggleTTS = function() {
+            if (!window.speechSynthesis) {
+                window.showToast('현재 브라우저에서는 음성 듣기를 지원하지 않습니다.');
+                return;
+            }
+            if (window.isTTSPlaying) {
+                window.speechSynthesis.cancel();
+                window.isTTSPlaying = false;
+                document.getElementById('ttsIcon').style.stroke = '#555';
+                document.getElementById('ttsIcon').style.fill = 'none';
+            } else {
+                const title = document.querySelector('.article-title')?.innerText || '';
+                let content = '';
+                const bodyEl = document.getElementById('articleBody');
+                if (bodyEl) {
+                    content = Array.from(bodyEl.querySelectorAll('p, div, span, h1, h2, h3'))
+                        .filter(el => el.innerText.trim() !== '')
+                        .map(el => el.innerText.trim())
+                        .join(' ');
+                }
+                if(!content) content = document.body.innerText;
+                
+                const msg = new SpeechSynthesisUtterance(title + "...... " + content);
+                msg.lang = 'ko-KR';
+                msg.rate = 1.0;
+                msg.pitch = 1.0;
+                msg.onend = function() {
+                    window.isTTSPlaying = false;
+                    if(document.getElementById('ttsIcon')) {
+                        document.getElementById('ttsIcon').style.stroke = '#555';
+                        document.getElementById('ttsIcon').style.fill = 'none';
+                    }
+                };
+                window.speechSynthesis.speak(msg);
+                window.isTTSPlaying = true;
+                document.getElementById('ttsIcon').style.stroke = '#1a73e8';
+                document.getElementById('ttsIcon').style.fill = 'rgba(26, 115, 232, 0.1)';
             }
         };
 
