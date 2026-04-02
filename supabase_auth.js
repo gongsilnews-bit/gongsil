@@ -605,7 +605,7 @@ function _gongsiAuthInit(supabase) {
                                 companyName: memberData.company_name || ""
                             };
                             
-                            const { data, error: fnErr } = await supabase.functions.invoke('verify-realtor', {
+                            const { data, error: fnErr } = await supabase.functions.invoke('swift-responder', {
                                 body: params
                             });
                             
