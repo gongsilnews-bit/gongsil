@@ -972,13 +972,24 @@
     
     // 글자 크기 / 행간 실시간 적용
     window.applyReadingStyle = function() {
-        const sz  = parseInt(document.getElementById('fontSizeSlider').value);
-        const lh  = parseInt(document.getElementById('lineHeightSlider').value);
+        const sz = parseInt(document.getElementById('fontSizeSlider').value);
+        const lh = parseInt(document.getElementById('lineHeightSlider').value);
         const body = document.getElementById('detailBody');
-        if(body) {
-            body.style.fontSize   = sz + 'px';
-            body.style.lineHeight = (lh / 100).toFixed(2);
+        if(!body) return;
+
+        // 부모에 줘도 인라인 스타일을 가진 자식이 우선되므로 CSS 주입으로 강제 적용
+        let styleTag = document.getElementById('readingStyleOverride');
+        if(!styleTag) {
+            styleTag = document.createElement('style');
+            styleTag.id = 'readingStyleOverride';
+            document.head.appendChild(styleTag);
         }
+        styleTag.textContent = `
+            #detailBody, #detailBody * {
+                font-size: ${sz}px !important;
+                line-height: ${(lh / 100).toFixed(2)} !important;
+            }
+        `;
     };
 
     // 찜하기 토글
