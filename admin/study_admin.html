@@ -479,12 +479,11 @@
                     return `<tr>
                         <td onclick="event.stopPropagation()"><input type="checkbox" class="row-check" value="${c.id}"></td>
                         <td>${badge}</td>
-                        <td class="cell-title" onclick="openEdit('${c.id}')">${c.title}</td>
+                        <td class="cell-title" onclick="openPreview('${c.id}')">${c.title}</td>
                         <td class="cell-price">${price}</td>
                         <td style="font-size:12px;color:#9ca3af;">${date}</td>
                         <td onclick="event.stopPropagation()" style="white-space:nowrap;">
                             ${approveBtn}
-                            <button class="btn-sm btn-preview" onclick="openPreview('${c.id}')">미리보기</button>
                             <button class="btn-sm btn-edit" onclick="openEdit('${c.id}')">수정</button>
                             <button class="btn-sm btn-delete" onclick="deleteCourse('${c.id}')">삭제</button>
                         </td>
