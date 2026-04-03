@@ -48,7 +48,7 @@
         }
         .menu-list::-webkit-scrollbar { display: none; }
 
-        .menu-item { margin: 2px 8px; }
+        .menu-item { margin: 2px 8px; position: relative; }
 
         /* 기본 메뉴 버튼 */
         .menu-link {
@@ -93,6 +93,71 @@
             height: 1px; background: #f0f0f0;
             margin: 8px 14px;
         }
+
+        /* =========== 서브메뉴 드롭다운 =========== */
+        .submenu {
+            display: none;
+            position: absolute;
+            left: calc(100% + 8px);
+            top: 0;
+            min-width: 164px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+            z-index: 200;
+            padding: 6px 0;
+            border: 1px solid #e8eaed;
+            animation: fadeInSub 0.14s ease;
+        }
+
+        @keyframes fadeInSub {
+            from { opacity: 0; transform: translateX(-6px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        .menu-item:hover .submenu { display: block; }
+
+        .submenu-label {
+            font-size: 10px; font-weight: 700;
+            color: #9ca3af;
+            padding: 8px 16px 4px;
+            letter-spacing: 0.06em;
+            border-bottom: 1px solid #f3f4f6;
+            margin-bottom: 2px;
+        }
+
+        .submenu-item {
+            display: block;
+            padding: 10px 16px;
+            font-size: 13px; font-weight: 600;
+            color: #374151;
+            text-decoration: none;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: background 0.13s, color 0.13s;
+            border-left: 3px solid transparent;
+            background: none; border-right: none;
+            border-top: none; border-bottom: none;
+            width: 100%; text-align: left;
+        }
+        .submenu-item:hover {
+            background: #fff8e6;
+            color: #f5a623;
+            border-left-color: #f5a623;
+        }
+        .submenu-item.active-sub {
+            background: #fff3d6;
+            color: #f5a623;
+            border-left-color: #f5a623;
+            font-weight: 700;
+        }
+
+        /* 다크모드 서브메뉴 */
+        body.dark-mode .submenu { background: #2c2d31 !important; border-color: #444 !important; }
+        body.dark-mode .submenu-label { color: #6b7280 !important; border-color: #3a3b3f !important; }
+        body.dark-mode .submenu-item { color: #ccc !important; }
+        body.dark-mode .submenu-item:hover { background: #38393e !important; color: #fbbf24 !important; border-left-color: #fbbf24 !important; }
+        body.dark-mode .submenu-item.active-sub { background: #38393e !important; color: #fbbf24 !important; border-left-color: #fbbf24 !important; }
 
         /* 하단 프로필 */
         .sidebar-footer {
@@ -270,11 +335,20 @@
             </li>
 
             <!-- 회원 -->
-            <li class="menu-item">
-                <button class="menu-link" onclick="loadPage(event, '회원관리', '../admin_members_list.html')">
+            <li class="menu-item" id="memberMenuItem">
+                <button class="menu-link" id="memberMenuLink" onclick="loadSubPage(event, '회원목록', '../admin_members_list.html', null)">
                     <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     회원
                 </button>
+                <!-- 호버 서브메뉴 -->
+                <div class="submenu" id="memberSubmenu">
+                    <div class="submenu-label">회원관리</div>
+                    <button class="submenu-item active-sub" onclick="loadSubPage(event, '회원목록', '../admin_members_list.html', this)">회원목록</button>
+                    <button class="submenu-item" onclick="loadSubPage(event, '휴면회원목록', '../dormant_members.html', this)">휴면회원목록</button>
+                    <button class="submenu-item" onclick="loadSubPage(event, '기타등록관리', '../etc_register_admin.html', this)">기타등록관리</button>
+                    <button class="submenu-item" onclick="loadSubPage(event, '필자표시관리', '../author_display_admin.html', this)">필자표시관리</button>
+                    <button class="submenu-item" onclick="loadSubPage(event, '부서관리', '../department_admin.html', this)">부서관리</button>
+                </div>
             </li>
 
             <!-- 게시판 -->
@@ -370,6 +444,8 @@
         if (event && event.preventDefault) event.preventDefault();
         document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
         if (event && event.currentTarget) event.currentTarget.classList.add('active');
+        // 서브메뉴 active 초기화
+        document.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active-sub'));
         document.getElementById('contentTitle').textContent = title;
 
         const frame = document.getElementById('mainFrame');
@@ -391,6 +467,27 @@
         } else {
             frame.src = url + '?v=' + Date.now();
         }
+    }
+
+    // 서브메뉴 클릭 핸들러
+    function loadSubPage(event, title, url, el) {
+        if (event && event.preventDefault) event.preventDefault();
+        if (event && event.stopPropagation) event.stopPropagation();
+
+        // 서브메뉴 active 처리
+        document.querySelectorAll('.submenu-item').forEach(i => i.classList.remove('active-sub'));
+        if (el) el.classList.add('active-sub');
+
+        // 부모 메뉴 링크 active 처리
+        document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
+        const memberLink = document.getElementById('memberMenuLink');
+        if (memberLink) memberLink.classList.add('active');
+
+        // 타이틀 변경
+        document.getElementById('contentTitle').textContent = title;
+
+        const frame = document.getElementById('mainFrame');
+        frame.src = url + '?v=' + Date.now();
     }
 
     // 다크모드 토글
