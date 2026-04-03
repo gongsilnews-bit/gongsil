@@ -469,7 +469,13 @@
             </body></html>`);
             doc.close();
         } else {
-            frame.src = url + '?v=' + Date.now();
+            let finalUrl = url;
+            if (!url.startsWith('http') && !url.startsWith('/') && !url.startsWith('../')) {
+                // If it's a relative URL passed from a child iframe in the root directory, point to the root directory
+                finalUrl = '../' + url;
+            }
+            let sep = finalUrl.includes('?') ? '&' : '?';
+            frame.src = finalUrl + sep + 'v=' + Date.now();
         }
     }
 
@@ -491,7 +497,12 @@
         document.getElementById('contentTitle').textContent = title;
 
         const frame = document.getElementById('mainFrame');
-        frame.src = url + '?v=' + Date.now();
+        let finalUrl = url;
+        if (!url.startsWith('http') && !url.startsWith('/') && !url.startsWith('../')) {
+            finalUrl = '../' + url;
+        }
+        let sep = finalUrl.includes('?') ? '&' : '?';
+        frame.src = finalUrl + sep + 'v=' + Date.now();
     }
 
 
