@@ -1155,7 +1155,7 @@
         });
     });
 
-    function confirmPhotoModal() {
+    async function confirmPhotoModal() {
         const fileInput = document.getElementById('fileInput');
         if (!fileInput.files || fileInput.files.length === 0) {
             alert("사진 파일을 선택해주세요.");
