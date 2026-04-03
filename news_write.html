@@ -664,7 +664,19 @@
                 
             </div>
 
-            
+            <!-- AI 기사작성 런처 (사이드바 이동) -->
+            <div style="background: linear-gradient(135deg, #fffbeb, #ffedd5); border: 1px solid #fdba74; border-radius: 8px; padding: 16px; margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
+                <div style="color: #ea580c; font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 20px;">🪄</span> AI 마법사
+                </div>
+                <div id="aiLauncherDesc" style="font-size: 12px; color: #431407; font-weight: 600; line-height: 1.4;">
+                    매물 정보만 한 번 입력하면 기사, 블로그, 쇼츠 대본까지 5가지 콘텐츠를 AI가 한 번에 완성해 줍니다!
+                </div>
+                <button type="button" id="aiLauncherBtn" class="btn" onclick="openAiwizardDynamic()" style="background: #f97316; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.4); display: flex; align-items: center; justify-content: center; width: 100%; gap: 6px;">
+                    ✨ 실행하기
+                </button>
+            </div>
+
         </aside>
 
         <!-- 2. 중앙 메인 수록폼 -->
@@ -995,6 +1007,7 @@
 
             </div>
 
+
         </aside>
 
     </div>
@@ -1246,8 +1259,12 @@
         if (videoId) {
             const isShorts = iframeCode.includes('/shorts/');
             const paddingRatio = isShorts ? '177.77%' : '56.25%';
-            const maxWidthStr = isShorts ? '; max-width:400px; margin:0 auto;' : '';
-            combinedHtml = `<div style="position:relative;padding-bottom:${paddingRatio};height:0;overflow:hidden;max-width:100%;border-radius:8px${maxWidthStr}"><iframe src="https://www.youtube.com/embed/${videoId}" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allowfullscreen></iframe></div>`;
+            const maxWidthStr = isShorts ? 'max-width:400px; margin:0 auto;' : 'width:100%;';
+            
+            combinedHtml = `<p><br></p><div style="${maxWidthStr}">`
+                         + `<div style="position:relative; width:100%; padding-bottom:${paddingRatio}; height:0; overflow:hidden; border-radius:8px;">`
+                         + `<iframe src="https://www.youtube.com/embed/${videoId}" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allowfullscreen></iframe>`
+                         + `</div></div><p><br></p>`;
             if (caption) combinedHtml += `<p style="text-align:center; color:#555; font-size:13px;">${caption}</p>`;
         } else {
             combinedHtml = iframeCode;
@@ -2665,10 +2682,10 @@
             const paddingRatio = vid.isShorts ? '177.77%' : '56.25%';
             const maxW = vid.isShorts ? 'max-width:400px; margin:0 auto;' : 'width:100%;';
             
-            let html = '<div class="yt-block" draggable="true" data-type="lib-video" contenteditable="false" data-video-id="' + vid.id + '">'
-                + '<div style="position:relative; padding-bottom:' + paddingRatio + '; height:0; overflow:hidden; border-radius:8px; ' + maxW + '">'
+            let html = '<p><br></p><div class="yt-block" draggable="true" data-type="lib-video" contenteditable="false" data-video-id="' + vid.id + '" style="' + maxW + '">'
+                + '<div style="position:relative; width:100%; padding-bottom:' + paddingRatio + '; height:0; overflow:hidden; border-radius:8px;">'
                 + '<iframe src="https://www.youtube.com/embed/' + vid.videoId + '" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allowfullscreen></iframe></div>'
-                + '</div>';
+                + '</div><p><br></p>';
             if (vid.caption && vid.caption.trim()) {
                 html += '<p style="text-align:center; font-size:13px; color:#888; margin:2px 0 12px;">' + vid.caption.trim() + '</p>';
             }
