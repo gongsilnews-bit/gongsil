@@ -1614,10 +1614,8 @@
     }
 
     function forceInsertPhoto(url, photoId) {
-        var imgId = 'photo_' + photoId;
-        var combinedHtml = '<figure class="news-figure" draggable="true" data-type="lib-img" data-photo-id="' + imgId + '" style="text-align:center; margin:0 auto;"><img src="' + url + '" style="max-width:100%; display:block; width:100%;"></figure>';
         if (typeof $ !== 'undefined' && $('#summernote').length) {
-            try { $('#summernote').summernote('pasteHTML', combinedHtml); } catch(e) { }
+            try { $('#summernote').summernote('insertImage', url); } catch(e) { }
         }
     }
 
@@ -2337,19 +2335,20 @@
 
 
         window.addPhotoFromDBToLibrary = function(url, initialCaption, initialAlign) {
-            var captionStr = initialCaption || '';
-            var alignStr = initialAlign || 'center';
             var id = 'photo_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-            libPhotos.push({ id: id, dataUrl: url, caption: captionStr });
+            libPhotos.push({ id: id, dataUrl: url, caption: '' });
             if (!globalRepId) {
                 globalRepId = id;
             }
             renderPhotoGrid();
 
-            var combinedHtml = '<figure class="news-figure" draggable="true" data-type="lib-img" data-photo-id="' + id + '" style="text-align:' + alignStr + '; margin:0 auto;">'
-                + '<img src="' + url + '" style="max-width:100%; display:block; width:100%;">'
-                + '</figure>';
-            window.insertNodeAtCursor(combinedHtml);
+            if (typeof $ !== 'undefined' && $('#summernote').length) {
+                try { $('#summernote').summernote('insertImage', url); } catch(e) {
+                    window.insertNodeAtCursor('<img src="' + url + '" style="max-width:100%; display:block;">'); 
+                }
+            } else {
+                window.insertNodeAtCursor('<img src="' + url + '" style="max-width:100%; display:block;">');
+            }
         };
 
 
@@ -2367,19 +2366,17 @@
                     results[i] = e.target.result;
                     doneCount++;
                     if (doneCount === files.length) {
-                        var combinedHtml = '';
                         results.forEach(function(dataUrl, idx) {
                             var id = 'photo_' + Date.now() + '_' + idx;
                             libPhotos.push({ id: id, dataUrl: dataUrl, caption: '' });
                             if (!globalRepId) globalRepId = id;
-
-                            combinedHtml +=
-                                '<figure class="news-figure" draggable="true" data-type="lib-img" data-photo-id="' + id + '" style="text-align:center; margin:0 auto;">'
-                                + '<img src="' + dataUrl + '" style="max-width:100%; display:block; width:100%;">'
-                                + '</figure>';
                         });
                         renderPhotoGrid();
-                        window.insertNodeAtCursor(combinedHtml);
+                        results.forEach(function(dataUrl) {
+                            if (typeof $ !== 'undefined' && $('#summernote').length) {
+                                try { $('#summernote').summernote('insertImage', dataUrl); } catch(e) {}
+                            }
+                        });
                     }
                 };
                 reader.readAsDataURL(file);
@@ -2595,7 +2592,7 @@
                     ['insert', ['link']]
                 ],
                 popover: {
-                    image: [],
+                    image: [['resize', ['resizeFull', 'resizeHalf', 'resizeQuarter', 'resizeNone']], ['float', ['floatLeft', 'floatRight', 'floatNone']], ['remove', ['removeMedia']]],
                     link: [],
                     air: []
                 },
