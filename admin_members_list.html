@@ -179,28 +179,29 @@
         .cell-actions { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
 
         .btn-edit {
-            padding: 3px 6px; font-size: 11px; border-radius: 3px;
-            border: 1px solid #d1d5db; background: #fff; cursor: pointer;
-            color: #333; font-family: inherit; font-weight: 500; transition: background 0.1s;
-            white-space: nowrap; margin-right: 4px;
+            padding: 5px 10px; font-size: 11px; border-radius: 4px;
+            border: 1px solid #4b5563; background: #4b5563; cursor: pointer;
+            color: #fff; font-family: inherit; font-weight: 600; transition: all 0.15s;
+            display: inline-flex; align-items: center; justify-content: center; gap: 4px;
         }
-        .btn-edit:hover { background: #f3f4f6; }
+        .btn-edit:hover { background: #374151; border-color: #374151; }
         
         .btn-delete {
-            padding: 3px 6px; font-size: 11px; border-radius: 3px;
-            border: 1px solid #fecaca; background: #fff; cursor: pointer;
-            color: #dc2626; font-family: inherit; font-weight: 500; transition: background 0.1s;
-            white-space: nowrap; margin-right: 4px;
+            padding: 5px 10px; font-size: 11px; border-radius: 4px;
+            border: 1px solid #d1d5db; background: #fff; cursor: pointer;
+            color: #374151; font-family: inherit; font-weight: 500; transition: all 0.15s;
+            display: inline-flex; align-items: center; justify-content: center; gap: 4px;
         }
-        .btn-delete:hover { background: #fef2f2; }
+        .btn-delete:hover { background: #f9fafb; border-color: #fecaca; color: #dc2626; }
+        .btn-delete:hover svg { stroke: #dc2626; }
         
         .btn-history {
-            padding: 3px 6px; font-size: 11px; border-radius: 3px;
-            border: 1px solid #bfdbfe; background: #fff; cursor: pointer;
-            color: #2563eb; font-family: inherit; font-weight: 500; transition: background 0.1s;
-            white-space: nowrap; margin-right: 4px;
+            padding: 5px 10px; font-size: 11px; border-radius: 4px;
+            border: 1px solid #d1d5db; background: #fff; cursor: pointer;
+            color: #374151; font-family: inherit; font-weight: 500; transition: all 0.15s;
+            display: inline-flex; align-items: center; justify-content: center; gap: 4px;
         }
-        .btn-history:hover { background: #eff6ff; }
+        .btn-history:hover { background: #f9fafb; }
 
         /* ── 페이지네이션 ── */
         .pagination { display: flex; justify-content: center; margin-top: 32px; gap: 4px; }
@@ -581,21 +582,22 @@
                 const vs = data.verification_status || 'pending';
                 if (vs === 'auto_verified')
                     verifyHtml = '<span class="status-badge" style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0;">자동검증</span>';
-                else if (vs === 'manual_required')
+                else if (vs === 'manual_required') {
                     verifyHtml = '<span class="status-badge" style="background:#fffbeb;color:#b45309;border-color:#fde68a;">심사대기</span>';
+                    statusHtml = '<span class="status-badge" style="background:#fff1f2;color:#be123c;border-color:#fecdd3;">보완요청 확인요망</span>';
+                }
                 else if (vs === 'approved')
                     verifyHtml = '<span class="status-badge" style="background:#f0f9ff;color:#0369a1;border-color:#bae6fd;">승인완료</span>';
-                else if (vs === 'rejected')
+                else if (vs === 'rejected') {
                     verifyHtml = '<span class="status-badge" style="background:#fff1f2;color:#be123c;border-color:#fecdd3;">반려됨</span>';
+                    statusHtml = '<span class="status-badge" style="background:#fff1f2;color:#be123c;border-color:#fecdd3;">보완요청 확인요망</span>';
+                }
                 else
                     verifyHtml = '<span class="status-badge" style="background:#f8fafc;color:#64748b;border-color:#cbd5e1;">입력중</span>';
             }
 
-            // 서류검토 버튼 (부동산 & 심사대기/반려)
-            const verifyBtn = (data.role === 'realtor' && (data.verification_status === 'manual_required' || data.verification_status === 'rejected'))
-                ? `<button class="btn-history" onclick="openVerifyModal('${data.id}')">서류검토</button>`
-                : '';
-
+            // 서류검토 로직이 제거됨 (사용자 요청에 의해 X표 처리된 버튼 삭제)
+            
             // 아이디 클릭 링크 (관리자는 링크 없음)
             const isClickable = data.role !== 'admin';
             const emailHtml = isClickable
@@ -618,10 +620,18 @@
                 <td>${statusHtml}</td>
                 <td>
                     <div class="cell-actions">
-                        ${verifyBtn}
-                        <button class="btn-edit" onclick="goDetail('${data.id}')">수정</button>
-                        <button class="btn-history" onclick="alert('수정내역 준비중입니다.')">수정내역</button>
-                        <button class="btn-delete" onclick="deleteUser('${data.id}','${data.email}')">삭제</button>
+                        <button class="btn-edit" onclick="goDetail('${data.id}')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+                            수정
+                        </button>
+                        <button class="btn-delete" onclick="deleteUser('${data.id}','${data.email}')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;stroke:#9ca3af;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            삭제
+                        </button>
+                        <button class="btn-history" onclick="alert('수정내역 준비중입니다.')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;stroke:#9ca3af;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                            수정내역
+                        </button>
                     </div>
                 </td>
             `;
