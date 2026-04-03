@@ -1616,7 +1616,7 @@
 
     function forceInsertPhoto(url, photoId) {
         var imgId = 'photo_' + photoId;
-        var combinedHtml = '<figure class="news-figure" draggable="true" data-type="lib-img" data-photo-id="' + imgId + '" style="text-align:center; margin:0 auto;"><img src="' + url + '" style="max-width:100%; display:block; width:100%;"></figure>';
+        var combinedHtml = '<figure class="news-figure" draggable="true" data-type="lib-img" data-photo-id="' + imgId + '" style="text-align:center; margin:0 auto;"><img src="' + url + '" style="max-width:100%; display:block; width:100%;"></figure><p><br></p>';
         if (typeof $ !== 'undefined' && $('#summernote').length) {
             try { $('#summernote').summernote('pasteHTML', combinedHtml); } catch(e) { }
         }
@@ -2350,7 +2350,7 @@
 
             var combinedHtml = '<figure class="news-figure" draggable="true" data-type="lib-img" data-photo-id="' + id + '" style="text-align:center; margin:0 auto;">'
                 + '<img src="' + url + '" style="max-width:100%; display:block; width:100%;">'
-                + '</figure>';
+                + '</figure><p><br></p>';
             window.insertNodeAtCursor(combinedHtml);
         };
 
@@ -2379,7 +2379,7 @@
                             combinedHtml +=
                                 '<figure class="news-figure" draggable="true" data-type="lib-img" data-photo-id="' + id + '" style="text-align:center; margin:0 auto;">'
                                 + '<img src="' + dataUrl + '" style="max-width:100%; display:block; width:100%;">'
-                                + '</figure>';
+                                + '</figure><p><br></p>';
                         });
                         renderPhotoGrid();
                         window.insertNodeAtCursor(combinedHtml); // 한 번만 삽입
