@@ -426,30 +426,102 @@ content = header_html + """
     // 3. 우측 사이드바: 추천공실 매물리스트
     //    매물 클릭 시 공실열람으로 이동
     async function loadRecommendSidebarProps() {
-        // 임시 샘플 표출 (실제 DB 연결할 경우 maps_apart 테이블 등에서 추출)
         const container = document.getElementById('recommendPropSidebarContainer');
-        const cdnBase = 'https://raw.githubusercontent.com/gongsilnews-bit/gongsilnews-bit.github.io/main';
-        
-        const sampleProps = [
-            { title: "서초대로오피스텔 101동 101호", price: "매매 10억", meta: "서초동 · 면적 84㎡(25.4평)<br>동 3개, 욕실 2개, 엘리베이터, 주차가능", badge: "공동중개", img: cdnBase + "/images/dummy1.jpg" },
-            { title: "강남대로빌딩 301호", price: "월세 1억/500", meta: "역삼동 · 면적 150㎡(45평)<br>사무실용도, 접근성 우수", badge: "수수료조율", img: cdnBase + "/images/dummy2.jpg" },
-            { title: "논현빌라 201동 101호", price: "전세 5억", meta: "논현동 · 면적 59㎡(18평)<br>신축투룸, 풀옵션", badge: "추천", img: cdnBase + "/images/dummy3.jpg" },
-            { title: "목동신시가지 7단지 701동", price: "매매 15억", meta: "목동 · 면적 134㎡(40평)<br>대형평수, 학군우수", badge: "급매", img: cdnBase + "/images/dummy4.jpg" }
-        ];
-        
-        container.innerHTML = sampleProps.map(item => `
+        const sb = window.gongsiClient || window.supabaseClient;
+        if(!sb) return;
+
+        const { data, error } = await sb.from('properties')
+            .select('*')
+            .eq('status', 'active')
+            .order('created_at', { ascending: false })
+            .limit(4);
+
+        if(error || !data || data.length === 0) {
+            container.innerHTML = '<div style="padding:20px; text-align:center; color:#999; font-size:13px;">추천 공실이 없습니다.</div>';
+            return;
+        }
+
+        function formatPriceValue(val) {
+            val = Number(val);
+            if (!val || val === 0) return '0';
+            if (val >= 10000) {
+                const uk = Math.floor(val / 10000);
+                const man = val % 10000;
+                return man > 0 ? `${uk}억 ${man}` : `${uk}억`;
+            }
+            return val.toLocaleString();
+        }
+
+        container.innerHTML = data.map(p => {
+            let propTitle = p.building_name || p.property_type || '공실매물';
+            if (p.main_category === '아파트·오피스텔') {
+                let aptName = p.building_name || p.property_type || '';
+                let dongStr = '';
+                if (p.dong_number) dongStr = String(p.dong_number).includes('동') ? p.dong_number : `${p.dong_number}동`;
+                let roomStr = '';
+                if (p.room_number) roomStr = String(p.room_number).includes('호') ? p.room_number : `${p.room_number}호`;
+                let tempStr = `${aptName} ${dongStr} ${roomStr}`.trim();
+                if (tempStr) propTitle = tempStr;
+            }
+
+            const badgeText = (function(pf) {
+                if (!pf) return '공실매물';
+                if (pf.includes('100') || pf.includes('양타')) return '수수료100%';
+                if (pf.includes('50') || pf.includes('단타')) return '수수료50%';
+                if (pf.includes('25')) return '수수료25%';
+                if (pf.includes('공동')) return '공동중개';
+                return '공동중개';
+            })(p.brokerage_fee);
+
+            const dep = formatPriceValue(p.deposit);
+            let priceStr = '';
+            if (p.trade_type === '매매' || p.trade_type === '전세') priceStr = `${p.trade_type} ${dep}`;
+            else priceStr = `${p.trade_type} ${dep}/${p.monthly_rent || 0}`;
+
+            const supAreaM2 = p.supply_area ? parseFloat(p.supply_area) : 0;
+            const excAreaM2 = p.dedicated_area ? parseFloat(p.dedicated_area) : (p.area ? parseFloat(p.area) : 0);
+            const fmtM2P = (m2) => m2 ? `${m2}㎡(${(m2 / 3.3058).toFixed(1)}평)` : '';
+            let areaDisplay = '';
+            if (supAreaM2 && excAreaM2) areaDisplay = `${fmtM2P(supAreaM2)} / ${fmtM2P(excAreaM2)}`;
+            else if (supAreaM2) areaDisplay = fmtM2P(supAreaM2);
+            else if (excAreaM2) areaDisplay = fmtM2P(excAreaM2);
+
+            let locStr = '';
+            if(p.address) {
+                 const words = p.address.split(' ');
+                 if(words.length > 2) locStr = words[2];
+                 else locStr = words[0];
+            } else {
+                 locStr = p.location || '';
+            }
+
+            let metaArr = [];
+            if(locStr) metaArr.push(locStr);
+            if(areaDisplay) metaArr.push('면적 ' + areaDisplay);
+            
+            let extraArr = [];
+            if(p.room_count) extraArr.push(`룸 ${p.room_count}개`);
+            if(p.bathroom_count) extraArr.push(`욕실 ${p.bathroom_count}개`);
+            
+            let metaHtml = metaArr.join(' · ');
+            if (extraArr.length > 0) metaHtml += '<br>' + extraArr.join(', ');
+
+            let imgUrl = (p.images && p.images.length > 0) ? p.images[0] : 'https://via.placeholder.com/80?text=NoImg';
+
+            return `
             <div class="prop-item" onclick="window.location.href='gongsil/index.html'">
-                <div class="prop-info">
-                    <div class="prop-title">${item.title}</div>
-                    <div class="prop-price">${item.price}</div>
-                    <div class="prop-meta">${item.meta}</div>
-                    <span class="prop-badge">${item.badge}</span>
+                <div class="prop-info" style="min-width:0; overflow:hidden;">
+                    <div class="prop-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width:180px;">${propTitle}</div>
+                    <div class="prop-price">${priceStr}</div>
+                    <div class="prop-meta">${metaHtml}</div>
+                    <span class="prop-badge">${badgeText}</span>
                 </div>
-                <div class="prop-img-wrapper">
-                    <img src="${item.img}" class="prop-img" onerror="this.src='https://via.placeholder.com/80?text=NoImg'">
+                <div class="prop-img-wrapper" style="flex-shrink:0;">
+                    <img src="${imgUrl}" class="prop-img" onerror="this.src='https://via.placeholder.com/80?text=NoImg'">
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
     }
     
     </script>

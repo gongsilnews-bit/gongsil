@@ -1200,6 +1200,8 @@
             });
         }
         
+        const compressedFile = typeof compressImage === 'function' ? await compressImage(file, 1600, 0.8) : file;
+
         const reader = new FileReader();
         reader.onload = function(e) {
             const dataUrl = e.target.result;
@@ -1208,14 +1210,14 @@
                 window.addPhotoFromDBToLibrary(dataUrl, caption, captionAlign, imgSize, imgPos);
             }
             
-            // 모달 초기화
+            // 폼 초기화
             fileInput.value = '';
             document.getElementById('fileName').textContent = '선택된 파일 없음';
             if (captionEls[0]) captionEls[0].value = '';
             
             closePhotoModal();
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(compressedFile);
     }
     </script>
 
