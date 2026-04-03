@@ -2520,6 +2520,12 @@
             toolbar: 'undo redo | blocks | bold italic underline | alignleft aligncenter alignright | link image media | code',
             content_style: 'body { font-family: sans-serif; font-size: 16px; line-height: 1.6; } img { max-width: 100%; height: auto; display: block; margin: 8px auto; }',
             promotion: false,
+            paste_data_images: true,
+            images_upload_handler: function (blobInfo, progress) {
+                return new Promise(function(resolve, reject) {
+                    resolve("data:" + blobInfo.blob().type + ";base64," + blobInfo.base64());
+                });
+            },
             setup: function(editor) {
                 editor.on('change keyup', function() {
                     if (typeof validateForm === 'function') validateForm();
