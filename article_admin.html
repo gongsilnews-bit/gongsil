@@ -365,7 +365,7 @@
             return;
         }
         rows.sort(function(a, b) {
-            var order = { 'pending': 1, 'published': 2, 'ended': 3, 'hidden': 3, 'draft': 4 };
+            var order = { 'pending': 1, 'published': 2, 'hidden': 3, 'draft': 4, 'ended': 5 };
             var oa = order[a.status] || 9;
             var ob = order[b.status] || 9;
             if (oa !== ob) return oa - ob;
@@ -416,7 +416,10 @@
                   if (a.status === 'published') {
                       return '<button onclick="adminEndAd('+a.id+')" style="'+btnStyle+' background:#2563eb; color:#fff;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1"><span style="'+titleStyle+'">광고중</span><span style="'+dateStyle+'">'+dStr+'</span></button>';
                   }
-                  if (a.status === 'ended' || a.status === 'hidden') {
+                  if (a.status === 'hidden') {
+                      return '<div style="'+btnStyle+' background:#ef4444; color:#fff; cursor:default;"><span style="'+titleStyle+'">반려중</span><span style="'+dateStyle+'">'+dStr+'</span></div>';
+                  }
+                  if (a.status === 'ended') {
                       return '<div style="'+btnStyle+' background:#9ca3af; color:#fff; cursor:default;"><span style="'+titleStyle+'">광고종료</span><span style="'+dateStyle+'">'+dStr+'</span></div>';
                   }
                   return '<div style="'+btnStyle+' background:#f3f4f6; color:#4b5563; border:1px solid #e5e7eb; cursor:default;"><span style="'+titleStyle+'">'+si.label+'</span><span style="'+dateStyle+'">'+dStr+'</span></div>';

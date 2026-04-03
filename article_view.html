@@ -632,18 +632,59 @@ async function submitPortalComment() {
 }
 
 function buildApproveBtn(status) {
-    if (status === 'published') {
-        return '<div class="tooltip-wrap">' +
-               '<button class="btn-toolbar" style="padding:5px 16px; border-radius:4px; font-size:13px; background:#f3f4f6; border:1px solid #d1d5db; color:#9ca3af; font-weight:bold; cursor:not-allowed;">✅ 승인</button>' +
-               '<div class="custom-tooltip">승인된 기사는 수정하실 수 없습니다.</div>' +
-               '</div>';
-    } else if (status === 'pending') {
-        return '<div class="tooltip-wrap">' +
-               '<button class="btn-toolbar" style="padding:5px 16px; border-radius:4px; font-size:13px; background:#f3f4f6; border:1px solid #d1d5db; color:#9ca3af; font-weight:bold; cursor:not-allowed;">✅ 승인신청</button>' +
-               '<div class="custom-tooltip">승인신청 기사는 수정하실 수 없습니다.</div>' +
-               '</div>';
+    var ud = {};
+    try { ud = JSON.parse(localStorage.getItem('gongsil_user') || '{}'); } catch(e) {}
+    var isAdmin = ud.role === 'admin';
+
+    if (isAdmin) {
+        if (status === 'pending') {
+            return '<button class="btn-toolbar" style="padding:5px 16px; border-radius:4px; font-size:13px; background:#16a34a; border:1px solid #16a34a; color:#fff; font-weight:bold; cursor:pointer;" onclick="changeStatus(\'published\')">✅ 승인</button>' +
+                   '<button class="btn-toolbar" style="padding:5px 16px; margin-left:6px; border-radius:4px; font-size:13px; background:#ef4444; border:1px solid #ef4444; color:#fff; font-weight:bold; cursor:pointer;" onclick="rejectArticle()">🚫 반려</button>';
+        } else if (status === 'published') {
+            return '<div class="tooltip-wrap">' +
+                   '<button class="btn-toolbar" style="padding:5px 16px; border-radius:4px; font-size:13px; background:#2563eb; border:1px solid #2563eb; color:#fff; font-weight:bold; cursor:not-allowed;">광고중</button>' +
+                   '<div class="custom-tooltip">현재 기사가 광고(게시) 중입니다.</div>' +
+                   '</div>';
+        } else if (status === 'hidden') {
+            return '<div class="tooltip-wrap">' +
+                   '<button class="btn-toolbar" style="padding:5px 16px; border-radius:4px; font-size:13px; background:#ef4444; border:1px solid #ef4444; color:#fff; font-weight:bold; cursor:not-allowed;">🚫 반려됨</button>' +
+                   '<div class="custom-tooltip">반려 처리된 기사입니다.</div>' +
+                   '</div>';
+        } else if (status === 'ended') {
+            return '<div class="tooltip-wrap">' +
+                   '<button class="btn-toolbar" style="padding:5px 16px; border-radius:4px; font-size:13px; background:#9ca3af; border:1px solid #9ca3af; color:#fff; font-weight:bold; cursor:not-allowed;">광고종료</button>' +
+                   '<div class="custom-tooltip">광고가 종료된 기사입니다.</div>' +
+                   '</div>';
+        }
+    } else {
+        if (status === 'published') {
+            return '<div class="tooltip-wrap">' +
+                   '<button class="btn-toolbar" style="padding:5px 16px; border-radius:4px; font-size:13px; background:#f3f4f6; border:1px solid #d1d5db; color:#9ca3af; font-weight:bold; cursor:not-allowed;">✅ 승인됨</button>' +
+                   '<div class="custom-tooltip">승인된 기사는 수정하실 수 없습니다.</div>' +
+                   '</div>';
+        } else if (status === 'pending') {
+            return '<div class="tooltip-wrap">' +
+                   '<button class="btn-toolbar" style="padding:5px 16px; border-radius:4px; font-size:13px; background:#f3f4f6; border:1px solid #d1d5db; color:#9ca3af; font-weight:bold; cursor:not-allowed;">✅ 승인신청중</button>' +
+                   '<div class="custom-tooltip">승인신청 기사는 수정하실 수 없습니다.</div>' +
+                   '</div>';
+        } else if (status === 'hidden') {
+            return '<div class="tooltip-wrap">' +
+                   '<button class="btn-toolbar" style="padding:5px 16px; border-radius:4px; font-size:13px; background:#ef4444; border:1px solid #ef4444; color:#fff; font-weight:bold; cursor:not-allowed;">🚫 반려됨</button>' +
+                   '<div class="custom-tooltip">관리자에 의해 반려된 기사입니다. 아래 댓글(반려사유)을 확인 후 수정하세요.</div>' +
+                   '</div>';
+        } else if (status === 'ended') {
+            return '<div class="tooltip-wrap">' +
+                   '<button class="btn-toolbar" style="padding:5px 16px; border-radius:4px; font-size:13px; background:#9ca3af; border:1px solid #9ca3af; color:#fff; font-weight:bold; cursor:not-allowed;">광고종료</button>' +
+                   '<div class="custom-tooltip">광고가 종료되었습니다.</div>' +
+                   '</div>';
+        }
     }
-    return '<button class="btn-toolbar" style="padding:5px 16px; border-radius:4px; font-size:13px; background:#16a34a; border:1px solid #16a34a; color:#fff; font-weight:bold; cursor:pointer;" onclick="changeStatus(\'pending\')">✅ 승인신청</button>';
+    
+    // 작성중(draft) 이거나 그 외 상태 (승인신청 버튼 표시)
+    if (!isAdmin && status !== 'published' && status !== 'pending') {
+        return '<button class="btn-toolbar" style="padding:5px 16px; border-radius:4px; font-size:13px; background:#16a34a; border:1px solid #16a34a; color:#fff; font-weight:bold; cursor:pointer;" onclick="changeStatus(\'pending\')">✅ 승인신청</button>';
+    }
+    return '';
 }
 
 function buildRecentLog(a) {
@@ -709,6 +750,37 @@ async function deleteArticle() {
 }
 
 function approveArticle() { changeStatus('published'); }
+
+async function rejectArticle() {
+    if (!articleId) return;
+    var reason = prompt("반려 사유를 입력해주세요.\n(입력된 사유는 아래 댓글 영역에 '시스템(반려사유)' 이름으로 자동 등록되어 작성자에게 전달됩니다.)\n\n반려 사유:");
+    if (reason === null) return; // 취소
+    if (reason.trim() === '') {
+        alert('반려 처리를 위해서는 반려 사유를 반드시 입력해야 합니다.');
+        return;
+    }
+    
+    // 1. 상태 변경
+    var resStatus = await sb.from('articles').update({ status: 'hidden' }).eq('id', articleId);
+    if (resStatus.error) {
+        alert('반려 상태 변경 실패: ' + resStatus.error.message);
+        return;
+    }
+    
+    // 2. 관리자 반려 사유 댓글 등록 (작성자 확인 용)
+    var commentRes = await sb.from('article_comments').insert([{
+        article_id: articleId,
+        user_name: '시스템 (반려사유)',
+        content: '[기사 반려] ' + reason.trim(),
+        likes: 0,
+        dislikes: 0
+    }]);
+    
+    alert('반려 처리가 완료되었으며, 사유가 기사 댓글에 등록되었습니다.');
+    articleData.status = 'hidden';
+    render();
+    loadPortalComments(articleId); // 댓글 영역 새로고침
+}
 
 function shareArticle() {
     var url = window.location.origin + window.location.pathname.replace(/article_view\.html$/, 'index.html') + '?article_id=' + articleId;
