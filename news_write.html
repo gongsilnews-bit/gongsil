@@ -227,6 +227,7 @@
         .col-library {
             width: 320px;
             position: sticky;
+            box-sizing: border-box;
             top: 24px;
             background: #fff;
             border-radius: 8px;
@@ -916,61 +917,114 @@
         </main>
 
         <!-- 3. 우측 라이브러리 (스티키) -->
-        <aside class="col-library">
-            <div class="library-title">라이브러리</div>
-            <div class="search-box">
-                <input type="text" placeholder="포토DB 간편검색">
-                <span class="icon" style="cursor:pointer;" onclick="openPhotodbModal()">🔍</span>
-            </div>
-
-            <!-- ===== 사진 섹션 ===== -->
-            <div class="lib-section" id="libPhotoSection">
-                <div class="lib-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <strong style="font-size:14px;">사진</strong>
-                    <div class="lib-toggle" style="border:1px solid #ddd; padding:0 8px; border-radius:4px; color:#666; cursor:pointer;">－</div>
-                </div>
-                <label class="dash-drop-box" style="cursor: pointer;" id="photoDropBox">
-                    <input type="file" accept="image/*" multiple style="display:none;" id="libPhotoInput" onchange="addLibraryPhotos(this)">
-                    <div><span style="color:#aaa;">🖺</span> 마우스로 이미지를 끌어오거나, 클릭해주세요.</div>
-                    <div style="margin-top:4px;">(허용용량 10MB)</div>
-                </label>
-                <!-- 사진 카드 그리드 -->
-                <div id="libPhotoGrid" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;"></div>
-            </div>
-
-            <!-- ===== 영상 섹션 ===== -->
-            <div class="lib-section" style="margin-top: 25px;">
-                <div class="lib-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <strong style="font-size:14px;">영상</strong>
-                    <div class="lib-toggle" style="border:1px solid #ddd; padding:0 8px; border-radius:4px; color:#666; cursor:pointer;">－</div>
-                </div>
-                <div style="display:flex; flex-direction:column; gap:8px;">
-                    <div style="display:flex; border:1px solid #6b7280; border-radius:4px; overflow:hidden;">
-                        <input type="text" id="libYoutubeInput" placeholder="YouTube영상링크입력" style="flex:1; padding:10px; border:none; outline:none; font-size:13px; color:#6b7280; background:#fff;">
-                        <button type="button" class="btn" onclick="addLibraryVideo()" style="background:#6b7280; color:white; border:none; padding:0 15px; border-radius:0; cursor:pointer; font-size:13px;">입력하기</button>
-                    </div>
-                    <label style="font-size:12px; color:#555; cursor:pointer; display:flex; align-items:center; gap:4px; padding-left:4px;">
-                        <input type="checkbox" id="libYoutubeIsShorts"> 쇼츠(세로) 영상으로 크기 맞춤
-                    </label>
-                </div>
-                <!-- 영상 카드 그리드 -->
-                <div id="libVideoGrid" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;"></div>
-            </div>
-
-            <!-- ===== 파일 섹션 ===== -->
-            <div class="lib-section" style="margin-top: 25px;">
-                <div class="lib-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <strong style="font-size:14px;">파일</strong>
-                    <div class="lib-toggle" style="border:1px solid #ddd; padding:0 8px; border-radius:4px; color:#666; cursor:pointer;">－</div>
-                </div>
-                <label class="dash-drop-box" style="cursor: pointer;">
-                    <input type="file" id="libFileInput" accept=".zip,.alz,.xls,.doc,.ppt,.xlsx,.docx,.pptx,.hwp,.pdf,.txt" multiple style="display:none;" onchange="addLibraryFiles(this)">
-                    <div><span style="color:#aaa;">🖺</span> 마우스로 파일을 끌어오거나, 클릭해주세요.</div>
-                    <div style="margin-top:4px;">(허용용량 2MB)</div>
+        <aside class="col-library">
+
+            <div class="library-title">라이브러리</div>
+
+            <div class="search-box">
+
+                <input type="text" placeholder="포토DB 간편검색">
+
+                <span class="icon" style="cursor:pointer;" onclick="openPhotodbModal()">🔍</span>
+
+            </div>
+
+
+
+            <!-- ===== 사진 섹션 ===== -->
+
+            <div class="lib-section" id="libPhotoSection">
+
+                <div class="lib-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+
+                    <strong style="font-size:14px;">사진</strong>
+
+                    <div class="lib-toggle" style="border:1px solid #ddd; padding:0 8px; border-radius:4px; color:#666; cursor:pointer;">－</div>
+
+                </div>
+
+                <label class="dash-drop-box" style="cursor: pointer;" id="photoDropBox">
+
+                    <input type="file" accept="image/*" multiple style="display:none;" id="libPhotoInput" onchange="addLibraryPhotos(this)">
+
+                    <div><span style="color:#aaa;">🖺</span> 마우스로 이미지를 끌어오거나, 클릭해주세요.</div>
+
+                    <div style="margin-top:4px;">(허용용량 10MB)</div>
+
+                </label>
+
+                <!-- 사진 카드 그리드 -->
+
+                <div id="libPhotoGrid" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;"></div>
+
+            </div>
+
+
+
+            <!-- ===== 영상 섹션 ===== -->
+
+            <div class="lib-section" style="margin-top: 25px;">
+
+                <div class="lib-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+
+                    <strong style="font-size:14px;">영상</strong>
+
+                    <div class="lib-toggle" style="border:1px solid #ddd; padding:0 8px; border-radius:4px; color:#666; cursor:pointer;">－</div>
+
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:8px;">
+
+                    <div style="display:flex; border:1px solid #6b7280; border-radius:4px; overflow:hidden; box-sizing: border-box; width: 100%;">
+
+                        <input type="text" id="libYoutubeInput" placeholder="YouTube영상링크입력" style="flex:1; padding:10px; border:none; outline:none; font-size:13px; color:#6b7280; background:#fff; box-sizing: border-box; min-width: 0;">
+
+                        <button type="button" class="btn" onclick="addLibraryVideo()" style="background:#6b7280; color:white; border:none; padding:0 15px; border-radius:0; cursor:pointer; font-size:13px;">입력하기</button>
+
+                    </div>
+
+                    <label style="font-size:12px; color:#555; cursor:pointer; display:flex; align-items:center; gap:4px; padding-left:4px;">
+
+                        <input type="checkbox" id="libYoutubeIsShorts"> 쇼츠(세로) 영상으로 크기 맞춤
+
+                    </label>
+
+                </div>
+
+                <!-- 영상 카드 그리드 -->
+
+                <div id="libVideoGrid" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;"></div>
+
+            </div>
+
+
+
+            <!-- ===== 파일 섹션 ===== -->
+
+            <div class="lib-section" style="margin-top: 25px;">
+
+                <div class="lib-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+
+                    <strong style="font-size:14px;">파일</strong>
+
+                    <div class="lib-toggle" style="border:1px solid #ddd; padding:0 8px; border-radius:4px; color:#666; cursor:pointer;">－</div>
+
+                </div>
+
+                <label class="dash-drop-box" style="cursor: pointer;">
+
+                    <input type="file" id="libFileInput" accept=".zip,.alz,.xls,.doc,.ppt,.xlsx,.docx,.pptx,.hwp,.pdf,.txt" multiple style="display:none;" onchange="addLibraryFiles(this)">
+
+                    <div><span style="color:#aaa;">🖺</span> 마우스로 파일을 끌어오거나, 클릭해주세요.</div>
+
+                    <div style="margin-top:4px;">(허용용량 2MB)</div>
+
                 </label>
                 <!-- 파일 카드 그리드 -->
-                <div id="libFileGrid" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;"></div>
-            </div>
+                <div id="libFileGrid" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;"></div>
+
+            </div>
+
         </aside>
 
     </div>
