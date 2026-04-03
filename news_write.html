@@ -2145,49 +2145,45 @@
         // 우측 라이브러리 기능 (사진 / 유튜브 본문 삽입)
         // ==========================================
 
-        // 에디터 내부 DOM에 직접 노드를 맨 끝에 추가하는 함수
-        // (커서 범위 추적 방식은 Summernote 내부 이벤트 간섭으로 인해 완전히 포기)
+        // 커서 위치 저장 (항상 최신 포커스 위치를 기억)
+        var savedRange = null;
+        $('#summernote').on('summernote.keyup summernote.mouseup summernote.blur', function() {
+            var r = $('#summernote').summernote('editor.getLastRange');
+            if (r) savedRange = r; // blur 시점에도 커서 위치 보존
+        });
+
+        // 커서 위치에 HTML을 삽입하는 함수
         function insertNodeAtCursor(htmlString) {
             var $editor = $('#summernote');
             try {
-                // Summernote의 실제 편집 영역(.note-editable) 직접 접근
-                var editable = $editor.next('.note-editor').find('.note-editable')[0];
-                if (!editable) {
-                    // 폴백: summernote('code')로 기존 HTML 뒤에 추가
-                    var currentHtml = $editor.summernote('code');
-                    $editor.summernote('code', currentHtml + htmlString);
-                    return;
+                if (savedRange) {
+                    // focus() 호출 없이 바로 범위 복원 후 pasteHTML
+                    // (focus()를 먼저 호출하면 Summernote가 커서를 맨 위로 재설정함)
+                    $editor.summernote('editor.restoreRange', savedRange);
+                    $editor.summernote('pasteHTML', htmlString);
+                    // 삽입 후 맨 끝 커서 위치 갱신
+                    var r2 = $editor.summernote('editor.getLastRange');
+                    if (r2) savedRange = r2;
+                } else {
+                    // savedRange가 없으면 에디터 맨 끝에 추가
+                    var editable = $editor.next('.note-editor').find('.note-editable')[0];
+                    if (editable) {
+                        var temp = document.createElement('div');
+                        temp.innerHTML = htmlString;
+                        while (temp.firstChild) editable.appendChild(temp.firstChild);
+                        var cursorP = document.createElement('p');
+                        cursorP.innerHTML = '<br>';
+                        editable.appendChild(cursorP);
+                        var range = document.createRange();
+                        range.setStart(cursorP, 0);
+                        range.collapse(true);
+                        var sel = window.getSelection();
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    }
                 }
-
-                // 임시 컨테이너에 HTML을 파싱해 노드로 변환
-                var temp = document.createElement('div');
-                temp.innerHTML = htmlString;
-
-                // 생성된 노드들을 editable 맨 끝에 순서대로 추가
-                var lastNode = null;
-                while (temp.firstChild) {
-                    lastNode = temp.firstChild;
-                    editable.appendChild(lastNode);
-                }
-
-                // 커서를 마지막에 추가된 노드 바로 다음에 위치시킴
-                var cursorP = document.createElement('p');
-                cursorP.innerHTML = '<br>';
-                editable.appendChild(cursorP);
-
-                // 브라우저 커서를 해당 p 태그 안으로 이동
-                var range = document.createRange();
-                range.setStart(cursorP, 0);
-                range.collapse(true);
-                var sel = window.getSelection();
-                sel.removeAllRanges();
-                sel.addRange(range);
-
-                // Summernote에게도 변경을 알려 내부 상태 동기화
-                $editor.summernote('editor.focus');
-
             } catch(e) {
-                console.error('에디터 노드 삽입 오류:', e);
+                console.error('에디터 삽입 오류:', e);
                 var currentHtml = $editor.summernote('code');
                 $editor.summernote('code', currentHtml + htmlString);
             }
