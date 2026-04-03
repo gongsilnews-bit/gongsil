@@ -3672,8 +3672,8 @@
         
         const styledContentHtml = `<div style="font-family: 'Apple SD Gothic Neo', sans-serif; font-size: 16px; line-height: 1.6; color:#222;"><p>최근 대치동 은마아파트에서 급매물이 등장하여 부동산 시장의 이목이 쏠리고 있습니다. 기존 호가 대비 파격적인 가격으로 조정된 이번 매물은 재건축을 앞두고 시장의 관망세를 대변하는 중대한 사례로 꼽힙니다.</p><p><br></p></div>`;
         
-        if (window.$ && (typeof tinymce !== 'undefined' && tinymce.activeEditor) > 0) {
-            if(tinymce.activeEditor) tinymce.activeEditor.setContent(styledContentHtml);
+        if (typeof tinymce !== 'undefined' && tinymce.activeEditor) {
+            tinymce.activeEditor.setContent(styledContentHtml);
         }
         
         const oldText = btn.innerHTML;
