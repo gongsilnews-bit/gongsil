@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <script src="admin_darkmode.js"></script>
@@ -205,7 +205,7 @@
         <div class="kpi-val" id="kpiProperties">-</div>
         <div class="kpi-sub" id="kpiPropSub">로딩 중...</div>
     </div>
-    <div class="kpi-card green">
+    <div class="kpi-card green" id="kpiMembersCard">
         <div class="kpi-icon">👤</div>
         <div class="kpi-label">전체 회원</div>
         <div class="kpi-val" id="kpiMembers">-</div>
@@ -247,7 +247,7 @@
             </tbody>
         </table>
     </div>
-    <div class="card">
+    <div class="card" id="recentMembersCard">
         <div class="card-title">
             👥 최근 가입 회원
             <span class="badge" id="recentMemCount">-</span>
@@ -316,33 +316,70 @@
 
     async function loadAll() {
         document.getElementById('lastUpdated').textContent = '';
+        
+        // 유저 정보 확인 (일반/부동산 회원은 API 호출 및 렌더링 스킵)
+        const ud = JSON.parse(localStorage.getItem('gongsil_user') || '{}');
+        const role = ud.profile ? (ud.profile.role || '') : '';
+        const isAdmin = role === 'admin' || role === 'superadmin';
+
         waitForClient(async (sb) => {
-            await Promise.all([
-                loadKPIs(sb),
-                loadRecentProperties(sb),
-                loadRecentMembers(sb),
+            const promises = [
+                loadKPIs(sb, isAdmin),
+                loadRecentProperties(sb, isAdmin),
                 loadRecentComments(sb)
-            ]);
+            ];
+            if (isAdmin) promises.push(loadRecentMembers(sb));
+
+            await Promise.all(promises);
             const now = new Date();
             document.getElementById('lastUpdated').textContent =
                 `마지막 갱신: ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
         });
     }
 
-    async function loadKPIs(sb) {
+    // Role 기반 렌더링 제어
+    document.addEventListener("DOMContentLoaded", () => {
+        const ud = JSON.parse(localStorage.getItem('gongsil_user') || '{}');
+        const role = ud.profile ? (ud.profile.role || '') : '';
+        
+        if (role !== 'admin' && role !== 'superadmin') {
+            const kpiMem = document.getElementById('kpiMembersCard');
+            const recentMem = document.getElementById('recentMembersCard');
+            if (kpiMem) kpiMem.style.display = 'none';
+            if (recentMem) recentMem.style.display = 'none';
+
+            // 남은 UI를 화면에 맞게 재배치
+            const kpiGrid = document.querySelector('.kpi-grid');
+            if (kpiGrid) {
+                kpiGrid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+            }
+            
+            const midGrid = document.querySelector('.mid-grid');
+            if (midGrid) {
+                midGrid.style.gridTemplateColumns = '1fr';
+            }
+            
+            // 빠른 링크에서도 고객 관리 메뉴 아이템 숨기기
+            const memberQuickLink = document.querySelector('.quick-links a[onclick*="customer_admin.html"]');
+            if (memberQuickLink) memberQuickLink.style.display = 'none';
+        }
+    });
+
+    async function loadKPIs(sb, isAdmin) {
         // 공실 물건 수
         const { count: propCount } = await sb.from('properties').select('*', { count: 'exact', head: true });
         document.getElementById('kpiProperties').textContent = fmt(propCount ?? 0);
         document.getElementById('kpiPropSub').textContent = '전체 등록 공실';
         document.getElementById('qlProps').textContent = fmt(propCount ?? 0);
 
-        // 회원 수
-        const { count: memCount } = await sb.from('members').select('*', { count: 'exact', head: true });
-        document.getElementById('kpiMembers').textContent = fmt(memCount ?? 0);
-        // 부동산 회원 수
-        const { count: realtorCount } = await sb.from('members').select('*', { count: 'exact', head: true }).eq('role', 'realtor');
-        document.getElementById('kpiMemSub').textContent = `부동산회원 ${fmt(realtorCount ?? 0)}명 포함`;
-        document.getElementById('qlMembers').textContent = fmt(memCount ?? 0);
+        // 회원 수 (관리자만 노출)
+        if (isAdmin) {
+            const { count: memCount } = await sb.from('members').select('*', { count: 'exact', head: true });
+            document.getElementById('kpiMembers').textContent = fmt(memCount ?? 0);
+            const { count: realtorCount } = await sb.from('members').select('*', { count: 'exact', head: true }).eq('role', 'realtor');
+            document.getElementById('kpiMemSub').textContent = `부동산회원 ${fmt(realtorCount ?? 0)}명 포함`;
+            document.getElementById('qlMembers').textContent = fmt(memCount ?? 0);
+        }
 
         // 기사 수
         const { count: artCount } = await sb.from('articles').select('*', { count: 'exact', head: true });
@@ -357,7 +394,7 @@
         document.getElementById('qlComments').textContent = fmt(comCount ?? 0);
     }
 
-    async function loadRecentProperties(sb) {
+    async function loadRecentProperties(sb, isAdmin) {
         const { data, error } = await sb.from('properties')
             .select('property_type, address, price, contact, created_at, sale_type')
             .order('created_at', { ascending: false })
