@@ -2213,6 +2213,23 @@
                     editable.appendChild(cursorP);
                 }
 
+                // ★ 핵심: figure 앞에 남은 빈 단락 모두 제거 (공백 완전 차단)
+                editable.querySelectorAll('figure').forEach(function(fig) {
+                    var prev = fig.previousSibling;
+                    while (prev) {
+                        var prevPrev = prev.previousSibling;
+                        var isEmpty = (prev.nodeType === 1 && prev.textContent.trim() === '' &&
+                                       !prev.querySelector('img,figure,video,iframe'));
+                        var isBr = (prev.nodeType === 1 && prev.tagName === 'BR');
+                        if (isEmpty || isBr) {
+                            prev.remove();
+                        } else {
+                            break;
+                        }
+                        prev = prevPrev;
+                    }
+                });
+
                 // 브라우저 커서를 해당 문단 안으로 이동
                 var range = document.createRange();
                 range.setStart(cursorP, 0);
