@@ -576,8 +576,7 @@
         try {
             const { error } = await supabase.from('members').update({
                 verification_status: status,
-                admin_note: note,
-                approved_at: status === 'approved' ? new Date().toISOString() : null,
+                admin_note: note
             }).eq('id', uid);
             if (error) throw error;
             document.getElementById('infoVerify').textContent = status === 'approved' ? '✓ 승인완료' : '✕ 반려됨';

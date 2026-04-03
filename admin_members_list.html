@@ -781,8 +781,7 @@
         msg.style.display = 'block'; msg.style.color = '#2563eb'; msg.textContent = '처리 중...';
         try {
             const { error } = await supabase.from('members').update({
-                verification_status: status, admin_note: note,
-                approved_at: status === 'approved' ? new Date().toISOString() : null
+                verification_status: status, admin_note: note
             }).eq('id', id);
             if (error) throw error;
             closeModal('verifyModal'); loadUsers();
