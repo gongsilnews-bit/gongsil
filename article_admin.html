@@ -332,6 +332,9 @@
             .select('id,status,article_type,title,section1,section2,reporter_name,author_id,created_at,view_count',{count:'exact'})
             .order('created_at',{ascending:false})
             .range(from,to);
+        var ud = {}; try { ud = JSON.parse(localStorage.getItem('gongsil_user') || '{}'); } catch(e) {}
+        var isAdminUser = ud.role === 'admin' || ud.role === 'super_admin';
+        if (!isAdminUser && ud.id) q = q.eq('author_id', ud.id);
         if (activeFilter.status  !== 'all') q = q.eq('status',  activeFilter.status);
         if (activeFilter.section1 !== 'all') q = q.eq('section1',activeFilter.section1);
         if (activeFilter.keyword) q = q.ilike('title','%'+activeFilter.keyword+'%');
@@ -410,11 +413,22 @@
                   var titleStyle = 'font-size:11px; font-weight:700; line-height:1.2;';
                   var dateStyle = 'font-size:10px; font-weight:400; line-height:1.2; margin-top:2px; opacity:0.9;';
 
+                  var udObj = {}; try { udObj = JSON.parse(localStorage.getItem('gongsil_user') || '{}'); } catch(e) {}
+                  var isAdminUser = udObj.role === 'admin' || udObj.role === 'super_admin';
+
                   if (a.status === 'pending') {
-                      return '<button onclick="adminApprove('+a.id+')" style="'+btnStyle+' background:#0ea5e9; color:#fff;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1"><span style="'+titleStyle+'">승인신청</span><span style="'+dateStyle+'">'+dStr+'</span></button>';
+                      if (isAdminUser) {
+                          return '<button onclick="adminApprove('+a.id+')" style="'+btnStyle+' background:#0ea5e9; color:#fff;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1"><span style="'+titleStyle+'">승인신청</span><span style="'+dateStyle+'">'+dStr+'</span></button>';
+                      } else {
+                          return '<div style="'+btnStyle+' background:#f3f4f6; color:#9ca3af; border:1px solid #d1d5db; cursor:default;"><span style="'+titleStyle+'">승인신청중</span><span style="'+dateStyle+'">'+dStr+'</span></div>';
+                      }
                   }
                   if (a.status === 'published') {
-                      return '<button onclick="adminEndAd('+a.id+')" style="'+btnStyle+' background:#2563eb; color:#fff;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1"><span style="'+titleStyle+'">광고중</span><span style="'+dateStyle+'">'+dStr+'</span></button>';
+                      if (isAdminUser) {
+                          return '<button onclick="adminEndAd('+a.id+')" style="'+btnStyle+' background:#2563eb; color:#fff;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1"><span style="'+titleStyle+'">광고중</span><span style="'+dateStyle+'">'+dStr+'</span></button>';
+                      } else {
+                          return '<div style="'+btnStyle+' background:#f3f4f6; color:#9ca3af; border:1px solid #d1d5db; cursor:default;"><span style="'+titleStyle+'">광고중</span><span style="'+dateStyle+'">'+dStr+'</span></div>';
+                      }
                   }
                   if (a.status === 'hidden') {
                       return '<div style="'+btnStyle+' background:#ef4444; color:#fff; cursor:default;"><span style="'+titleStyle+'">반려중</span><span style="'+dateStyle+'">'+dStr+'</span></div>';
@@ -472,9 +486,15 @@
     // 기사 뷰 페이지로 이동
     function goView(id) {
         if (window.parent && window.parent.loadPage) {
-            window.parent.loadPage(null, '기사뷰', 'article_view.html?id='+id+'&admin=true');
+            var udObj = {}; try { udObj = JSON.parse(localStorage.getItem('gongsil_user') || '{}'); } catch(e) {}
+            var isAdminUser = udObj.role === 'admin' || udObj.role === 'super_admin';
+            var urlParam = isAdminUser ? '&admin=true' : '';
+            window.parent.loadPage(null, '기사뷰', 'article_view.html?id='+id+urlParam);
         } else {
-            window.location.href = 'article_view.html?id='+id+'&admin=true';
+            var udObj = {}; try { udObj = JSON.parse(localStorage.getItem('gongsil_user') || '{}'); } catch(e) {}
+            var isAdminUser = udObj.role === 'admin' || udObj.role === 'super_admin';
+            var urlParam = isAdminUser ? '&admin=true' : '';
+            window.location.href = 'article_view.html?id='+id+urlParam;
         }
     }
 
