@@ -2253,7 +2253,7 @@
                 + '<img src="' + url + '" style="max-width:100%; display:block; width:100%;">'
                 + '<figcaption contenteditable="true"></figcaption>'
                 + '</figure>'
-                + '<p><br></p>'; // 커서를 다음 줄로 내리기 위한 강제 앵커
+                + '&#8203;'; // 커서를 피겨 밖으로 빼기 위한 폭 없는 공백
             insertNodeAtCursor(combinedHtml);
         };
 
@@ -2285,7 +2285,7 @@
                                 + '<figcaption contenteditable="true"></figcaption>'
                                 + '</figure>';
                         });
-                        combinedHtml += '<p><br></p>'; // 사진 묶음 삽입 후 커서를 마지막 사진 다음 줄로 내림
+                        combinedHtml += '&#8203;'; // 사진 묶음 삽입 후 커서를 밖으로 뺌
                         renderPhotoGrid();
                         insertNodeAtCursor(combinedHtml); // 한 번만 삽입
                     }
