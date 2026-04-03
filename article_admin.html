@@ -364,6 +364,14 @@
             tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#aaa;padding:40px;">등록된 기사가 없습니다.</td></tr>';
             return;
         }
+        rows.sort(function(a, b) {
+            var order = { 'pending': 1, 'published': 2, 'ended': 3, 'hidden': 3, 'draft': 4 };
+            var oa = order[a.status] || 9;
+            var ob = order[b.status] || 9;
+            if (oa !== ob) return oa - ob;
+            return new Date(b.created_at) - new Date(a.created_at);
+        });
+
         tbody.innerHTML = rows.map(function(a){
             var si = statusInfo(a.status);
             var icon = (a.article_type !== 'normal') ? ' 🖼️' : '';
@@ -454,6 +462,27 @@
             window.location.href = 'news_write.html?editId='+id;
         }
     }
+
+    // 최고관리자 승인 및 광고 종료
+    window.adminApprove = async function(id) {
+        if (!confirm("정말로 승인처리 하시겠습니까?")) return;
+        var res = await sb.from('articles').update({ status: 'published', updated_at: new Date() }).eq('id', id);
+        if (res.error) alert('승인 실패: ' + res.error.message);
+        else {
+            alert('승인되었습니다.');
+            loadCounts(); loadArticles();
+        }
+    };
+
+    window.adminEndAd = async function(id) {
+        if (!confirm("정말로 광고를 종료하시겠습니까? (상태: 광고종료)")) return;
+        var res = await sb.from('articles').update({ status: 'ended', updated_at: new Date() }).eq('id', id);
+        if (res.error) alert('종료 실패: ' + res.error.message);
+        else {
+             alert('광고가 종료되었습니다.');
+             loadCounts(); loadArticles();
+        }
+    };
 
     // 삭제
     async function deleteArticle(id, title) {
