@@ -1160,7 +1160,7 @@
         }
 
         if (typeof insertNodeAtCursor === 'function') {
-            insertNodeAtCursor(combinedHtml);
+            window.insertNodeAtCursor(combinedHtml);
         } else if (typeof $ !== 'undefined' && $('#summernote').length) {
             try { $('#summernote').summernote('pasteHTML', combinedHtml); } catch(e) {}
         }
@@ -1209,7 +1209,7 @@
         </div>`;
 
         if (typeof insertNodeAtCursor === 'function') {
-            insertNodeAtCursor(editorHtml);
+            window.insertNodeAtCursor(editorHtml);
         } else if (typeof $ !== 'undefined' && $('#summernote').length) {
             try { $('#summernote').summernote('pasteHTML', editorHtml); } catch(e) {}
         }
@@ -2170,7 +2170,7 @@
         });
 
         // 커서 위치에 HTML을 삽입하는 함수 (pasteHTML 완전 폐기, DOM 직접 조작)
-        function insertNodeAtCursor(htmlString) {
+        window.insertNodeAtCursor = function(htmlString) {
             var $editor = $('#summernote');
             var editable = editorEditableEl || $editor.next('.note-editor').find('.note-editable')[0];
 
@@ -2274,7 +2274,7 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const imgUrl = e.target.result;
-                    insertNodeAtCursor(`<img src="${imgUrl}" style="max-width: 100%; border-radius: 8px; display: block; margin: 8px auto;">`);
+                    window.insertNodeAtCursor(`<img src="${imgUrl}" style="max-width: 100%; border-radius: 8px; display: block; margin: 8px auto;">`);
                     inputTarget.value = ''; // 같은 파일 재선택 가능하도록 초기화
                 };
                 reader.readAsDataURL(inputTarget.files[0]);
@@ -2305,7 +2305,7 @@
             const paddingRatio = isShorts ? '177.77%' : '56.25%';
             const maxWidthStr = isShorts ? '; max-width: 400px; margin: 0 auto;' : '';
             const iframeHtml = `<div style="position:relative;padding-bottom:${paddingRatio};height:0;overflow:hidden;max-width:100%;border-radius:8px${maxWidthStr}"><iframe src="https://www.youtube.com/embed/${videoId}" style="position:absolute;top:0;left:0;width:100%;height:100%;" frameborder="0" allowfullscreen></iframe></div><p><br></p>`;
-            insertNodeAtCursor(iframeHtml);
+            window.insertNodeAtCursor(iframeHtml);
 
             ytInput.value = ''; // 입력창 초기화
         }
@@ -2338,7 +2338,7 @@
                 + '<img src="' + url + '" style="max-width:100%; display:block; width:100%;">'
                 + '<figcaption contenteditable="true">' + captionStr + '</figcaption>'
                 + '</figure>';
-            insertNodeAtCursor(combinedHtml);
+            window.insertNodeAtCursor(combinedHtml);
         };
 
         // === 사진 ===
@@ -2370,7 +2370,7 @@
                                 + '</figure>';
                         });
                         renderPhotoGrid();
-                        insertNodeAtCursor(combinedHtml); // 한 번만 삽입
+                        window.insertNodeAtCursor(combinedHtml); // 한 번만 삽입
                     }
                 };
                 reader.readAsDataURL(file);
@@ -2566,7 +2566,7 @@
             if (vid.caption && vid.caption.trim()) {
                 html += '<p style="text-align:center; font-size:13px; color:#888; margin:2px 0 12px;">' + vid.caption.trim() + '</p>';
             }
-            insertNodeAtCursor(html);
+            window.insertNodeAtCursor(html);
         }
 
 
@@ -3793,4 +3793,7 @@
 <script src="gongsil_chatbot.js?v=20250329"></script>
 </body>
 </html>
+
+
+
 
