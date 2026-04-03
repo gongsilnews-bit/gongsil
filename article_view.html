@@ -620,7 +620,7 @@ async function submitPortalComment() {
 
 function buildApproveBtn(status) {
     if (status === 'published') {
-        return '<button class="btn-toolbar" style="padding:5px 16px; border-radius:4px; font-size:13px; background:#fef2f2; border:1px solid #fecaca; color:#ef4444; font-weight:bold; cursor:pointer;" onclick="changeStatus(\'hidden\')">🚫 숨기기</button>';
+        return '<button class="btn-toolbar" style="padding:5px 16px; border-radius:4px; font-size:13px; background:#fef2f2; border:1px solid #fecaca; color:#ef4444; font-weight:bold; cursor:pointer;" onclick="changeStatus(\'hidden\')">🚫 반려중</button>';
     }
     return '<button class="btn-toolbar" style="padding:5px 16px; border-radius:4px; font-size:13px; background:#16a34a; border:1px solid #16a34a; color:#fff; font-weight:bold; cursor:pointer;" onclick="changeStatus(\'published\')">✅ 승인</button>';
 }
@@ -662,7 +662,7 @@ function goEdit() {
 }
 
 async function changeStatus(newStatus) {
-    var label = { published: '승인', pending: '승인신청', hidden: '숨기기' }[newStatus] || newStatus;
+    var label = { published: '승인', pending: '승인신청', hidden: '반려중' }[newStatus] || newStatus;
     if (!confirm('기사를 [' + label + '] 상태로 변경하시겠습니까?')) return;
     var res = await sb.from('articles').update({ status: newStatus }).eq('id', articleId);
     if (res.error) { alert('상태 변경 실패: ' + res.error.message); return; }
