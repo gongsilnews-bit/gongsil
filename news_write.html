@@ -1632,10 +1632,13 @@
     async function usePhotoInArticle(url, photoId) {
         const sb = window.gongsiClient;
         if (sb && photoId) {
-            sb.rpc('increment_photo_used', { pid: photoId }).catch(() => {
-                sb.from('user_photos').select('used_count').eq('id', photoId).single().then(({ data }) => {
-                    if (data) sb.from('user_photos').update({ used_count: (data.used_count || 0) + 1 }).eq('id', photoId);
-                });
+            // Supabase v2 rpc returns {data, error}, not a promise that rejects
+            sb.rpc('increment_photo_used', { pid: photoId }).then(res => {
+                if (res && res.error) {
+                    sb.from('user_photos').select('used_count').eq('id', photoId).single().then(({ data }) => {
+                        if (data) sb.from('user_photos').update({ used_count: (data.used_count || 0) + 1 }).eq('id', photoId);
+                    });
+                }
             });
         }
 
@@ -3793,6 +3796,9 @@
 <script src="gongsil_chatbot.js?v=20250329"></script>
 </body>
 </html>
+
+
+
 
 
 
