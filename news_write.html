@@ -2659,6 +2659,54 @@
                             }
                         }
                     },
+                    onMediaDelete: function(target) {
+                        var isFigure = target[0].tagName === 'FIGURE';
+                        var isImg = target[0].tagName === 'IMG';
+                        var isIframe = target[0].tagName === 'IFRAME';
+                        
+                        var src = target.attr('src');
+                        if (!src && isFigure) {
+                            var img = target.find('img, iframe');
+                            if (img.length) src = img.attr('src');
+                        }
+                        
+                        // 우측 사이드바 라이브러리 항목 연동 삭제
+                        setTimeout(function() {
+                            if (src) {
+                                var matched = false;
+                                // 먼저 사진에서 찾기
+                                var pIdx = libPhotos.findIndex(function(p) { return p.dataUrl === src; });
+                                if (pIdx > -1) {
+                                    if(typeof removePhoto === 'function') removePhoto(libPhotos[pIdx].id);
+                                    matched = true;
+                                }
+                                // 영상에서 찾기
+                                if (!matched) {
+                                    var vIdx = libVideos.findIndex(function(v) { return v.url === src; });
+                                    if (vIdx > -1) {
+                                        if(typeof removeVideo === 'function') removeVideo(libVideos[vIdx].id);
+                                        matched = true;
+                                    }
+                                }
+                                
+                                // 그래도 못 찾으면 figure의 id 속성으로 직접 삭제 (최후의 보루)
+                                if (!matched) {
+                                    var $fig = isFigure ? target : target.closest('figure');
+                                    var pid = $fig.attr('data-photo-id');
+                                    var vid = $fig.attr('data-video-id');
+                                    if (pid && typeof removePhoto === 'function') removePhoto(pid);
+                                    else if (vid && typeof removeVideo === 'function') removeVideo(vid);
+                                }
+                            } else {
+                                // src 없는 경우
+                                var $fig2 = isFigure ? target : target.closest('figure');
+                                var pid2 = $fig2.attr('data-photo-id');
+                                var vid2 = $fig2.attr('data-video-id');
+                                if (pid2 && typeof removePhoto === 'function') removePhoto(pid2);
+                                else if (vid2 && typeof removeVideo === 'function') removeVideo(vid2);
+                            }
+                        }, 50);
+                    },
                     onPaste: function (e) {
                         var bufferText = ((e.originalEvent || e).clipboardData || window.clipboardData).getData('Text');
                         var bufferHtml = ((e.originalEvent || e).clipboardData || window.clipboardData).getData('text/html');
