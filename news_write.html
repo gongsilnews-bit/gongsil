@@ -2249,12 +2249,10 @@
             }
             renderPhotoGrid();
 
-            var combinedHtml = '<p></p>'
-                + '<figure class="news-figure" draggable="true" data-type="lib-img" data-photo-id="' + id + '" style="text-align:center; margin:8px auto;">'
+            var combinedHtml = '<figure class="news-figure" draggable="true" data-type="lib-img" data-photo-id="' + id + '" style="text-align:center; margin:0 auto;">'
                 + '<img src="' + url + '" style="max-width:100%; display:block; width:100%;">'
                 + '<figcaption contenteditable="true"></figcaption>'
-                + '</figure>'
-                + '<p></p>';
+                + '</figure>';
             insertNodeAtCursor(combinedHtml);
         };
 
@@ -2274,18 +2272,17 @@
                     doneCount++;
                     if (doneCount === files.length) {
                         // 모든 파일 읽기 완료 → 한 번에 HTML 조합 후 단일 삽입
-                        var combinedHtml = '<p></p>'; // 커서 위치 앵커
+                        var combinedHtml = ''; // 불필요한 빈 문단 제거
                         results.forEach(function(dataUrl, idx) {
                             var id = 'photo_' + Date.now() + '_' + idx;
                             libPhotos.push({ id: id, dataUrl: dataUrl, caption: '' });
                             if (!globalRepId) globalRepId = id;
                             // figure HTML 조합
                             combinedHtml +=
-                                '<figure class="news-figure" draggable="true" data-type="lib-img" data-photo-id="' + id + '" style="text-align:center; margin:8px auto;">'
+                                '<figure class="news-figure" draggable="true" data-type="lib-img" data-photo-id="' + id + '" style="text-align:center; margin:0 auto;">'
                                 + '<img src="' + dataUrl + '" style="max-width:100%; display:block; width:100%;">'
                                 + '<figcaption contenteditable="true"></figcaption>'
-                                + '</figure>'
-                                + '<p></p>'; // 각 이미지 뒤 줄바꿈
+                                + '</figure>';
                         });
                         renderPhotoGrid();
                         insertNodeAtCursor(combinedHtml); // 한 번만 삽입
