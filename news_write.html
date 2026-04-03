@@ -2732,6 +2732,17 @@
                                 if (pid2 && typeof removePhoto === 'function') removePhoto(pid2);
                                 else if (vid2 && typeof removeVideo === 'function') removeVideo(vid2);
                             }
+
+                            // [추가] 에디터 내 이미지나 영상이 삭제되어 껍데기만 남은 빈 figure 제거
+                            var editorEl = document.querySelector('.note-editable');
+                            if (editorEl) {
+                                var figures = editorEl.querySelectorAll('figure.news-figure');
+                                figures.forEach(function(fig) {
+                                    if (!fig.querySelector('img') && !fig.querySelector('iframe')) {
+                                        fig.remove();
+                                    }
+                                });
+                            }
                         }, 50);
                     },
                     onPaste: function (e) {
