@@ -565,9 +565,12 @@
 
     // 인증 처리
     window.handleVerify = async function(status) {
+        let confirmMsg = status === 'approved' ? '부동산 인증을 [승인] 처리하시겠습니까?' : '회원에게 서류/정보 보완을 요청하는 [반려] 처리를 진행하시겠습니까?';
+        if (!confirm(confirmMsg)) return;
+        
         const note = document.getElementById('fAdminNote').value.trim();
         if (status === 'rejected' && !note) {
-            alert('거절 사유(검토 메모)를 입력해주세요.'); return;
+            alert('회원이 수정할 수 있도록 거절 사유(검토 메모)를 꼭 입력해주세요.'); return;
         }
         showMsg('realtorMsg', '처리 중...', 'info');
         try {

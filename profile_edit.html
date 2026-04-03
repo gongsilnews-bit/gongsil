@@ -217,6 +217,15 @@
         <span>최신 정보를 입력해 주세요. 등록하신 정보는 서비스 이용 시 중요하게 사용됩니다.</span>
     </div>
 
+    <!-- 반려 안내 배너 (기본 숨김) -->
+    <div id="rejectionBanner" class="banner" style="display:none; background-color: #fee2e2; border-left-color: #ef4444; color: #b91c1c;">
+        <span style="font-size: 20px;">🚨</span>
+        <div style="flex: 1;">
+            <strong style="font-size: 15px; display:block; margin-bottom: 4px;">부동산 인증 보완 요청</strong>
+            <span id="rejectionNote" style="font-size: 14px;"></span>
+        </div>
+    </div>
+
     <form id="profileForm">
         <!-- 기본 정보 섹션 -->
         <div class="section-title">👤 기본 정보</div>
@@ -355,6 +364,9 @@
         if (error) console.error("프로필 로드 에러:", error);
 
         if (profile) {
+            window.currentProfileRole = profile.role;
+            window.currentProfileStatus = profile.verification_status;
+
             document.getElementById('userName').value = profile.name || user.user_metadata.full_name || '';
             document.getElementById('userPhone').value = profile.phone || '';
 
@@ -362,6 +374,11 @@
             if (profile.role === 'realtor') {
                 document.getElementById('pageTitle').textContent = '부동산 회원 정보 수정';
                 document.getElementById('realtorSection').style.display = 'block';
+
+                if (profile.verification_status === 'rejected') {
+                    document.getElementById('rejectionBanner').style.display = 'flex';
+                    document.getElementById('rejectionNote').textContent = profile.admin_note || "서류나 정보가 누락되어 검토가 반려되었습니다. 올바르게 수정 후 다시 저장해주세요.";
+                }
                 
                 document.getElementById('companyName').value = profile.company_name || '';
                 document.getElementById('companyRegNo').value = profile.company_reg_no || '';
@@ -473,6 +490,11 @@
                 const { data: { publicUrl } } = supabase.storage.from('member_documents').getPublicUrl(fileName);
                 updateData.license_image_brokerage = publicUrl;
             }
+
+            // 반려 상태이거나 알 수 없는 상태에서 수정한 경우 -> 심사대기로 핑퐁
+            if (window.currentProfileStatus === 'rejected' || !window.currentProfileStatus || window.currentProfileStatus === 'pending') {
+                updateData.verification_status = 'manual_required'; // 심사대기 상태로 변경
+            }
         }
 
         try {
@@ -483,7 +505,11 @@
 
             if (error) throw error;
 
-            alert("정보가 성공적으로 수정되었습니다.");
+            if (updateData.verification_status === 'manual_required') {
+                alert("정보가 정상적으로 수정되었으며, 관리자에게 심사(재심사)가 요청되었습니다.");
+            } else {
+                alert("정보가 성공적으로 수정되었습니다.");
+            }
             
             // 중첩 로딩 방지: 전체 창을 새로고침하거나 부모창의 로드 함수 호출
             if (window.parent && typeof window.parent.loadPage === 'function') {
