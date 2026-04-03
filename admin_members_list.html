@@ -128,7 +128,7 @@
         }
 
         td {
-            padding: 14px 8px;
+            padding: 26px 8px;
             border-bottom: 1px solid #f1f3f5;
             text-align: center; vertical-align: middle; color: #444;
         }
@@ -466,6 +466,33 @@
     </div>
 </div>
 
+<!-- 수정내역 팝업 모달 -->
+<div class="modal-overlay" id="historyModal">
+    <div class="modal-content" style="width: 800px; padding: 0; max-width:95%;">
+        <div class="modal-header" style="background:#5c8aff; color:#fff; text-align:center; position:relative; border-radius: 10px 10px 0 0; padding: 24px; border: none; font-size: 20px; font-weight:bold;">
+            회원정보 수정내역
+            <button onclick="closeModal('historyModal')" style="position:absolute; right: 20px; top: 20px; background: rgba(0,0,0,0.1); border:none; color:#fff; width:32px; height:32px; cursor:pointer; font-size:16px; border-radius:6px; display:flex; align-items:center; justify-content:center; transition:background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.2)'" onmouseout="this.style.background='rgba(0,0,0,0.1)'">✕</button>
+        </div>
+        <div style="padding: 24px 30px; max-height:600px; overflow-y:auto;">
+            <table style="width:100%; text-align:center; border-collapse: collapse; font-size:13px;">
+                <thead>
+                    <tr style="border-top:2px solid #555; border-bottom:1px solid #ccc; background:#fff;">
+                        <th style="padding:14px 10px; font-weight:600; color:#333;">일시</th>
+                        <th style="padding:14px 10px; font-weight:600; color:#333;">대상아이디</th>
+                        <th style="padding:14px 10px; font-weight:600; color:#333;">유형</th>
+                        <th style="padding:14px 10px; font-weight:600; color:#333;">상세</th>
+                        <th style="padding:14px 10px; font-weight:600; color:#333;">아이디</th>
+                        <th style="padding:14px 10px; font-weight:600; color:#333;">아이피</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    <tr><td colspan="6" style="padding:50px; color:#aaa;">로딩 중...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase_gongsi_config.js"></script>
 
@@ -628,7 +655,7 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;stroke:#9ca3af;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                             삭제
                         </button>
-                        <button class="btn-history" onclick="alert('수정내역 준비중입니다.')">
+                        <button class="btn-history" onclick="openHistoryModal('${data.id}')">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;stroke:#9ca3af;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                             수정내역
                         </button>
@@ -703,6 +730,7 @@
 
     document.getElementById('btnSaveEdit').addEventListener('click', async () => {
         const id = document.getElementById('editUid').value;
+        const email = document.getElementById('editEmail').value;
         const role = document.getElementById('editRole').value;
         const membership = document.getElementById('editMembership').value;
         const dateStr = document.getElementById('editExpiredAt').value;
@@ -711,6 +739,18 @@
         try {
             let updateData = { role, membership };
             updateData.expired_at = (membership === 'paid' && dateStr) ? dateStr : null;
+            
+            const myIp = await getIp();
+            const { data: { session } } = await supabase.auth.getSession();
+            const actUid = session ? session.user.id : null;
+            const actEmail = session ? session.user.email : null;
+
+            await supabase.from('member_logs').insert({
+                target_uid: id, target_email: email, action_type: '회원정보수정',
+                details: '관리자가 회원정보 수정 (' + role + '/' + membership + ')',
+                actor_uid: actUid, actor_email: actEmail, ip_address: myIp
+            });
+
             const { error } = await supabase.from('members').update(updateData).eq('id', id);
             if (error) throw error;
             closeModal('editModal'); loadUsers();
@@ -720,12 +760,67 @@
     });
 
     window.deleteUser = async function(id, email) {
-        if (!confirm(`경고: '${email}' 회원을 삭제하시겠습니까?`)) return;
+        if(!confirm(`[${email}] 회원을 삭제하시겠습니까?`)) return;
         try {
+            const myIp = await getIp();
+            const { data: { session } } = await supabase.auth.getSession();
+            const actUid = session ? session.user.id : null;
+            const actEmail = session ? session.user.email : null;
+
+            await supabase.from('member_logs').insert({
+                target_uid: id, target_email: email, action_type: '회원삭제',
+                details: '관리자가 회원 직접 삭제', actor_uid: actUid, actor_email: actEmail, ip_address: myIp
+            });
+
             const { error } = await supabase.from('members').delete().eq('id', id);
             if (error) throw error;
-            alert('삭제되었습니다.'); loadUsers();
+            alert('삭제되었습니다.');
+            loadUsers();
         } catch (e) { alert('삭제 오류: ' + e.message); }
+    };
+
+    async function getIp() {
+        try { const r = await fetch('https://api.ipify.org?format=json'); const d = await r.json(); return d.ip; } catch(e){ return 'unknown'; }
+    }
+
+    window.openHistoryModal = async function(id) {
+        const modal = document.getElementById('historyModal');
+        const tbody = document.getElementById('historyTableBody');
+        tbody.innerHTML = '<tr><td colspan="6" style="padding:40px; color:#aaa;">로딩 중...</td></tr>';
+        modal.style.display = 'flex';
+        try {
+            const { data, error } = await supabase.from('member_logs').select('*').eq('target_uid', id).order('created_at', {ascending: false});
+            if (error) throw error;
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="padding:40px; color:#aaa;">기록이 없습니다.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.map(log => {
+                const dateParts = log.created_at.split('T');
+                // 포맷팅 (예: 26.03.19 12:44)
+                let dtStr = '-';
+                if(dateParts.length > 1) {
+                    const dateSub = dateParts[0].substring(2).replace(/-/g, '.'); // YYYY-MM-DD -> YY.MM.DD
+                    const timeSub = dateParts[1].substring(0, 5); // HH:mm:ss -> HH:mm
+                    dtStr = dateSub + ' ' + timeSub;
+                }
+                const targetEmail = (log.target_email || '').split('@')[0];
+                const actorEmail = (log.actor_email || '시스템').split('@')[0];
+                
+                return `
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding:12px; color:#555;">${dtStr}</td>
+                    <td style="padding:12px; color:#222;">${targetEmail}</td>
+                    <td style="padding:12px; color:#222;">${log.action_type || '-'}</td>
+                    <td style="padding:12px; color:#555;">${log.details || '-'}</td>
+                    <td style="padding:12px; color:#222;">${actorEmail}</td>
+                    <td style="padding:12px; color:#555;">${log.ip_address || '-'}</td>
+                </tr>
+                `;
+            }).join('');
+        } catch(e) {
+            tbody.innerHTML = `<tr><td colspan="6" style="padding:40px; color:#dc2626;">오류: ${e.message}</td></tr>`;
+        }
     };
 
     const regRoleSelect = document.getElementById('regRole');
