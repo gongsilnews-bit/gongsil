@@ -137,61 +137,79 @@
 
         /* ── 상태 배지 ── */
         .status-badge {
-            display: inline-block; padding: 2px 8px; border-radius: 3px;
-            font-size: 11px; font-weight: 700;
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 4px 11px; border-radius: 20px;
+            font-size: 12px; font-weight: 700;
+            letter-spacing: -0.01em;
+            white-space: nowrap;
         }
-        .status-normal { background-color: #dcfce7; color: #166534; }
-        .status-expired { background-color: #fee2e2; color: #991b1b; }
-        .status-pending { background-color: #fef3c7; color: #92400e; }
+        .status-normal  { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .status-expired { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+        .status-pending { background: #fef9c3; color: #a16207; border: 1px solid #fde68a; }
 
         /* ── 회원 유형 배지 ── */
         .role-badge {
-            display: inline-block; padding: 2px 8px; border-radius: 3px;
-            font-size: 11px; font-weight: 700;
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 4px 11px; border-radius: 20px;
+            font-size: 12px; font-weight: 700;
+            white-space: nowrap;
         }
-        .role-admin   { background-color: #fee2e2; color: #991b1b; }
-        .role-realtor { background-color: #fff7ed; color: #c2410c; }
-        .role-general { background-color: #f3f4f6; color: #374151; }
+        .role-admin   { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+        .role-realtor { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+        .role-general { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
 
-        /* ── 멤버십 배지 (추가) ── */
+        /* ── 멤버십 배지 ── */
         .membership-badge {
-            display: inline-flex; align-items: center; gap: 3px;
-            padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 800;
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 11px; border-radius: 20px;
+            font-size: 12px; font-weight: 700;
+            white-space: nowrap;
         }
-        .membership-free { background-color: #f1f3f5; color: #888; }
-        .membership-paid { background-color: #fff3bf; color: #e67700; border: 1px solid #ffe066; }
-        .membership-paid i { font-size: 10px; }
+        .membership-free { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+        .membership-paid { background: #fefce8; color: #a16207; border: 1px solid #fde68a; }
+
+        /* ── 관리 버튼 ── */
+        .cell-actions { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; }
+        .btn-edit {
+            padding: 5px 12px; font-size: 12px; font-weight: 700;
+            border-radius: 6px;
+            border: 1.5px solid #d1d5db; background: #fff; cursor: pointer;
+            color: #374151; font-family: inherit;
+            white-space: nowrap; transition: all 0.15s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+        }
+        .btn-edit:hover { background: #f9fafb; border-color: #9ca3af; color: #111; }
+        .btn-delete {
+            padding: 5px 12px; font-size: 12px; font-weight: 700;
+            border-radius: 6px;
+            border: 1.5px solid #fca5a5; background: #fff5f5; cursor: pointer;
+            color: #dc2626; font-family: inherit;
+            white-space: nowrap; transition: all 0.15s;
+            box-shadow: 0 1px 2px rgba(220,38,38,0.08);
+        }
+        .btn-delete:hover { background: #fee2e2; border-color: #f87171; }
+        .btn-history {
+            padding: 5px 12px; font-size: 12px; font-weight: 700;
+            border-radius: 6px;
+            border: 1.5px solid #bfdbfe; background: #eff6ff; cursor: pointer;
+            color: #2563eb; font-family: inherit;
+            white-space: nowrap; transition: all 0.15s;
+            box-shadow: 0 1px 2px rgba(37,99,235,0.08);
+        }
+        .btn-history:hover { background: #dbeafe; border-color: #93c5fd; }
 
         /* ── 아이디/이름 셀 ── */
-
         .cell-user { text-align: left; min-width: 180px; }
         .user-email { font-size: 12px; color: #555; }
         .user-name  { font-size: 13px; font-weight: 700; color: #111; }
 
         /* ── 유료기간 셀 ── */
         .paid-period { font-size: 12px; color: #555; }
-        .paid-period.active { color: #166534; font-weight: 700; }
-        .paid-period.expired { color: #991b1b; }
+        .paid-period.active { color: #15803d; font-weight: 700; }
+        .paid-period.expired { color: #b91c1c; }
 
         /* ── 날짜 ── */
         .date-text { font-size: 12px; color: #888; }
-
-        /* ── 관리 버튼 ── */
-        .cell-actions { display: flex; gap: 4px; justify-content: center; }
-        .btn-edit {
-            padding: 3px 7px; font-size: 11px; border-radius: 3px;
-            border: 1px solid #d1d5db; background: #fff; cursor: pointer;
-            color: #333; font-family: inherit; font-weight: 500;
-            white-space: nowrap; transition: background 0.1s;
-        }
-        .btn-edit:hover { background: #f3f4f6; }
-        .btn-delete {
-            padding: 3px 7px; font-size: 11px; border-radius: 3px;
-            border: 1px solid #fecaca; background: #fff; cursor: pointer;
-            color: #dc2626; font-family: inherit; font-weight: 500;
-            white-space: nowrap; transition: background 0.1s;
-        }
-        .btn-delete:hover { background: #fef2f2; }
 
         /* ── 페이지네이션 ── */
         .pagination { display: flex; justify-content: center; margin-top: 32px; gap: 4px; }
@@ -608,9 +626,10 @@
                 <td class="date-text">${createdStr}</td>
                 <td>${verifyHtml}</td>
                 <td>
-                    <div class="cell-actions" style="flex-wrap:wrap;">
-                        ${data.role === 'realtor' && (data.verification_status === 'manual_required' || data.verification_status === 'rejected') ? `<button class="btn-edit" style="background:#eff6ff;" onclick="openVerifyModal('${data.id}')">서류검토</button>` : ''}
+                    <div class="cell-actions">
+                        ${data.role === 'realtor' && (data.verification_status === 'manual_required' || data.verification_status === 'rejected') ? `<button class="btn-history" style="border-color:#fde68a; background:#fefce8; color:#a16207;" onclick="openVerifyModal('${data.id}')">서류검토</button>` : ''}
                         <button class="btn-edit" onclick="openEditModal('${data.id}','${data.email}','${data.role}','${data.membership || 'free'}','${expiredStr || ''}')">수정</button>
+                        <button class="btn-history" onclick="alert('수정내역 준비중입니다.')">수정내역</button>
                         <button class="btn-delete" onclick="deleteUser('${data.id}','${data.email}')">삭제</button>
                     </div>
                 </td>
