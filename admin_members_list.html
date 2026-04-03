@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>회원관리 - 공실뉴스 Admin</title>
+    <script src="admin_darkmode.js"></script>
+    <link rel="stylesheet" href="admin_dark.css">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable.css" />
     <style>
         :root {
@@ -11,7 +13,8 @@
             --bg-body: #f4f5f7;
             --bg-card: #ffffff;
             --border-color: #e1e4e8;
-            --text-main: #222222;
+            --text-main: #333333;
+            --text-sub: #666666;
             --blue-filter-bg: #f0f4fc;
             --dark-btn-bg: #4b5563;
         }
@@ -21,101 +24,119 @@
         body {
             font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
             background-color: var(--bg-body);
-            padding: 20px;
+            padding: 24px;
             margin: 0;
             color: var(--text-main);
-            line-height: 1.4;
+            line-height: 1.5;
         }
 
         .admin-card {
             background-color: var(--bg-card);
             border-radius: 10px;
             box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-            padding: 24px;
-            min-height: 600px;
+            padding: 32px;
+            min-height: 800px;
         }
 
         /* ── 헤더 ── */
-        .card-header {
-            display: flex; align-items: baseline;
-            justify-content: space-between; margin-bottom: 16px;
-        }
-        .card-header-left { display: flex; align-items: baseline; gap: 10px; }
-        .card-header h2 { margin: 0; font-size: 1.25rem; font-weight: 800; color: #111; }
-        .card-header .sub-info { font-size: 13px; color: #888; }
+        .card-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 24px; }
+        .card-header h2 { margin: 0; font-size: 1.25rem; font-weight: 700; color: #111; }
+        .card-header .sub-info { font-size: 13px; color: #666; }
         .card-header .sub-info b { color: #333; font-weight: 700; }
-        .card-header .total-count { font-size: 13px; color: #888; font-weight: 600; }
+        .card-header .total-count { font-size: 13px; color: #333; font-weight: 700; margin-left: auto; }
 
         /* ── 검색 필터 ── */
         .filter-container {
             background-color: var(--blue-filter-bg);
-            border-radius: 6px; padding: 14px 16px;
-            margin-bottom: 14px; display: flex;
-            flex-wrap: wrap; gap: 8px; align-items: center;
+            border-radius: 6px;
+            padding: 18px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
         }
-        .filter-group { display: flex; align-items: center; gap: 5px; }
-        .filter-label { font-size: 13px; font-weight: 700; color: #444; white-space: nowrap; }
+        .filter-group { display: flex; align-items: center; gap: 6px; }
+        .filter-label { font-size: 13px; font-weight: 600; color: #555; white-space: nowrap; }
         .filter-input {
-            padding: 6px 8px; border: 1px solid #d1d5db;
-            border-radius: 4px; font-size: 13px;
-            background-color: #fff; outline: none;
-            font-family: inherit; color: var(--text-main);
+            padding: 7px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 13px;
+            background-color: #fff;
+            outline: none;
+            font-family: inherit;
+            color: var(--text-main);
         }
         .filter-input:focus { border-color: #4285f4; }
         select.filter-input { cursor: pointer; }
-        .filter-divider { width: 1px; height: 20px; background-color: #d1d5db; margin: 0 2px; }
+        .filter-divider { width: 1px; height: 24px; background-color: #d1d5db; margin: 0 4px; }
 
         .btn-search {
-            background-color: var(--dark-btn-bg); color: white; border: none;
-            padding: 6px 12px; border-radius: 4px;
-            font-size: 13px; font-weight: 700; cursor: pointer;
-            display: flex; align-items: center; gap: 4px;
+            background-color: var(--dark-btn-bg);
+            color: white; border: none;
+            padding: 7px 14px; border-radius: 4px;
+            font-size: 13px; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; gap: 4px;
             font-family: inherit; transition: background 0.15s;
         }
         .btn-search:hover { background-color: #374151; }
+
         .btn-reset {
             background-color: #fff; color: #666;
-            border: 1px solid #d1d5db; padding: 6px 12px;
-            border-radius: 4px; font-size: 13px; cursor: pointer;
+            border: 1px solid #d1d5db;
+            padding: 7px 14px; border-radius: 4px;
+            font-size: 13px; cursor: pointer;
             font-family: inherit; transition: background 0.15s;
         }
         .btn-reset:hover { background-color: #f9fafb; }
 
         /* ── 액션 바 ── */
-        .action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .left-actions { display: flex; gap: 6px; }
+
         .btn {
-            padding: 5px 10px; font-size: 12px; font-weight: 600;
+            padding: 6px 12px; font-size: 13px; font-weight: 500;
             border-radius: 4px; border: 1px solid #d1d5db;
             background: #fff; cursor: pointer;
             display: inline-flex; align-items: center; gap: 4px;
             color: #333; font-family: inherit; transition: background 0.15s;
         }
         .btn:hover { background-color: #f3f4f6; }
-        .btn-primary {
+
+        .btn-register {
             background-color: #4285f4; color: white;
-            border: none; padding: 6px 14px; font-weight: 700; font-size: 12px;
+            border: none; padding: 8px 18px;
+            font-weight: 700; font-size: 13px;
         }
-        .btn-primary:hover { background-color: #3367d6; }
+        .btn-register:hover { background-color: #3367d6; }
 
         /* ── 테이블 ── */
         .table-container { width: 100%; overflow-x: auto; border-top: 2px solid #333; }
 
-        table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 1000px; }
+        table {
+            width: 100%; border-collapse: collapse;
+            font-size: 13px; min-width: 1050px;
+        }
+
         th {
-            background-color: #fafafa; border-bottom: 1px solid #e5e7eb;
-            padding: 10px 6px; font-weight: 700; color: #111;
-            text-align: center; white-space: nowrap; font-size: 12px;
+            background-color: #fafafa;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 12px 8px;
+            font-weight: 700; color: #333;
+            text-align: center; white-space: nowrap;
         }
+
         td {
-            padding: 13px 6px; border-bottom: 1px solid #f1f3f5;
-            text-align: center; vertical-align: middle; color: #222;
-            font-size: 13px;
+            padding: 14px 8px;
+            border-bottom: 1px solid #f1f3f5;
+            text-align: center; vertical-align: middle; color: #444;
         }
+
         tr:hover td { background-color: #fafcff; }
 
         /* ── 셀 스타일 ── */
-        .member-no { font-size: 11px; color: #aaa; font-weight: 700; }
+        .member-no { font-size: 11px; color: #aaa; font-weight: 400; }
         .user-email { font-size: 13px; color: #222; font-weight: 600; }
         .user-email.clickable {
             color: #2563eb; cursor: pointer; text-decoration: underline;
@@ -124,8 +145,8 @@
         }
         .user-email.clickable:hover { color: #1d4ed8; text-decoration-color: #93c5fd; }
         .user-name-sub { font-size: 11px; color: #999; margin-top: 1px; }
-        .date-text { font-size: 11px; color: #888; }
-        .phone-text { font-size: 12px; color: #555; }
+        .date-text { font-size: 12px; color: #888; }
+        .phone-text { font-size: 13px; color: #444; }
 
         /* ── 공통 배지 ── */
         .status-badge, .role-badge, .membership-badge {
@@ -159,34 +180,32 @@
         .cell-actions { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
 
         .btn-edit, .btn-delete, .btn-history, .btn-action {
-            padding: 4px 9px;
-            font-size: 11px; font-weight: 700;
-            border-radius: 4px; border: 1px solid #d1d5db;
-            background: #fff; cursor: pointer;
-            color: #374151; font-family: inherit;
-            white-space: nowrap; transition: background 0.12s, border-color 0.12s;
+            padding: 3px 6px; font-size: 11px; border-radius: 3px;
+            border: 1px solid #d1d5db; background: #fff; cursor: pointer;
+            color: #333; font-family: inherit; font-weight: 500; transition: background 0.1s;
+            white-space: nowrap;
         }
-        .btn-edit:hover    { background: #f8fafc; border-color: #9ca3af; }
-        .btn-delete        { color: #dc2626; border-color: #fca5a5; }
-        .btn-delete:hover  { background: #fff1f2; border-color: #f87171; }
+        .btn-edit:hover    { background: #f3f4f6; }
+        .btn-delete        { border-color: #fecaca; color: #dc2626; }
+        .btn-delete:hover  { background: #fef2f2; }
         .btn-history       { color: #2563eb; border-color: #bfdbfe; }
-        .btn-history:hover { background: #eff6ff; border-color: #93c5fd; }
+        .btn-history:hover { background: #eff6ff; }
         .btn-action        { color: #7c3aed; border-color: #ddd6fe; }
-        .btn-action:hover  { background: #f5f3ff; border-color: #c4b5fd; }
+        .btn-action:hover  { background: #f5f3ff; }
 
         /* ── 페이지네이션 ── */
-        .pagination { display: flex; justify-content: center; margin-top: 24px; gap: 4px; }
+        .pagination { display: flex; justify-content: center; margin-top: 32px; gap: 4px; }
         .page-link {
-            width: 30px; height: 30px; display: flex;
-            justify-content: center; align-items: center;
+            width: 32px; height: 32px;
+            display: flex; justify-content: center; align-items: center;
             border: 1px solid #d1d5db; border-radius: 4px;
-            font-size: 12px; color: #666; background: #fff;
-            cursor: pointer; transition: background 0.12s; text-decoration: none;
+            font-size: 13px; color: #666; text-decoration: none;
+            background: #fff; cursor: pointer; transition: background 0.12s;
         }
         .page-link:hover { background-color: #f3f4f6; }
         .page-link.active { background-color: var(--dark-btn-bg); color: #fff; border-color: var(--dark-btn-bg); }
 
-        input[type="checkbox"] { width: 14px; height: 14px; accent-color: #4285f4; cursor: pointer; }
+        input[type="checkbox"] { width: 15px; height: 15px; accent-color: #4285f4; cursor: pointer; }
 
         /* ── 모달 ── */
         .modal-overlay {
@@ -226,12 +245,10 @@
 
     <!-- 헤더 -->
     <div class="card-header">
-        <div class="card-header-left">
-            <h2>회원관리</h2>
-            <span class="sub-info">
-                (<b id="countAdmin">관리자 -</b> / <b id="countRealtor">부동산 -</b> / <b id="countGeneral">일반 -</b>)
-            </span>
-        </div>
+        <h2>회원관리</h2>
+        <span class="sub-info">
+            (<b id="countAdmin">관리자 -</b> / <b id="countRealtor">부동산 -</b> / <b id="countGeneral">일반 -</b>)
+        </span>
         <span class="total-count" id="totalCount">회원수 : 로딩중...</span>
     </div>
 
@@ -239,7 +256,7 @@
     <section class="filter-container">
         <div class="filter-group">
             <span class="filter-label">회원번호</span>
-            <input type="text" class="filter-input" id="filterNo" placeholder="회원번호 입력" style="width:110px;">
+            <input type="text" class="filter-input" id="filterNo" placeholder="회원번호 입력" style="width:130px;">
         </div>
         <div class="filter-divider"></div>
         <div class="filter-group">
@@ -253,7 +270,7 @@
         </div>
         <div class="filter-divider"></div>
         <div class="filter-group">
-            <input type="text" class="filter-input" id="filterKeyword" placeholder="이름 또는 이메일 검색" style="width:200px;">
+            <input type="text" class="filter-input" id="filterKeyword" placeholder="이름 또는 이메일 검색" style="width:220px;">
         </div>
         <button class="btn-search" id="btnSearch">🔍&nbsp;검색</button>
         <button class="btn-reset" id="btnReset">초기화</button>
@@ -262,13 +279,12 @@
     <!-- 액션 바 -->
     <div class="action-bar">
         <div class="left-actions">
+            <button class="btn btn-register" id="btnOpenRegModal">+ 회원등록</button>
             <button class="btn" onclick="alert('준비중인 기능입니다.')">★ 광고순위갱신</button>
             <button class="btn" id="btnBulkDelete">🗑 선택삭제</button>
-        </div>
-        <div style="display:flex; gap:8px;">
             <button class="btn" onclick="alert('준비중인 기능입니다.')">✖ 탈퇴아이디보기</button>
-            <button class="btn btn-primary" id="btnOpenRegModal">+ 회원등록</button>
         </div>
+        <div class="right-actions"></div>
     </div>
 
     <!-- 테이블 -->
