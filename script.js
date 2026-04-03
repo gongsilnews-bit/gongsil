@@ -328,7 +328,7 @@ async function loadPortalNews(category, isLoadMore = false) {
                 let playOverlay = '';
                 let hoverEvent = '';
                 if (hot.video_id) {
-                    playOverlay = '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:60px; height:60px; background:rgba(0,0,0,0.6); border-radius:50%; display:flex; align-items:center; justify-content:center; padding-left:4px; z-index:5;"><svg viewBox="0 0 24 24" width="30" height="30" fill="white"><path d="M8 5v14l11-7z"/></svg></div>';
+                    playOverlay = '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:64px; height:64px; background:rgba(0,0,0,0.4); border-radius:50%; border: 3px solid white; display:flex; align-items:center; justify-content:center; z-index:5;"><svg viewBox="0 0 24 24" width="30" height="30" fill="white" style="margin-left:5px;"><path d="M8 5v14l11-7z"/></svg></div>';
                     hoverEvent = `onmouseenter="window.playYtPreview(this, '${hot.video_id}')" onmouseleave="window.stopYtPreview(this)"`;
                 }
 
@@ -352,7 +352,7 @@ async function loadPortalNews(category, isLoadMore = false) {
                 sideItems.forEach(news => {
                     const esc = JSON.stringify(news).replace(/"/g, '&quot;');
                     const img = news.image_url ? `<img src="${news.image_url}" class="portal-side-item-img" onload="if(this.src.includes('youtube.com') && this.naturalWidth === 120) { this.src='https://via.placeholder.com/600x400/eeeeee/cccccc?text=Gongsil+News'; this.onload=null; }" onerror="this.src='https://via.placeholder.com/600x400/eeeeee/cccccc?text=Gongsil+News';">` : '<div style="width:100%;height:100%;background:#eee;"></div>';
-                    let playOverlay = news.video_id ? '<div style="position:absolute; bottom:5px; left:5px; width:24px; height:24px; background:rgba(0,0,0,0.7); border-radius:4px; display:flex; align-items:center; justify-content:center; padding-left:2px; z-index:5;"><svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M8 5v14l11-7z"/></svg></div>' : '';
+                    let playOverlay = news.video_id ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:32px; height:32px; background:rgba(0,0,0,0.4); border-radius:50%; border: 2px solid white; display:flex; align-items:center; justify-content:center; z-index:5;"><svg viewBox="0 0 24 24" width="16" height="16" fill="white" style="margin-left:2px;"><path d="M8 5v14l11-7z"/></svg></div>' : '';
                     let hoverEvent = news.video_id ? `onmouseenter="window.playYtPreview(this, '${news.video_id}')" onmouseleave="window.stopYtPreview(this)"` : '';
                     rightSideTopHtml += `
                         <a href="javascript:void(0)" class="portal-side-item" onclick="window.showNewsDetail(${esc})">
@@ -458,7 +458,7 @@ function generatePortalListHtml(newsList) {
     return newsList.map(news => {
         const esc = JSON.stringify(news).replace(/"/g, '&quot;');
         const img = news.image_url ? `<img src="${news.image_url}" class="portal-list-img" onload="if(this.src.includes('youtube.com') && this.naturalWidth === 120) { this.src='https://via.placeholder.com/600x400/eeeeee/cccccc?text=Gongsil+News'; this.onload=null; }" onerror="this.src='https://via.placeholder.com/600x400/eeeeee/cccccc?text=Gongsil+News';">` : '<div style="width:100%;height:100%;background:#f0f0f0;"></div>';
-        let playOverlay = news.video_id ? '<div style="position:absolute; bottom:8px; left:8px; width:30px; height:30px; background:rgba(0,0,0,0.7); border-radius:4px; display:flex; align-items:center; justify-content:center; padding-left:3px; z-index:5;"><svg viewBox="0 0 24 24" width="18" height="18" fill="white"><path d="M8 5v14l11-7z"/></svg></div>' : '';
+        let playOverlay = news.video_id ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:44px; height:44px; background:rgba(0,0,0,0.4); border-radius:50%; border: 2.5px solid white; display:flex; align-items:center; justify-content:center; z-index:5;"><svg viewBox="0 0 24 24" width="20" height="20" fill="white" style="margin-left:3px;"><path d="M8 5v14l11-7z"/></svg></div>' : '';
         let hoverEvent = news.video_id ? `onmouseenter="window.playYtPreview(this, '${news.video_id}')" onmouseleave="window.stopYtPreview(this)"` : '';
         const date = news.pub_date ? new Date(news.pub_date).toLocaleDateString('ko-KR') : '-';
         return `
