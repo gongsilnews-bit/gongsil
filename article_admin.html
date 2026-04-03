@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <script src="admin_darkmode.js"></script>
@@ -262,6 +262,7 @@
             <thead>
                 <tr>
                     <th style="width: 40px;"><input type="checkbox" id="checkAll" onchange="toggleAll(this)"></th>
+                    <th style="width: 80px;">기사번호</th>
                     <th style="width: 100px;">진행상황</th>
                     <th>기사명</th>
                     <th style="width: 140px;">1차섹션</th>
@@ -271,7 +272,7 @@
                 </tr>
             </thead>
             <tbody id="articleTableBody">
-                <tr><td colspan="7" style="text-align:center; color:#aaa; padding:40px;">로딩 중...</td></tr>
+                <tr><td colspan="8" style="text-align:center; color:#aaa; padding:40px;">로딩 중...</td></tr>
             </tbody>
         </table>
     </div>
@@ -320,10 +321,10 @@
 
     async function loadArticles() {
         if (!sb) {
-            document.getElementById('articleTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:#e11d48;padding:40px;">Supabase 클라이언트 초기화 실패. 세션을 확인하세요.</td></tr>';
+            document.getElementById('articleTableBody').innerHTML = '<tr><td colspan="8" style="text-align:center;color:#e11d48;padding:40px;">Supabase 클라이언트 초기화 실패. 세션을 확인하세요.</td></tr>';
             return;
         }
-        document.getElementById('articleTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:#aaa;padding:40px;">로딩 중...</td></tr>';
+        document.getElementById('articleTableBody').innerHTML = '<tr><td colspan="8" style="text-align:center;color:#aaa;padding:40px;">로딩 중...</td></tr>';
 
         var from = (currentPage-1)*PAGE_SIZE, to = from+PAGE_SIZE-1;
         var q = sb.from('articles')
@@ -336,7 +337,7 @@
 
         var res = await q;
         if (res.error) {
-            document.getElementById('articleTableBody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#e11d48;padding:40px;">로딩 오류: '+res.error.message+'</td></tr>';
+            document.getElementById('articleTableBody').innerHTML = '<tr><td colspan="8" style="text-align:center;color:#e11d48;padding:40px;">로딩 오류: '+res.error.message+'</td></tr>';
             return;
         }
         totalCount = res.count || 0;
@@ -347,7 +348,7 @@
     function renderTable(rows) {
         var tbody = document.getElementById('articleTableBody');
         if (!rows.length) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#aaa;padding:40px;">등록된 기사가 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#aaa;padding:40px;">등록된 기사가 없습니다.</td></tr>';
             return;
         }
         tbody.innerHTML = rows.map(function(a){
@@ -355,6 +356,7 @@
             var icon = (a.article_type !== 'normal') ? ' 🖼️' : '';
             return '<tr>'
               +'<td><input type="checkbox" class="row-check" data-id="'+a.id+'"></td>'
+              +'<td style="color:#888; font-weight:600;">'+a.id+'</td>'
               +'<td><span class="badge-status '+si.cls+'">'+si.label+'</span></td>'
               +'<td class="cell-title" onclick="goView('+a.id+')">'+escHtml(a.title||'(제목없음)')+icon+'</td>'
               +'<td class="section-primary">'+(a.section1||'-')+'</td>'
