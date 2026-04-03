@@ -829,7 +829,7 @@
         container.innerHTML = skeletonHtml;
         
         const { data, error } = await sb.from('articles')
-            .select('*')
+            .select('*, article_media!fk_rep_media(url)')
             .eq('status', 'published')
             .eq('section1', '세무·법률')
             .order('created_at', { ascending: false })
@@ -849,7 +849,12 @@
             const detailUrl = `news_read.html?article_id=${news.id}`; 
             card.onclick = () => window.location.href = detailUrl;
             
-            const imgHtml = news.image_url ? `<img src="${news.image_url}" class="an-img" onerror="this.src='https://via.placeholder.com/160x100?text=News'">` : `<div class="an-img" style="display:flex;align-items:center;justify-content:center;color:#ccc;font-size:12px;">NO IMAGE</div>`;
+            let extractUrl = (news.article_media && news.article_media.url) ? news.article_media.url : news.image_url;
+            if(!extractUrl && news.content) {
+                const imgMatch = news.content.match(/<img[^>]+src=["']([^"']+)["']/i);
+                if(imgMatch) extractUrl = imgMatch[1];
+            }
+            const imgHtml = extractUrl ? \`<img src="\${extractUrl}" class="an-img" onerror="this.src='https://via.placeholder.com/160x100?text=News'">\` : \`<div class="an-img" style="display:flex;align-items:center;justify-content:center;color:#ccc;font-size:12px;background:#f4f6fa;">NO IMAGE</div>\`;
             
             const categoryBadge = news.section1 ? `[${news.section1}${news.section2 ? ' > '+news.section2 : ''}]` : '';
             
