@@ -1650,7 +1650,7 @@
 
     function forceInsertPhoto(url, photoId) {
         var imgId = 'photo_' + photoId;
-        var combinedHtml = '<figure class="news-figure" draggable="true" data-type="lib-img" data-photo-id="' + imgId + '" style="text-align:center; margin:0 auto;"><img src="' + url + '" style="max-width:100%; display:block; width:100%;"><figcaption contenteditable="true"></figcaption></figure><p><br></p>';
+        var combinedHtml = '<p><br></p><figure class="news-figure" draggable="true" data-type="lib-img" data-photo-id="' + imgId + '" style="text-align:center; margin:0 auto;"><img src="' + url + '" style="max-width:100%; display:block; width:100%;"><figcaption contenteditable="true"></figcaption></figure><p><br></p>';
         if (typeof $ !== 'undefined' && $('#summernote').length) {
             try { $('#summernote').summernote('pasteHTML', combinedHtml); } catch(e) { }
         }
@@ -2384,7 +2384,7 @@
             }
             renderPhotoGrid();
 
-            var combinedHtml = '<figure class="news-figure" draggable="true" data-type="lib-img" data-photo-id="' + id + '" style="text-align:' + alignStr + '; margin:0 auto;">'
+            var combinedHtml = '<p><br></p><figure class="news-figure" draggable="true" data-type="lib-img" data-photo-id="' + id + '" style="text-align:' + alignStr + '; margin:0 auto;">'
                 + '<img src="' + url + '" style="max-width:100%; display:block; width:100%;">'
                 + '<figcaption contenteditable="true">' + captionStr + '</figcaption>'
                 + '</figure><p><br></p>';
@@ -2407,7 +2407,7 @@
                     doneCount++;
                     if (doneCount === files.length) {
                         // 모든 파일 읽기 완료 → 한 번에 HTML 조합 후 단일 삽입
-                        var combinedHtml = ''; // 불필요한 빈 문단 제거
+                        var combinedHtml = '<p><br></p>'; // 윗 공간 커서 확보를 위해 빈 문단 추가
                         results.forEach(function(dataUrl, idx) {
                             var id = 'photo_' + Date.now() + '_' + idx;
                             libPhotos.push({ id: id, dataUrl: dataUrl, caption: '' });
