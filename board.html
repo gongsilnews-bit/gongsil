@@ -992,12 +992,13 @@
 
     /* 렌더러: 동영상 앨범형 스킨 */
     function renderVideoAlbum(container, posts) {
-        let html = '<div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:20px;">';
+        // 대표님 요청: 가로 갯수 조절 (기존 2개 -> 3개로 변경. 필요시 repeat(4, 1fr) 로 변경 가능)
+        let html = '<div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:15px;">';
         posts.forEach(p => {
             const dateStr = new Date(p.created_at).toLocaleDateString();
             html += `
                 <div class="vid-card" style="border:1px solid #eee; border-radius:8px; overflow:hidden; cursor:pointer;" onclick="window.location.href='board_read.html?post_id=${p.id}&board_id=${currentBoardId}'">
-                    <div style="height:160px; background:#222; position:relative; overflow:hidden;">
+                    <div style="height:140px; background:#222; position:relative; overflow:hidden;">
                         <img src="${p.thumbnail_url || 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=320&q=80'}" style="width:100%; height:100%; object-fit:cover; opacity:0.8;">
                         <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:44px; height:44px; background:rgba(0,0,0,0.6); border-radius:50%; border:2px solid #fff; display:flex; align-items:center; justify-content:center;"><svg width="20" height="20" fill="#fff" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
                     </div>
