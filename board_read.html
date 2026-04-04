@@ -865,8 +865,19 @@
         try {
             const sb = window.gongsiClient || window.supabaseClient;
             if (!sb) return;
+            
             const { data: { user } } = await sb.auth.getUser();
+            
+            let isAdmin = false;
+            let currentUserId = null;
+            
+            try {
+                const localUser = JSON.parse(localStorage.getItem('gongsil_user') || '{}');
+                if (localUser?.profile?.role === 'admin') isAdmin = true;
+            } catch(e) {}
+            
             if (user) {
+                currentUserId = user.id;
                 let userName = user.email.split('@')[0];
                 try {
                     const { data: ud } = await sb.from('users_profile').select('name').eq('id', user.id).single();
@@ -876,20 +887,21 @@
                 const commentUser = document.getElementById('commentUserName');
                 if (commentUser) commentUser.innerText = userName + '님';
                 
-                let isAdmin = false;
-                try {
-                    const localUser = JSON.parse(localStorage.getItem('gongsil_user') || '{}');
-                    if (localUser?.profile?.role === 'admin') isAdmin = true;
-                    if (user.email === 'gongsilnews@gmail.com') isAdmin = true;
-                } catch(e) {}
+                if (user.email === 'gongsilnews@gmail.com') isAdmin = true;
+            }
 
-                // 사용자가 글쓴이이거나 관리자인 경우 수정/삭제 버튼 표시
-                if (user.id === window._postAuthorId || isAdmin) {
-                    const btnEdit = document.getElementById('btnGoEdit');
-                    const btnDel = document.getElementById('btnGoDelete');
-                    if (btnEdit) btnEdit.style.display = 'inline-block';
-                    if (btnDel) btnDel.style.display = 'inline-block';
-                }
+            // Fallback UUID (오류 우회 등 로컬 테스트 환경에서 작성된 경우)
+            const FALLBACK_UUID = '00000000-0000-0000-0000-000000000000';
+            const authorId = window._postAuthorId;
+            
+            // 관리자이거나, 실제 작성자이거나, (로컬 작성글 오류 방어를 위해) 관리자+로컬작성글 인 경우 모두 호환
+            const isAuthor = (currentUserId && currentUserId === authorId) || (authorId === FALLBACK_UUID && isAdmin);
+
+            if (isAuthor || isAdmin) {
+                const btnEdit = document.getElementById('btnGoEdit');
+                const btnDel = document.getElementById('btnGoDelete');
+                if (btnEdit) btnEdit.style.display = 'inline-block';
+                if (btnDel) btnDel.style.display = 'inline-block';
             }
         } catch(e) { console.warn('유저 로드 오류:', e); }
     }
