@@ -133,10 +133,19 @@ function _gongsiAuthInit(supabase) {
 
         const titleEl = modal.querySelector('.glb-title');
         const descEl = modal.querySelector('.glb-desc');
+        const tabs = modal.querySelectorAll('.glb-tab');
         if (action === 'login') {
+            if (tabs.length === 2) {
+                tabs[0].style.borderColor = '#ddd'; tabs[0].style.background = '#fff'; tabs[0].style.color = '#444';
+                tabs[1].style.borderColor = '#1e56a0'; tabs[1].style.background = '#f4f6fa'; tabs[1].style.color = '#1e56a0';
+            }
             titleEl.textContent = '반갑습니다! 공실뉴스 로그인';
             descEl.textContent = '로그인하시고 공실뉴스만의 혜택을 누려보세요';
         } else {
+            if (tabs.length === 2) {
+                tabs[1].style.borderColor = '#ddd'; tabs[1].style.background = '#fff'; tabs[1].style.color = '#444';
+                tabs[0].style.borderColor = '#1e56a0'; tabs[0].style.background = '#f4f6fa'; tabs[0].style.color = '#1e56a0';
+            }
             titleEl.textContent = '공실뉴스 회원이 되어 보세요';
             descEl.textContent = '지금 바로 공실뉴스 회원으로 가입하시고, 독점 혜택을 누려보세요';
         }
@@ -654,10 +663,19 @@ function _gongsiAuthInit(supabase) {
         }
         const titleEl = modal.querySelector('.glb-title');
         const descEl = modal.querySelector('.glb-desc');
+        const tabs = modal.querySelectorAll('.glb-tab');
         if (action === 'login') {
+            if (tabs.length === 2) {
+                tabs[0].style.borderColor = '#ddd'; tabs[0].style.background = '#fff'; tabs[0].style.color = '#444';
+                tabs[1].style.borderColor = '#1e56a0'; tabs[1].style.background = '#f4f6fa'; tabs[1].style.color = '#1e56a0';
+            }
             titleEl.textContent = '반갑습니다! 공실뉴스 로그인';
             descEl.textContent = '로그인하시고 공실뉴스만의 혜택을 누려보세요';
         } else {
+            if (tabs.length === 2) {
+                tabs[1].style.borderColor = '#ddd'; tabs[1].style.background = '#fff'; tabs[1].style.color = '#444';
+                tabs[0].style.borderColor = '#1e56a0'; tabs[0].style.background = '#f4f6fa'; tabs[0].style.color = '#1e56a0';
+            }
             titleEl.textContent = '공실뉴스 회원이 되어 보세요';
             descEl.textContent = '지금 바로 공실뉴스 회원으로 가입하시고, 독점 혜택을 누려보세요';
         }
