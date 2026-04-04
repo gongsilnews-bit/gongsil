@@ -680,9 +680,20 @@
 
     // ========== 게시글 렌더링 ==========
     function renderPost(info) {
-        // 카테고리
+        // 카테고리 배지
         const catEl = document.getElementById('vCategory');
         catEl.innerText = info.category ? `[${info.category}]` : '[전체]';
+
+        // ★ 해당 카테고리 탭 자동 활성화 ★
+        const allTabs = document.querySelectorAll('#boardTabs .b-tab');
+        if (info.category && allTabs.length > 0) {
+            allTabs.forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.innerText.trim() === info.category.trim()) {
+                    tab.classList.add('active');
+                }
+            });
+        }
 
         // 제목/작성자/날짜/조회수
         document.getElementById('vTitle').innerText = info.title || '(제목 없음)';
