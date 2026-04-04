@@ -951,7 +951,8 @@
         
         let boardMeta = boardData;
         if (boardErr || !boardData) {
-            const { data: firstBoard } = await sb.from('boards').select('board_id').limit(1).single();
+            const { data: firstBoardData } = await sb.from('boards').select('board_id').order('created_at', { ascending: true }).limit(1);
+            const firstBoard = firstBoardData && firstBoardData.length > 0 ? firstBoardData[0] : null;
             
             if (!urlParams.get('id')) {
                 // 주소창에 명시적 id가 없는데 (예: board.html 이동) 기본값이 DB에 없을 경우 -> 조용히 첫 게시판으로 점프
