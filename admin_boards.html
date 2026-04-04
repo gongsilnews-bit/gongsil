@@ -203,19 +203,109 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase_gongsi_config.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadBoards();
+        });
+
+        async function loadBoards() {
+            const tableBody = document.getElementById('boardTableBody');
+            const sb = window.gongsiClient || window.supabaseClient;
+            if(!sb) {
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">DB 초기화 실패</td></tr>';
+                return;
+            }
+
+            const { data, error } = await sb.from('boards').select('*').order('created_at', { ascending: false });
+            if (error) {
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">게시판 데이터를 불러올 수 없습니다. (' + error.message + ')</td></tr>';
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#666;">생성된 게시판이 없습니다. 새 게시판을 만들어주세요.</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = data.map(b => {
+                let skinIcon = '📝';
+                let skinLabel = '일반 리스트형';
+                if (b.skin_type === 'video_album') { skinIcon = '▶'; skinLabel = '동영상 앨범형'; }
+                else if (b.skin_type === 'file_album') { skinIcon = '📄'; skinLabel = '자료실 썸네일형'; }
+
+                return `
+                <tr>
+                    <td style="font-family: monospace; color: var(--text-muted); font-size: 13px;">${b.board_id}</td>
+                    <td style="font-weight: 700;">${b.board_name} <span style="font-size:12px; color:#9ca3af; font-weight:400; margin-left:6px;">(${b.subtitle || ''})</span></td>
+                    <td><span class="badge"><span class="skin-icon">${skinIcon}</span> ${skinLabel}</span></td>
+                    <td style="font-size: 13px; color: var(--text-muted);">${b.auth_list} / ${b.auth_read} / ${b.auth_write}</td>
+                    <td>
+                        <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;" onclick="location.href='../board.html?id=${b.board_id}'">미리보기</button>
+                        <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px; color:#dc2626; border-color: #fecaca; background: #fef2f2;" onclick="deleteBoard('${b.board_id}')">삭제</button>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
         function openModal() {
             document.getElementById('boardModal').style.display = 'flex';
         }
+
         function closeModal() {
             document.getElementById('boardModal').style.display = 'none';
         }
-        function saveBoard() {
-            alert('게시판 설정이 성공적으로 저장되었습니다. (DB 연동 대기중)');
-            closeModal();
+
+        async function saveBoard() {
+            const id = document.getElementById('boardId').value;
+            const name = document.getElementById('boardName').value;
+            const sub = document.getElementById('boardSubtitle').value;
+            const skin = document.getElementById('boardSkin').value;
+            const cat = document.getElementById('boardCategories').value;
+            const aList = parseInt(document.getElementById('authList').value) || 1;
+            const aRead = parseInt(document.getElementById('authRead').value) || 1;
+            const aWrite = parseInt(document.getElementById('authWrite').value) || 9;
+
+            if(!id || !name) return alert('게시판 고유 ID와 게시판명은 필수 입력 항목입니다.');
+
+            const sb = window.gongsiClient || window.supabaseClient;
+            if(!sb) return alert('DB 클라이언트 연결 오류');
+
+            const insertData = {
+                board_id: id,
+                board_name: name,
+                subtitle: sub,
+                skin_type: skin,
+                categories: cat,
+                auth_list: aList,
+                auth_read: aRead,
+                auth_write: aWrite
+            };
+
+            const { error } = await sb.from('boards').insert([insertData]);
+            
+            if (error) {
+                alert('게시판 생성 실패: ' + error.message);
+                console.error(error);
+            } else {
+                alert('게시판이 성공적으로 생성되었습니다!');
+                closeModal();
+                loadBoards(); // 목록 새로고침
+            }
+        }
+
+        async function deleteBoard(bid) {
+            if(!confirm(`정말 '${bid}' 게시판을 삭제하시겠습니까?\n내부의 모든 게시물이 함께 삭제될 수 있습니다.`)) return;
+            const sb = window.gongsiClient || window.supabaseClient;
+            const { error } = await sb.from('boards').delete().eq('board_id', bid);
+            if(error) alert('삭제 실패: ' + error.message);
+            else loadBoards();
         }
         
         // 다크모드 대응
+
         window.addEventListener('message', function(e) {
             if(e.data === 'darkmode:on') {
                 document.documentElement.style.setProperty('--bg', '#1f2937');
