@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS public.boards (
     auth_list INTEGER DEFAULT 1,            -- 목록 보기 가능 레벨 (1: 일반/ 5: 기자/ 9: 관리자 등)
     auth_read INTEGER DEFAULT 1,            -- 본문/다운로드 가능 레벨
     auth_write INTEGER DEFAULT 9,           -- 글쓰기 가능 레벨
+    gallery_columns INTEGER DEFAULT 3,      -- 앨범형 게시판 가로 칸수 (2,3,4)
     point_cost_read INTEGER DEFAULT 0,      -- (향후 확장) 열람 시 차감할 포인트
     point_cost_download INTEGER DEFAULT 0,  -- (향후 확장) 다운로드 시 차감할 포인트
     is_active BOOLEAN DEFAULT TRUE,         -- 게시판 활성 상태 여부

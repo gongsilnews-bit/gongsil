@@ -992,8 +992,9 @@
 
     /* 렌더러: 동영상 앨범형 스킨 */
     function renderVideoAlbum(container, posts) {
-        // 대표님 요청: 가로 갯수 조절 (기존 2개 -> 3개로 변경. 필요시 repeat(4, 1fr) 로 변경 가능)
-        let html = '<div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:15px;">';
+        // 관리자가 설정한 가로 갯수를 가져옵니다. 기본값은 3개.
+        let cols = boardMeta.gallery_columns || 3;
+        let html = `<div style="display:grid; grid-template-columns:repeat(${cols}, 1fr); gap:15px;">`;
         posts.forEach(p => {
             const dateStr = new Date(p.created_at).toLocaleDateString();
             html += `
@@ -1018,7 +1019,8 @@
 
     /* 렌더러: 자료실 썸네일형 스킨 */
     function renderFileAlbum(container, posts) {
-        let html = '<div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:15px;">';
+        let cols = boardMeta.gallery_columns || 3;
+        let html = `<div style="display:grid; grid-template-columns:repeat(${cols}, 1fr); gap:15px;">`;
         posts.forEach(p => {
             html += `
                 <div class="file-card" style="cursor:pointer;" onclick="window.location.href='board_read.html?post_id=${p.id}&board_id=${currentBoardId}'">
