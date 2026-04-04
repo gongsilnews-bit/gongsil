@@ -329,8 +329,8 @@
             const file = thumbInput.files[0];
             const fileExt = file.name.split('.').pop();
             const fileName = `thumb_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-            // user-photos 버킷은 보통 자기 uid 폴더 하위 업로드를 허용함
-            const filePath = `${currentUserId}/board_${boardId}_${Date.now()}/${fileName}`;
+            // user-photos 버킷은 보통 uid 직계 하위 폴더만 업로드 정책이 허용되어 있을 수 있으므로 하위 폴더 제거
+            const filePath = `${currentUserId}/board_thumb_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
 
             // 업로드 시도 (contentType, upsert 추가)
             const { error: uploadError } = await sb.storage.from('user-photos').upload(filePath, file, { 
