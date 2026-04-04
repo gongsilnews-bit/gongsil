@@ -499,10 +499,14 @@
                     </div>
                 </div>
                 <div class="post-body">
-                    <!-- 동영상 -->
-                    <div id="vVideoArea"></div>
-                    <!-- 파일 다운로드 및 외부 링크 -->
-                    <div id="vDownloadArea" style="display:none; flex-direction:column; gap:10px;">
+                    <!-- 미디어 영역 (썸네일 또는 유튜브) -->
+                    <div id="vMediaArea" style="display:none; text-align:center; margin-bottom:30px;"></div>
+                    
+                    <!-- 본문 내용 -->
+                    <div id="vContent"></div>
+                    
+                    <!-- 파일 다운로드 및 외부 링크 (본문 하단) -->
+                    <div id="vDownloadArea" style="display:none; flex-direction:column; gap:10px; margin-top:40px;">
                         <div class="dl-info" style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0;" id="driveAreaWrap">
                             <div>
                                 <div class="dl-title" style="font-weight:700; color:#1e293b; margin-bottom:4px;">참고자료 링크</div>
@@ -520,8 +524,6 @@
                             </div>
                         </div>
                     </div>
-                    <!-- 본문 내용 -->
-                    <div id="vContent"></div>
                 </div>
             </div>
 
@@ -728,7 +730,8 @@
             });
         }
 
-        // ===== 유튜브 영상 (썸네일 → 클릭 시 재생) =====
+        // ===== 유튜브 영상 또는 일반 썸네일 노출 =====
+        const mediaArea = document.getElementById('vMediaArea');
         if (info.youtube_url && info.youtube_url.trim()) {
             const origUrl = info.youtube_url.trim();
 
@@ -749,9 +752,8 @@
             const thumbUrl = info.thumbnail_url || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
             const watchUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : origUrl;
 
-            const vidArea = document.getElementById('vVideoArea');
-            vidArea.style.display = 'block';
-            vidArea.innerHTML = `
+            mediaArea.style.display = 'block';
+            mediaArea.innerHTML = `
                 <div id="videoThumbWrap" onclick="playYouTube('${embedUrl}')" style="position:relative; background:#000; border-radius:8px; overflow:hidden; cursor:pointer; aspect-ratio:16/9;">
                     <img src="${thumbUrl}" style="width:100%; height:100%; object-fit:cover; display:block; opacity:0.85;">
                     <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
@@ -770,6 +772,10 @@
                     </a>
                 </div>
             `;
+        } else if (info.thumbnail_url && info.thumbnail_url.trim()) {
+            // 유튜브 영상이 없고 썸네일만 존재할 경우 (본문 상단에 썸네일 표시)
+            mediaArea.style.display = 'block';
+            mediaArea.innerHTML = `<img src="${info.thumbnail_url}" style="max-width:100%; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.05);" alt="썸네일 이미지">`;
         }
 
         // ===== 구글 드라이브 다운로드 / 외부 링크 =====
