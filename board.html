@@ -751,14 +751,21 @@
             .h-tag-display { color: var(--brand-blue); font-weight: 800; margin-right: 4px;}
         </style>
 
+        <style>
+            .board-search-write {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+        </style>
         <div class="board-header">
             <div class="board-title">드론영상 <span style="font-size: 16px; font-weight: 500; color: #666; margin-left: 10px;">(자료실)</span></div>
             <div class="board-search-write">
+                <button class="b-write-btn" id="writePostBtn" onclick="location.href='board_write.html?board_id=' + currentBoardId">글쓰기</button>
                 <div class="b-search">
                     <input type="text" placeholder="해당 카테고리 검색">
                     <button>검색</button>
                 </div>
-                <button class="b-write-btn" id="writePostBtn" onclick="location.href='board_write.html?board_id=' + currentBoardId">글쓰기</button>
             </div>
         </div>
 
