@@ -640,8 +640,8 @@
             return;
         }
 
-        // 게시판 메타 (이름 표시용)
-        const { data: boardData } = await sb.from('boards').select('board_name').eq('board_id', BOARD_ID).single();
+        // 게시판 메타 (이름 + 카테고리 표시용)
+        const { data: boardData } = await sb.from('boards').select('board_name, categories, subtitle').eq('board_id', BOARD_ID).single();
         if (boardData) {
             document.getElementById('bcBoardName').innerText = boardData.board_name;
             document.getElementById('bphBoardName').childNodes[0].textContent = boardData.board_name + ' ';
@@ -695,27 +695,46 @@
             });
         }
 
-        // ===== 유튜브 영상 =====
+        // ===== 유튜브 영상 (썸네일 → 클릭 시 재생) =====
         if (info.youtube_url && info.youtube_url.trim()) {
-            let url = info.youtube_url.trim();
-            // youtu.be/ID -> youtube.com/embed/ID
-            url = url.replace('https://youtu.be/', 'https://www.youtube.com/embed/');
-            url = url.replace('http://youtu.be/', 'https://www.youtube.com/embed/');
-            // youtube.com/watch?v=ID -> youtube.com/embed/ID
-            url = url.replace('youtube.com/watch?v=', 'youtube.com/embed/');
-            // ?si= 파라미터 제거
-            if (url.includes('?si=')) url = url.split('?si=')[0];
-            // &si= 제거
-            if (url.includes('&si=')) url = url.split('&si=')[0];
+            const origUrl = info.youtube_url.trim();
 
-            const vidArea  = document.getElementById('vVideoArea');
+            // 동영상 ID 추출
+            let videoId = '';
+            if (origUrl.includes('youtu.be/')) {
+                videoId = origUrl.split('youtu.be/')[1];
+                if (videoId.includes('?')) videoId = videoId.split('?')[0];
+            } else if (origUrl.includes('watch?v=')) {
+                videoId = origUrl.split('watch?v=')[1];
+                if (videoId.includes('&')) videoId = videoId.split('&')[0];
+            } else if (origUrl.includes('/embed/')) {
+                videoId = origUrl.split('/embed/')[1];
+                if (videoId.includes('?')) videoId = videoId.split('?')[0];
+            }
+
+            const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+            const thumbUrl = info.thumbnail_url || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+            const watchUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : origUrl;
+
+            const vidArea = document.getElementById('vVideoArea');
             vidArea.style.display = 'block';
             vidArea.innerHTML = `
-                <div class="video-embed-box">
-                    <iframe src="${url}" 
-                        allowfullscreen
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
-                    </iframe>
+                <div id="videoThumbWrap" onclick="playYouTube('${embedUrl}')" style="position:relative; background:#000; border-radius:8px; overflow:hidden; cursor:pointer; aspect-ratio:16/9;">
+                    <img src="${thumbUrl}" style="width:100%; height:100%; object-fit:cover; display:block; opacity:0.85;">
+                    <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
+                        <div style="width:72px; height:72px; background:rgba(255,0,0,0.92); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 24px rgba(0,0,0,0.5); transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+                        </div>
+                    </div>
+                </div>
+                <div id="videoEmbedBox" style="display:none; position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:8px; background:#000;">
+                    <iframe id="videoIframe" src="" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;"></iframe>
+                </div>
+                <div style="margin-top:10px; text-align:right;">
+                    <a href="${watchUrl}" target="_blank" style="font-size:13px; color:#888; text-decoration:none; display:inline-flex; align-items:center; gap:5px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#ff0000"><path d="M21.8 8s-.2-1.4-.8-2c-.8-.8-1.6-.8-2-.9C16.2 5 12 5 12 5s-4.2 0-7 .1c-.4.1-1.3.1-2 .9C2.4 6.6 2.2 8 2.2 8S2 9.6 2 11.2v1.5c0 1.5.2 3.1.2 3.1s.2 1.4.8 2c.8.8 1.8.8 2.2.8 1.6.2 6.8.2 6.8.2s4.2 0 7-.1c.4-.1 1.3-.1 2-.9.6-.6.8-2 .8-2s.2-1.6.2-3.1v-1.5C22 9.6 21.8 8 21.8 8z"/><polygon points="9.75,8.25 15.5,12 9.75,15.75" fill="white"/></svg>
+                        YouTube에서 직접 보기 ↗
+                    </a>
                 </div>
             `;
         }
@@ -738,6 +757,16 @@
         document.getElementById('actionBar').style.display   = 'flex';
         document.getElementById('commentBox').style.display  = 'block';
         document.getElementById('loadingMsg').style.display  = 'none';
+    }
+
+    // 유튜브 썸네일 클릭 시 iframe 재생으로 교체
+    function playYouTube(embedUrl) {
+        const thumb = document.getElementById('videoThumbWrap');
+        const embed = document.getElementById('videoEmbedBox');
+        const iframe = document.getElementById('videoIframe');
+        if (thumb) thumb.style.display = 'none';
+        if (embed) embed.style.display = 'block';
+        if (iframe) iframe.src = embedUrl;
     }
 
     // ========== 이전글/다음글 ==========
