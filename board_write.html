@@ -148,7 +148,7 @@
 
     <div class="btn-wrap">
         <button class="btn btn-cancel" onclick="history.back()">목록으로 취소</button>
-        <button class="btn btn-submit" onclick="submitPost()">🚀 게시글 최종 등록</button>
+        <button class="btn btn-submit" onclick="submitPost()" id="btnSubmit">🚀 게시글 최종 등록</button>
     </div>
 </div>
 
@@ -171,6 +171,7 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const targetBoardId = urlParams.get('board_id');
+    const editId = urlParams.get('edit_id');
     
     // 페이지 로드 시 게시판 정보 세팅
     document.addEventListener('DOMContentLoaded', async () => {
@@ -197,6 +198,29 @@
             } else {
                 alert('게시판 정보를 불러오지 못했습니다.');
                 history.back();
+                return;
+            }
+
+            // 수정 모드인 경우 데이터 불러오기
+            if (editId) {
+                document.getElementById('btnSubmit').innerText = '🚀 게시글 수정 완료';
+                document.title = '게시글 수정 - 공실뉴스';
+                document.getElementById('boardNameTitle').innerText += ' (수정)';
+                
+                const { data: postData } = await sb.from('board_posts').select('*').eq('id', editId).single();
+                if (postData) {
+                    if (postData.category) document.getElementById('categorySelect').value = postData.category;
+                    if (postData.title) document.getElementById('postTitle').value = postData.title;
+                    if (postData.content) $('#summernote').summernote('code', postData.content);
+                    if (postData.youtube_url && document.getElementById('ytbUrl')) document.getElementById('ytbUrl').value = postData.youtube_url;
+                    if (postData.drive_url && document.getElementById('driveUrl')) document.getElementById('driveUrl').value = postData.drive_url;
+                    if (postData.thumbnail_url) {
+                        autoYtbThumbUrl = postData.thumbnail_url;
+                        const box = document.getElementById('thumbBox');
+                        box.style.backgroundImage = `url(${postData.thumbnail_url})`;
+                        box.innerHTML = '';
+                    }
+                }
             }
         }
     });
@@ -301,14 +325,24 @@
             thumbnail_url: autoYtbThumbUrl 
         };
 
-        const { error } = await sb.from('board_posts').insert([insertData]);
+        let result;
+        if (editId) {
+            // 작성자 정보는 덮어쓰지 않도록 제거
+            delete insertData.author_id;
+            delete insertData.author_name;
+            result = await sb.from('board_posts').update(insertData).eq('id', editId);
+        } else {
+            result = await sb.from('board_posts').insert([insertData]);
+        }
+        
+        const { error } = result;
 
         if (error) {
             console.error(error);
-            alert('게시물 등록 중 오류가 발생했습니다: ' + error.message);
+            alert('게시물 처리 중 오류가 발생했습니다: ' + error.message);
         } else {
-            alert('성공적으로 등록되었습니다!');
-            window.location.href = `board.html?id=${boardId}`;
+            alert(editId ? '성공적으로 수정되었습니다!' : '성공적으로 등록되었습니다!');
+            window.location.href = editId ? `board_read.html?board_id=${boardId}&post_id=${editId}` : `board.html?id=${boardId}`;
         }
     }
 </script>
