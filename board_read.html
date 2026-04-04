@@ -13,13 +13,13 @@
             --border-light: #e5e5e5;
             --text-dark: #222222;
             --text-gray: #777777;
-            --bg-body: #f5f6f8;
+            --bg-body: #ffffff;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Pretendard', sans-serif;
-            background-color: var(--bg-body);
+            background-color: #ffffff;
             color: var(--text-dark);
             min-width: 1200px;
             overflow-x: auto;
@@ -293,6 +293,44 @@
 
         /* ===== SIDEBAR ===== */
         .read-sidebar { width: 300px; flex-shrink: 0; }
+        /* ===== 게시판 헤더 (상단 타이틀+검색) ===== */
+        .board-page-header {
+            width: 1200px; margin: 0 auto;
+            padding: 24px 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 2px solid #222;
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+        }
+        .board-page-title {
+            font-size: 22px; font-weight: 800; color: var(--brand-navy);
+        }
+        .board-page-title span { font-size: 15px; font-weight: 400; color: #888; margin-left: 8px; }
+        .board-page-right { display: flex; gap: 12px; align-items: center; }
+        .bph-search {
+            display: flex; align-items: center;
+            border: 1px solid #ccc; border-radius: 4px; overflow: hidden;
+        }
+        .bph-search input {
+            border: none; padding: 9px 14px; outline: none;
+            width: 200px; font-size: 14px; font-family: 'Pretendard', sans-serif;
+        }
+        .bph-search button {
+            background: #f8f9fa; border-left: 1px solid #ccc;
+            padding: 0 14px; height: 38px; font-size: 14px;
+            font-weight: 700; color: #555; cursor: pointer;
+        }
+        .bph-search button:hover { background: #eee; }
+        .bph-write-btn {
+            background: var(--brand-blue); color: #fff;
+            padding: 9px 18px; border-radius: 4px;
+            font-weight: 700; font-size: 14px;
+            border: none; cursor: pointer; transition: background 0.2s;
+        }
+        .bph-write-btn:hover { background: #2563eb; }
+
         .sb-banner {
             width: 100%; height: 200px;
             background: #e2e2e2;
@@ -400,6 +438,18 @@
             </div>
         </div>
     </header>
+
+    <!-- 게시판 헤더 (타이틀 + 검색 + 글쓰기) -->
+    <div class="board-page-header">
+        <div class="board-page-title" id="bphBoardName">게시판 <span id="bphBoardSub">(자료실)</span></div>
+        <div class="board-page-right">
+            <button class="bph-write-btn" id="bphWriteBtn">글쓰기</button>
+            <div class="bph-search">
+                <input type="text" placeholder="해당 카테고리 검색" id="bphSearchInput">
+                <button onclick="alert('검색 기능 준비 중입니다.')">검색</button>
+            </div>
+        </div>
+    </div>
 
     <!-- PAGE CONTENT -->
     <div class="page-wrap">
@@ -543,6 +593,7 @@
     document.getElementById('btnGoList').onclick  = () => location.href = `board.html?id=${BOARD_ID}`;
     document.getElementById('btnGoWrite').onclick = () => location.href = `board_write.html?board_id=${BOARD_ID}`;
     document.getElementById('bcBoardLink').href   = `board.html?id=${BOARD_ID}`;
+    document.getElementById('bphWriteBtn').onclick = () => location.href = `board_write.html?board_id=${BOARD_ID}`;
 
     // 헤더 스크롤
     document.addEventListener('scroll', () => {
@@ -573,6 +624,7 @@
         const { data: boardData } = await sb.from('boards').select('board_name').eq('board_id', BOARD_ID).single();
         if (boardData) {
             document.getElementById('bcBoardName').innerText = boardData.board_name;
+            document.getElementById('bphBoardName').childNodes[0].textContent = boardData.board_name + ' ';
             document.title = `게시글 보기 - ${boardData.board_name} | 공실뉴스`;
         }
 
