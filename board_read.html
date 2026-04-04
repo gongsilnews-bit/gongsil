@@ -1193,93 +1193,122 @@
 
     
     async function fetchPostData() {
-        const sb = window.gongsiClient || window.supabaseClient;
-        if(!sb) return;
+        try {
+            const sb = window.gongsiClient || window.supabaseClient;
+            if(!sb) return;
 
-        if (!window.currentPostId) {
-            alert('잘못된 접근입니다.');
-            location.href = 'board.html?id=' + currentBoardId;
-            return;
+            if (!window.currentPostId) {
+                alert('잘못된 접근입니다.');
+                location.href = 'board.html?id=' + currentBoardId;
+                return;
+            }
+
+            const { data, error } = await sb.from('board_posts').select('*').eq('id', window.currentPostId).single();
+            if (error || !data) {
+                alert('게시글을 불러올 수 없거나 삭제되었습니다.');
+                location.href = 'board.html?id=' + currentBoardId;
+                return;
+            }
+            
+            let currentPost = data;
+
+            // 조회수 증가 업데이트 (RLS 실패 시에도 에러 처리하지 않고 넘어감)
+            Promise.resolve(sb.from('board_posts').update({ view_count: (data.view_count || 0) + 1 }).eq('id', window.currentPostId)).catch(e => console.log('조회수 반영 오류', e));
+
+            renderPostDetails(data);
+            await loadPrevNext(data);
+        } catch(err) {
+            showError('데이터를 가져오는 중 오류가 발생했습니다. ' + err.message);
         }
-
-        const { data, error } = await sb.from('board_posts').select('*').eq('id', window.currentPostId).single();
-        if (error || !data) {
-            alert('게시글을 불러올 수 없거나 삭제되었습니다.');
-            location.href = 'board.html?id=' + currentBoardId;
-            return;
-        }
-        
-        let currentPost = data;
-
-        // 조회수 1 증가 (조회 꼼수 방지는 나중에 보완)
-        await sb.from('board_posts').update({ view_count: (data.view_count || 0) + 1 }).eq('id', window.currentPostId);
-
-        renderPostDetails(data);
-        await loadPrevNext(data);
     }
 
     async function loadPrevNext(post) {
-        const sb = window.gongsiClient || window.supabaseClient;
-        // 이전글: 나보다 created_at이 작은(과거) 글 중 가장 최신
-        const { data: prevData } = await sb.from('board_posts').select('id, title').eq('board_id', currentBoardId).lt('created_at', post.created_at).order('created_at', {ascending: false}).limit(1);
-        // 다음글: 나보다 created_at이 큰(미래) 글 중 가장 오래된
-        const { data: nextData } = await sb.from('board_posts').select('id, title').eq('board_id', currentBoardId).gt('created_at', post.created_at).order('created_at', {ascending: true}).limit(1);
-        
-        const vPrevTitle = document.getElementById('vPrevTitle');
-        const vNextTitle = document.getElementById('vNextTitle');
+        try {
+            const sb = window.gongsiClient || window.supabaseClient;
+            const { data: prevData } = await sb.from('board_posts').select('id, title').eq('board_id', currentBoardId).lt('created_at', post.created_at).order('created_at', {ascending: false}).limit(1);
+            const { data: nextData } = await sb.from('board_posts').select('id, title').eq('board_id', currentBoardId).gt('created_at', post.created_at).order('created_at', {ascending: true}).limit(1);
+            
+            const vPrevTitle = document.getElementById('vPrevTitle');
+            const vNextTitle = document.getElementById('vNextTitle');
 
-        if(prevData && prevData.length > 0) {
-            vPrevTitle.innerText = prevData[0].title;
-            vPrevTitle.style.cursor = 'pointer';
-            vPrevTitle.onclick = () => location.href = `board_read.html?post_id=${prevData[0].id}&board_id=${currentBoardId}`;
-        }
+            if(prevData && prevData.length > 0) {
+                vPrevTitle.innerText = prevData[0].title;
+                vPrevTitle.style.cursor = 'pointer';
+                vPrevTitle.onclick = () => location.href = `board_read.html?post_id=${prevData[0].id}&board_id=${currentBoardId}`;
+            }
 
-        if(nextData && nextData.length > 0) {
-            vNextTitle.innerText = nextData[0].title;
-            vNextTitle.style.cursor = 'pointer';
-            vNextTitle.onclick = () => location.href = `board_read.html?post_id=${nextData[0].id}&board_id=${currentBoardId}`;
+            if(nextData && nextData.length > 0) {
+                vNextTitle.innerText = nextData[0].title;
+                vNextTitle.style.cursor = 'pointer';
+                vNextTitle.onclick = () => location.href = `board_read.html?post_id=${nextData[0].id}&board_id=${currentBoardId}`;
+            }
+        } catch(e) {
+            console.log('이전/다음글 불러오기 실패', e);
         }
     }
 
     function renderPostDetails(info) {
-        document.getElementById('vWrapper').style.display = 'block';
-        document.getElementById('vCategory').innerText = `[${info.category || '전체'}]`;
-        document.getElementById('vTitle').innerText = info.title;
-        document.getElementById('vAuthor').innerText = info.author_name || '익명';
-        document.getElementById('vViews').innerText = (info.view_count || 0).toLocaleString();
-        
-        const dateStr = new Date(info.created_at).toLocaleString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
-        document.getElementById('vDate').innerText = dateStr;
-
-        // 유튜브 URL 파싱
-        if (info.youtube_url) {
-            const vidArea = document.getElementById('vVideoArea');
-            let embedUrl = info.youtube_url;
-            if(embedUrl.includes('youtu.be/')) embedUrl = embedUrl.replace('youtu.be/', 'youtube.com/embed/');
-            if(embedUrl.includes('watch?v=')) embedUrl = embedUrl.replace('watch?v=', 'embed/');
-            if(embedUrl.includes('?si=')) embedUrl = embedUrl.split('?si=')[0]; // 클린 URL
+        try {
+            const wrapper = document.getElementById('vWrapper');
+            if(wrapper) wrapper.style.display = 'block';
+            else alert('오류: 콘텐츠 래퍼를 찾을 수 없습니다!');
             
-            vidArea.style.display = 'block';
-            vidArea.innerHTML = `<div class="b-video-box"><iframe src="${embedUrl}" allowfullscreen></iframe></div>`;
-        }
+            document.getElementById('vCategory').innerText = `[${info.category || '전체'}]`;
+            document.getElementById('vTitle').innerText = info.title || '제목 없음';
+            document.getElementById('vAuthor').innerText = info.author_name || '익명';
+            document.getElementById('vViews').innerText = (info.view_count || 0).toLocaleString();
+            
+            let dateStr = '-';
+            if(info.created_at) {
+                dateStr = new Date(info.created_at).toLocaleString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+            }
+            document.getElementById('vDate').innerText = dateStr;
 
-        // 구글드라이브 URL 파싱
-        if (info.drive_url) {
-            document.getElementById('vDownloadArea').style.display = 'flex';
-            document.getElementById('vDriveBtn').href = info.drive_url;
-        }
+            // 유튜브 URL 파싱
+            if (info.youtube_url) {
+                const vidArea = document.getElementById('vVideoArea');
+                if(vidArea) {
+                    let embedUrl = info.youtube_url;
+                    if(embedUrl.includes('youtu.be/')) embedUrl = embedUrl.replace('youtu.be/', 'youtube.com/embed/');
+                    if(embedUrl.includes('watch?v=')) embedUrl = embedUrl.replace('watch?v=', 'embed/');
+                    if(embedUrl.includes('?si=')) embedUrl = embedUrl.split('?si=')[0]; // 클린 URL
+                    
+                    vidArea.style.display = 'block';
+                    vidArea.innerHTML = `<div class="b-video-box" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; background: #000; border-radius: 8px; margin-bottom: 30px;"><iframe src="${embedUrl}" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"></iframe></div>`;
+                }
+            }
 
-        document.getElementById('vContent').innerHTML = info.content || '';
+            // 구글드라이브 URL 파싱
+            if (info.drive_url) {
+                const dlArea = document.getElementById('vDownloadArea');
+                const dlBtn = document.getElementById('vDriveBtn');
+                if(dlArea && dlBtn) {
+                    dlArea.style.display = 'flex';
+                    dlBtn.href = info.drive_url;
+                }
+            }
+
+            const contentArea = document.getElementById('vContent');
+            if(contentArea) {
+                contentArea.innerHTML = info.content || '<p>내용이 없습니다.</p>';
+            }
+        } catch(err) {
+            showError('콘텐츠를 렌더링하는 중 오류가 발생했습니다: ' + err.message);
+        }
     }
 
     /* --- 댓글 시스템 이식부 --- */
     async function loadBoardComments() {
-        const sb = window.gongsiClient || window.supabaseClient;
-        if(!sb) return;
-        const { data: { user } } = await sb.auth.getUser();
-        if(user) {
-            const { data: ud } = await sb.from('users_profile').select('name').eq('id', user.id).single();
-            document.getElementById('commentUserName').innerText = (ud?.name || user.email.split('@')[0]) + '님';
+        try {
+            const sb = window.gongsiClient || window.supabaseClient;
+            if(!sb) return;
+            const { data: { user } } = await sb.auth.getUser();
+            if(user) {
+                const { data: ud } = await sb.from('users_profile').select('name').eq('id', user.id).single();
+                document.getElementById('commentUserName').innerText = (ud?.name || user.email.split('@')[0]) + '님';
+            }
+        } catch(e) {
+            console.log('댓글 유저 불러오기 에러', e);
         }
     }
 
