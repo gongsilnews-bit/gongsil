@@ -939,7 +939,8 @@
     let totalItems = 0;
     let currentBoardId = 'bbs_drone'; // 기본 게시판
     let currentSkin = 'video_album'; // 기본 스킨
-    
+    let boardMeta = null;
+
     document.addEventListener('DOMContentLoaded', async () => {
         // 탑 네비게이션 활성화
         const urlParams = new URLSearchParams(window.location.search);
@@ -956,7 +957,7 @@
         // 1. 게시판 메타 정보 불러오기
         const { data: boardData, error: boardErr } = await sb.from('boards').select('*').eq('board_id', currentBoardId).single();
         
-        let boardMeta = boardData;
+        boardMeta = boardData;
         if (boardErr || !boardData) {
             const { data: firstBoardData } = await sb.from('boards').select('board_id').order('created_at', { ascending: true }).limit(1);
             const firstBoard = firstBoardData && firstBoardData.length > 0 ? firstBoardData[0] : null;
