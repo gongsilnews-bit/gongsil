@@ -329,10 +329,14 @@
             const file = thumbInput.files[0];
             const fileExt = file.name.split('.').pop();
             const fileName = `thumb_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-            const filePath = `board/${boardId}/${fileName}`;
+            // user-photos 버킷은 보통 자기 uid 폴더 하위 업로드를 허용함
+            const filePath = `${currentUserId}/board_${boardId}_${Date.now()}/${fileName}`;
 
-            // article-images 버킷에 업로드 시도 (버킷명은 공실뉴스 기존 구성)
-            const { error: uploadError } = await sb.storage.from('article-images').upload(filePath, file);
+            // 업로드 시도 (contentType, upsert 추가)
+            const { error: uploadError } = await sb.storage.from('user-photos').upload(filePath, file, { 
+                upsert: true,
+                contentType: file.type 
+            });
             
             if (uploadError) {
                 console.error('썸네일 업로드 에러:', uploadError);
@@ -341,7 +345,7 @@
                 return alert('썸네일 이미지 업로드에 실패했습니다.\n사유: ' + uploadError.message);
             }
             
-            const { data } = sb.storage.from('article-images').getPublicUrl(filePath);
+            const { data } = sb.storage.from('user-photos').getPublicUrl(filePath);
             if (data && data.publicUrl) {
                 finalThumbUrl = data.publicUrl;
             }
