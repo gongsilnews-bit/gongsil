@@ -90,30 +90,19 @@
 
 <div class="write-container">
     <div class="header">
-        <h1>통합 게시물 작성</h1>
+        <h1><span id="boardNameTitle" style="color:var(--primary);"></span> 게시물 작성</h1>
         <span style="color:var(--text-muted); font-size:14px; font-weight:600;">작성자: <span id="currentAuthor">관리자</span></span>
     </div>
 
     <!-- 1. 기본 정보 폼 -->
     <div class="form-row">
-        <div class="form-group" style="flex: 0.3;">
-            <label class="form-label">게시판 선택</label>
-            <select class="form-control" id="boardSelect" onchange="handleSkinChange()">
-                <option value="" disabled selected>게시판을 선택하세요</option>
-                <option value="bbs_drone" data-skin="video_album">드론영상 (자료실)</option>
-                <option value="bbs_form" data-skin="file_album">계약서/양식 (자료실)</option>
-                <option value="bbs_free" data-skin="default_bbs">자유게시판 (일반형)</option>
-            </select>
-        </div>
         <div class="form-group" style="flex: 0.2;">
             <label class="form-label">카테고리</label>
             <select class="form-control" id="categorySelect">
-                <option value="전체">전체</option>
-                <option value="아파트">아파트</option>
-                <option value="빌딩">빌딩</option>
+                <!-- 동적으로 채워짐 -->
             </select>
         </div>
-        <div class="form-group" style="flex: 0.5;">
+        <div class="form-group" style="flex: 0.8;">
             <label class="form-label">게시글 제목</label>
             <input type="text" class="form-control" id="postTitle" placeholder="제목을 입력하세요">
         </div>
@@ -180,12 +169,40 @@
         });
     });
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetBoardId = urlParams.get('board_id');
+    
+    // 페이지 로드 시 게시판 정보 세팅
+    document.addEventListener('DOMContentLoaded', async () => {
+        if(!targetBoardId) {
+            alert('잘못된 접근입니다. 게시판이 지정되지 않았습니다.');
+            history.back();
+            return;
+        }
+
+        const sb = window.gongsiClient || window.supabaseClient;
+        if(sb) {
+            const { data: bMeta } = await sb.from('boards').select('*').eq('board_id', targetBoardId).single();
+            if(bMeta) {
+                document.getElementById('boardNameTitle').innerText = bMeta.board_name;
+                
+                if(bMeta.categories) {
+                     const catArr = bMeta.categories.split(',').map(c=>c.trim());
+                     document.getElementById('categorySelect').innerHTML = catArr.map(c => `<option value="${c}">${c}</option>`).join('');
+                } else {
+                     document.getElementById('categorySelect').innerHTML = '<option value="전체">전체</option>';
+                }
+                
+                applySkinUI(bMeta.skin_type);
+            } else {
+                alert('게시판 정보를 불러오지 못했습니다.');
+                history.back();
+            }
+        }
+    });
+
     // 스킨 변경에 따른 UI 동적 변화 로직
-    function handleSkinChange() {
-        const select = document.getElementById('boardSelect');
-        const selectedOption = select.options[select.selectedIndex];
-        const skin = selectedOption.getAttribute('data-skin');
-        
+    function applySkinUI(skin) {
         const mediaSection = document.getElementById('mediaLinkSection');
         const ytbField = document.getElementById('ytbField');
         
@@ -198,7 +215,7 @@
             mediaSection.classList.add('active');
             ytbField.style.display = 'none';
         } else {
-            // 일반 게시판은 다 끄고 에디터만 씀
+            // 일반 게시판 및 기타는 끄고 에디터만 씀
             mediaSection.classList.remove('active');
         }
     }
@@ -218,14 +235,14 @@
 
     // 등록 액션 (Supabase 연동 완료)
     async function submitPost() {
-        const boardId = document.getElementById('boardSelect').value;
+        const boardId = targetBoardId;
         const category = document.getElementById('categorySelect').value;
         const title = document.getElementById('postTitle').value;
         const content = $('#summernote').summernote('code');
         const ytbUrl = document.getElementById('ytbUrl')?.value || null;
         const driveUrl = document.getElementById('driveUrl')?.value || null;
         
-        if(!boardId) return alert('게시판을 선택해주세요.');
+        if(!boardId) return alert('게시판 지정이 잘못되었습니다.');
         if(!title) return alert('제목을 입력해주세요.');
 
         // 로그인된 유저 정보 가져오기 (현재는 Supabase auth 세션 기반, 없어도 admin으로 처리)
