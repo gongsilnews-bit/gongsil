@@ -940,6 +940,7 @@
     let currentBoardId = 'bbs_drone'; // 기본 게시판
     let currentSkin = 'video_album'; // 기본 스킨
     let boardMeta = null;
+    let currentCategory = ''; // 현재 선택된 카테고리 탭 (빈 문자열 = 전체)
 
     document.addEventListener('DOMContentLoaded', async () => {
         // 탑 네비게이션 활성화
@@ -979,12 +980,26 @@
         // UI 타이틀 및 탭 변경
         document.querySelector('.board-title').innerHTML = `${boardMeta.board_name} <span style="font-size: 16px; font-weight: 500; color: #666; margin-left: 10px;">(${boardMeta.subtitle || ''})</span>`;
         
+        const tabsContainer = document.querySelector('.board-tabs');
         if (boardMeta.categories) {
-            const tabsContainer = document.querySelector('.board-tabs');
-            tabsContainer.innerHTML = boardMeta.categories.split(',').map((cat, idx) => 
-                `<div class="b-tab ${idx===0?'active':''}">${cat.trim()}</div>`
-            ).join('');
+            const cats = boardMeta.categories.split(',').map(c => c.trim()).filter(c => c);
+            tabsContainer.innerHTML = 
+                `<div class="b-tab active" data-cat="">전체</div>` +
+                cats.map(cat => `<div class="b-tab" data-cat="${cat}">${cat}</div>`).join('');
+        } else {
+            tabsContainer.innerHTML = `<div class="b-tab active" data-cat="">전체</div>`;
         }
+        
+        // 탭 클릭 이벤트 바인딩
+        tabsContainer.querySelectorAll('.b-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                tabsContainer.querySelectorAll('.b-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                currentCategory = this.dataset.cat || '';
+                currentPage = 1;
+                loadBoardPosts();
+            });
+        });
 
         // 2. 게시글 목록 불러오기
         await loadBoardPosts();
@@ -997,10 +1012,17 @@
         // 기존 뼈대 초기화 (페이지네이션은 남김)
         container.innerHTML = '<div style="padding:40px; text-align:center;">게시글을 불러오고 있습니다...</div>';
 
-        const { data: postsData, error: postsErr } = await sb.from('board_posts')
+        let query = sb.from('board_posts')
             .select('*')
             .eq('board_id', currentBoardId)
             .order('created_at', { ascending: false });
+        
+        // 카테고리 탭 필터 적용 (전체일 때는 필터 없음)
+        if (currentCategory) {
+            query = query.ilike('tags', `%${currentCategory}%`);
+        }
+        
+        const { data: postsData, error: postsErr } = await query;
 
         let posts = postsData || [];
         
