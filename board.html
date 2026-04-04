@@ -1019,7 +1019,7 @@
         
         // 카테고리 탭 필터 적용 (전체일 때는 필터 없음)
         if (currentCategory) {
-            query = query.ilike('tags', `%${currentCategory}%`);
+            query = query.eq('category', currentCategory);
         }
         
         const { data: postsData, error: postsErr } = await query;
@@ -1032,10 +1032,13 @@
         }
 
         if (posts.length === 0) {
+            const emptyMsg = currentCategory
+                ? `[${currentCategory}] 카테고리에 등록된 게시글이 없습니다.`
+                : '등록된 게시글이 없습니다. 우측 상단의 글쓰기 버튼을 눌러 첫 글을 작성해보세요!';
             container.innerHTML = `
             <div style="padding:100px 0; text-align:center; color:#9ca3af;">
                 <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:16px; margin-left:auto; margin-right:auto;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                <div style="font-size:16px;">등록된 게시글이 없습니다. 우측 상단의 글쓰기 버튼을 눌러 첫 글을 작성해보세요!</div>
+                <div style="font-size:16px;">${emptyMsg}</div>
             </div>`;
             return;
         }
