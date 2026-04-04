@@ -976,9 +976,17 @@
         }
 
         // 스킨에 따른 렌더링 분기
-        if (currentSkin === 'video_album') renderVideoAlbum(container, posts);
-        else if (currentSkin === 'file_album') renderFileAlbum(container, posts);
-        else renderDefaultBbs(container, posts); // 일반 리스트형
+        if (boardMeta.skin_type === 'video_album') {
+            renderVideoAlbum(container, posts);
+        } else if (boardMeta.skin_type === 'file_album') {
+            renderFileAlbum(container, posts);
+        } else if (boardMeta.skin_type === 'faq_album') {
+            renderFaqList(container, posts);
+        } else if (boardMeta.skin_type === 'qna_1on1') {
+            render1on1List(container, posts);
+        } else {
+            renderDefaultBbs(container, posts);
+        }
         
         // 페이지네이션 덧붙이기
         container.innerHTML += `

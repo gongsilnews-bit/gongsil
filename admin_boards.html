@@ -159,6 +159,8 @@
                         <option value="default_bbs">📝 일반 리스트형 (자유게시판/공지사항)</option>
                         <option value="video_album">▶ 동영상 앨범형 (유튜브 + 드라이브 다운로드 최적화)</option>
                         <option value="file_album">📄 파일 자료실형 (디자인 썸네일 + 다운로드 버튼)</option>
+                        <option value="faq_album">💡 자주묻는질문 (FAQ 아코디언형)</option>
+                        <option value="qna_1on1">🔒 1:1 문의 (작성자/관리자 전용 비밀글)</option>
                     </select>
                 </div>
                 <div class="form-group" style="flex:1;">
@@ -243,6 +245,8 @@
                 let skinLabel = '일반 리스트형';
                 if (b.skin_type === 'video_album') { skinIcon = '▶'; skinLabel = '동영상 앨범형'; }
                 else if (b.skin_type === 'file_album') { skinIcon = '📄'; skinLabel = '자료실 썸네일형'; }
+                else if (b.skin_type === 'faq_album') { skinIcon = '💡'; skinLabel = 'FAQ 아코디언형'; }
+                else if (b.skin_type === 'qna_1on1') { skinIcon = '🔒'; skinLabel = '1:1 비밀 문의형'; }
 
                 return `
                 <tr>
