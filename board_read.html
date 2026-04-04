@@ -861,13 +861,28 @@
             if (!sb) return;
             const { data: { user } } = await sb.auth.getUser();
             if (user) {
-                const { data: ud } = await sb.from('users_profile').select('name').eq('id', user.id).single();
-                document.getElementById('commentUserName').innerText = (ud?.name || user.email.split('@')[0]) + '님';
+                let userName = user.email.split('@')[0];
+                try {
+                    const { data: ud } = await sb.from('users_profile').select('name').eq('id', user.id).single();
+                    if (ud && ud.name) userName = ud.name;
+                } catch(err) {} 
                 
-                // 사용자가 글쓴이인 경우 수정/삭제 버튼 표시
-                if (user.id === window._postAuthorId) {
-                    document.getElementById('btnGoEdit').style.display = 'inline-block';
-                    document.getElementById('btnGoDelete').style.display = 'inline-block';
+                const commentUser = document.getElementById('commentUserName');
+                if (commentUser) commentUser.innerText = userName + '님';
+                
+                let isAdmin = false;
+                try {
+                    const localUser = JSON.parse(localStorage.getItem('gongsil_user') || '{}');
+                    if (localUser?.profile?.role === 'admin') isAdmin = true;
+                    if (user.email === 'gongsilnews@gmail.com') isAdmin = true;
+                } catch(e) {}
+
+                // 사용자가 글쓴이이거나 관리자인 경우 수정/삭제 버튼 표시
+                if (user.id === window._postAuthorId || isAdmin) {
+                    const btnEdit = document.getElementById('btnGoEdit');
+                    const btnDel = document.getElementById('btnGoDelete');
+                    if (btnEdit) btnEdit.style.display = 'inline-block';
+                    if (btnDel) btnDel.style.display = 'inline-block';
                 }
             }
         } catch(e) { console.warn('유저 로드 오류:', e); }
