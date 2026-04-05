@@ -575,10 +575,14 @@
         
         /* 혹시라도 위 클래스 없이 에디터에서 단순 비디오 추가한 경우 대비 */
         .article-body iframe[src*="youtube"] {
-            width: 100% !important;
+            width: 100%;
             border-radius: 8px;
-            aspect-ratio: 16/9;
-            height: auto !important;
+        }
+        .article-body .yt-shorts-box iframe,
+        .article-body .yt-block iframe,
+        .article-body .yt-wrap iframe,
+        .article-body .yt-ratio-box iframe {
+            height: 100% !important;
         }
 
         .yt-drag-handle {
