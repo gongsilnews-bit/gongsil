@@ -1478,7 +1478,7 @@ window.showNewsDetail = async function(news) {
             var mediaList = mRes.data || [];
 
             // 조회수 +1
-            sb.from('articles').update({ view_count: (news.view_count || 0) + 1 }).eq('id', news.id);
+            sb.from('articles').update({ view_count: (news.view_count || 0) + 1 }).eq('id', news.id).then(() => {});
 
             // 본문 조립
             var contentHtml = '';

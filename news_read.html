@@ -910,7 +910,7 @@
 
         // 조회수 증가 비동기 처리 (블로킹 방지)
         if (news) {
-            sb.from('articles').update({ view_count: (news.view_count || 0) + 1 }).eq('id', articleId);
+            sb.from('articles').update({ view_count: (news.view_count || 0) + 1 }).eq('id', articleId).then(() => {});
         }
         
         if(error || !news) {
@@ -928,7 +928,7 @@
         
         const dateStr = new Date(news.created_at).toLocaleString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'});
         document.getElementById('detailDate').innerText = '입력 ' + dateStr;
-        document.getElementById('detailViews').innerText = '조회수 ' + (news.view_count || 1);
+        document.getElementById('detailViews').innerText = '조회수 ' + ((news.view_count || 0) + 1);
         
         let contentHtml = '';
         if (news.image_url) {
