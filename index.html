@@ -1275,13 +1275,12 @@
 
     <!-- Index News Fetch Script -->
     <script>
-        document.addEventListener('DOMContentLoaded', async function() {
-            const NEWS_URL = 'https://imtdijfseaninhvjoklp.supabase.co';
-            const NEWS_KEY = 'sb_publishable_fY0K_-WP3PyG5ihvxgCPSw_bYewHmnR';
-            if(!window.supabase) return;
-            const newsDb = window.supabase.createClient(NEWS_URL, NEWS_KEY);
-            
-            async function fetchAndRenderNews(targetId, sec1, sec2Array, limit=2) {
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(async () => {
+                const newsDb = window.gongsiClient;
+                if(!newsDb) return;
+                
+                async function fetchAndRenderNews(targetId, sec1, sec2Array, limit=2) {
                 const target = document.getElementById(targetId);
                 if(!target) return;
                 
@@ -1299,7 +1298,7 @@
                 const {data, error} = await query;
                 if(error) {
                     console.error('Error fetching '+targetId, error);
-                    target.innerHTML = '<div style="padding:20px;color:#999;font-size:14px;">데이터를 불러오지 못했습니다.</div>';
+                    target.innerHTML = '<div style="padding:20px;color:#999;font-size:14px;">쿼리 오류: ' + (error.message || JSON.stringify(error)) + '</div>';
                     return;
                 }
                 
@@ -1350,6 +1349,7 @@
             fetchAndRenderNews('home-news-life', '뉴스/칼럼', ['여행·맛집', '건강·헬스']);
             // 5. 기타 (IT·가전·가구 + 스포츠·연예·Car + 인물·미션·기타)
             fetchAndRenderNews('home-news-etc', '뉴스/칼럼', ['IT·가전·가구', '스포츠·연예·Car', '인물·미션·기타']);
+            }, 500); // end setTimeout
         });
     </script>
 </body>
