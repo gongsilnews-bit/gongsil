@@ -1489,6 +1489,10 @@ window.showNewsDetail = async function(news) {
                 contentHtml += '<figure style="margin:0 0 20px;"><img src="' + repMedia.url + '" style="width:100%;border-radius:8px;" alt=""><figcaption style="font-size:12px;color:#888;text-align:center;margin-top:6px;">' + (repMedia.caption || '') + '</figcaption></figure>';
             }
 
+            if (news.subtitle) {
+                contentHtml += `<div style="border-left: 3px solid #508bf5; padding-left: 16px; margin: 24px 0; font-size: 16px; color: #111; font-weight: 600; line-height: 1.6; white-space: pre-line; word-break: keep-all;">${news.subtitle}</div>`;
+            }
+
             // 본문이 있으면 HTML 그대로, 없으면 미디어 전체 표시
             if (news.content && news.content.trim().length > 10) {
                 contentHtml += news.content;

@@ -931,7 +931,7 @@
             contentHtml += `<div class="article-img-wrap"><img src="${news.image_url}" class="article-img" alt="기사 이미지" onerror="this.src='https://via.placeholder.com/600x400?text=NoImage'"></div>`;
         }
         if (news.subtitle) {
-            contentHtml += `<b style="margin-top:0; white-space: pre-line; display: block; line-height: 1.6;">${news.subtitle}</b>`;
+            contentHtml += `<div style="border-left: 3px solid #508bf5; padding-left: 16px; margin: 24px 0; font-size: 16px; color: #111; font-weight: 600; line-height: 1.6; white-space: pre-line; word-break: keep-all;">${news.subtitle}</div>`;
         }
         
         if (news.content && news.content.includes('<p>')) {
