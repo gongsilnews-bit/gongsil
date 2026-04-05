@@ -905,9 +905,13 @@
             return;
         }
         
-        // 조회수 증가 및 기사 데이터 로딩
-        await sb.rpc('increment_view_count', { article_id: articleId });
+        // 기사 데이터 우선 로딩
         const { data: news, error } = await sb.from('articles').select('*').eq('id', articleId).single();
+
+        // 조회수 증가 비동기 처리 (블로킹 방지)
+        if (news) {
+            sb.from('articles').update({ view_count: (news.view_count || 0) + 1 }).eq('id', articleId);
+        }
         
         if(error || !news) {
             document.getElementById('detailBody').innerHTML = '<div style="padding: 100px 0; text-align: center;">기사를 불러오는 중 오류가 발생했습니다.</div>';
