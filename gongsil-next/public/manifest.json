@@ -1,0 +1,23 @@
+{
+  "name": "공실뉴스 (Gongsil News)",
+  "short_name": "공실뉴스",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#102c57",
+  "description": "11만 부동산을 위한 무료 정보 채널, 실시간 전국 공실 현황과 핫뉴스를 빠르게 확인하세요.",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "orientation": "portrait",
+  "categories": ["news", "real estate", "business"]
+}

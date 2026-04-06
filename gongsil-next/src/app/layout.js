@@ -4,6 +4,13 @@ import Script from "next/script";
 export const metadata = {
   title: "공실뉴스 - 부동산 중개망의 스마트한 변화",
   description: "11만 부동산을 위한 무료 정보 채널",
+  manifest: "/manifest.json",
+  themeColor: "#102c57",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "공실뉴스",
+  },
 };
 
 export default function RootLayout({ children }) {
