@@ -1,0 +1,595 @@
+import os
+
+html_path = 'c:/Users/user/Desktop/test/index.html'
+
+html_content = '''<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1200">
+    <title>공실뉴스 - 부동산 중개망의 스마트한 변화</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        
+        :root {
+            --brand-navy: #102c57;
+            --brand-blue: #1e56a0;
+            --border-light: #e5e5e5;
+            --text-dark: #222222;
+            --text-gray: #777777;
+            --bg-body: #ffffff;
+            --bg-gray: #f8f9fa;
+        }
+
+        /* Reset & Base */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            min-width: 1200px;
+            overflow-x: auto;
+            overflow-y: scroll !important;
+        }
+        ul, li { list-style: none; }
+        a { text-decoration: none; color: inherit; }
+        button { border: none; background: none; cursor: pointer; font-family: inherit; }
+
+        /* Container */
+        .container {
+            width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 1. Top Nav Bar */
+        .top-bar {
+            background-color: var(--brand-navy);
+            height: 40px;
+            color: #ffffff;
+            font-size: 13px;
+        }
+        .top-bar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 100%;
+            padding: 0 20px;
+        }
+        .top-bar-left { font-weight: 300; letter-spacing: -0.5px; opacity: 0.9; }
+        .top-bar-right { font-size: 16px; cursor: pointer; }
+
+        /* 2. Main Header */
+        .header {
+            height: 90px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 100%;
+            padding: 0 20px;
+        }
+        .logo-area { display: flex; align-items: center; }
+        .logo-area img { height: 45px; margin-right: 40px; }
+        .gnb {
+            display: flex;
+            gap: 35px;
+            font-size: 17px;
+            font-weight: 700;
+            color: #111;
+        }
+        .gnb a:hover { color: var(--brand-blue); }
+        .util-menu {
+            font-size: 14px;
+            color: #444;
+            font-weight: 500;
+        }
+        .util-menu a { position: relative; padding: 0 10px; }
+        .util-menu a:first-child::after {
+            content: '';
+            position: absolute;
+            right: 0; top: 3px; width: 1px; height: 12px;
+            background: #ccc;
+        }
+
+        /* Component: Section Title */
+        .sec-title-wrap {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .sec-title-wrap::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 18px;
+            background-color: var(--brand-blue);
+            margin-right: 10px;
+        }
+        .sec-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--brand-blue);
+            letter-spacing: -0.5px;
+        }
+
+        /* Grey Box Placeholder */
+        .box-placeholder {
+            background-color: #e2e2e2;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Layout Spaces */
+        .mt-50 { margin-top: 50px; }
+        .mb-50 { margin-bottom: 50px; }
+        .py-60 { padding-top: 60px; padding-bottom: 60px; }
+        .px-20 { padding-left: 20px; padding-right: 20px; }
+
+        /* 3. Hero Section (Map & News App) */
+        .hero-section {
+            display: flex;
+            gap: 20px;
+            height: 460px;
+            position: relative;
+        }
+        .hero-left {
+            flex: 0 0 380px; /* App layout width */
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            background: #fff;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+        /* App Style Mockup inside Hero Left */
+        .app-mock { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .app-item { display: flex; gap: 15px; border-bottom: 1px solid #f0f0f0; padding-bottom: 15px; }
+        .app-img { width: 80px; height: 80px; background: #ddd; border-radius: 6px; flex-shrink: 0; }
+        .app-txt h3 { font-size: 15px; margin-bottom: 8px; font-weight: 700; color: #111; letter-spacing: -0.5px; }
+        .app-txt p { font-size: 14px; color: #c00; font-weight: 800; }
+        .app-txt span { font-size: 12px; color: #888; display: block; margin-top: 4px; }
+        
+        .hero-right {
+            flex: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            position: relative;
+        }
+        .hero-right iframe {
+            width: 100%; height: 100%; border: none;
+        }
+        
+        /* Floating Quick Menu */
+        .quick-menu {
+            position: absolute;
+            top: 0;
+            right: -80px; /* Outside container */
+            width: 70px;
+            background: #fff;
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+        }
+        .qm-item { padding: 12px 5px; font-size: 12px; color: #555; border-bottom: 1px solid #eee; font-weight: 600; cursor:pointer;}
+        .qm-item:last-child { border-bottom: none; }
+        .qm-item span { display: block; font-size: 18px; margin-bottom: 4px; color: var(--brand-blue); }
+
+        /* 4. Ticker Section */
+        .ticker {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .ticker-item {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            color: #333;
+        }
+        .ticker-val { color: #d32f2f; }
+        .ticker-val.down { color: #1976d2; }
+
+        /* 5. Hot Issue Section */
+        .hot-issue-wrap {
+            display: flex;
+            gap: 40px;
+        }
+        .hi-left { flex: 1; }
+        .hi-list { display: flex; flex-direction: column; gap: 20px; }
+        .hi-item { display: flex; gap: 20px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+        .hi-item img { width: 140px; height: 100px; background: #ddd; object-fit: cover; border-radius: 4px; }
+        .hi-txt h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; line-height: 1.4; color: #111; }
+        .hi-txt p { font-size: 14px; color: #666; line-height: 1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+        
+        .hi-right { flex: 1; height: 260px; }
+
+        /* 6. Video News Section */
+        .video-wrap { border-top: 1px solid var(--border-light); padding-top: 40px; }
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .vid-item { cursor: pointer; }
+        .vid-thumb { height: 220px; background: #222; position: relative; border-radius: 4px; margin-bottom: 15px; }
+        .vid-play { position: absolute; top:50%; left:50%; transform: translate(-50%, -50%); width: 44px; height: 44px; background: rgba(0,0,0,0.6); border-radius: 50%; border: 2px solid #fff;}
+        .vid-play::after { content:''; display:block; border-left:12px solid #fff; border-top:8px solid transparent; border-bottom:8px solid transparent; margin-left:18px; margin-top:12px; }
+        .vid-title { font-size: 16px; font-weight: 700; line-height: 1.4; color:#111; }
+
+        /* 7. Premium Section (Dark Blue) */
+        .premium-bg { background-color: var(--brand-navy); color: #fff; padding: 60px 0; }
+        .premium-bg .sec-title { color: #fff; }
+        .premium-bg .sec-title-wrap::before { background-color: #f97316; }
+        .prem-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        .prem-card { cursor: pointer; }
+        .prem-img { height: 180px; background: #555; margin-bottom: 15px; border-radius: 4px; }
+        .prem-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; line-height: 1.4; }
+        .prem-desc { font-size: 13px; color: #aaa; line-height: 1.4; }
+
+        /* 8. Expert Section */
+        .expert-wrap { display: flex; gap: 40px; }
+        .expert-left { flex: 1; border-top: 2px solid #222; padding-top: 20px;}
+        .ex-item { display: flex; gap: 20px; border-bottom: 1px solid #eee; padding: 20px 0; }
+        .ex-img { width: 100px; height: 100px; background: #ddd; border-radius: 50%; }
+        .ex-txt h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+        .ex-txt p { font-size: 14px; color: #666; line-height: 1.6; }
+        .expert-right { flex: 1; height: 300px; padding-top: 20px; }
+
+        /* 9. Study Section */
+        .study-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .study-card { border: 1px solid var(--border-light); border-radius: 8px; overflow: hidden; }
+        .st-img { height: 180px; background: #e2e2e2; position: relative; }
+        .st-badge { position: absolute; top:0; left:0; padding:6px 12px; color:#fff; font-size:12px; font-weight:bold; }
+        .st-badge.orange { background: #ff9800; }
+        .st-badge.red { background: #f44336; }
+        .st-badge.black { background: #222; }
+        .st-txt { padding: 20px; }
+        .st-title { font-size: 16px; font-weight: 700; line-height: 1.4; margin-bottom: 10px; }
+        .st-info { font-size: 13px; color: #888; display: flex; justify-content: space-between; border-top: 1px solid #f0f0f0; padding-top: 15px; mt-15px;}
+        .st-price { font-size: 15px; font-weight: 700; color: #ff5722; }
+
+        /* 10. Knowhow & Notice Section */
+        .bottom-wrap { display: flex; gap: 40px; border-top: 1px solid var(--border-light); padding-top: 40px; }
+        .bm-left { flex: 2; }
+        .kh-item { display: flex; gap: 20px; align-items: center; border-bottom: 1px solid #eee; padding: 15px 0; }
+        .kh-item img { width: 120px; height: 80px; background: #ddd; border-radius: 4px; }
+        .kh-txt h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+        .kh-txt p { font-size: 14px; color: #666; }
+        .bm-right { flex: 1; height: 400px; }
+
+        /* 11. Chatbot Banner */
+        .chat-banner {
+            background-color: #fafafa;
+            border-top: 1px solid var(--border-light);
+            text-align: center;
+            padding-top: 50px;
+        }
+        .chat-title { font-size: 20px; font-weight: 800; color: #f97316; margin-bottom: 5px; }
+        .chat-sub { font-size: 28px; font-weight: 800; color: #111; margin-bottom: 40px; letter-spacing: -1px; }
+        .chat-mockup { width: 300px; height: 450px; background: #ddd; margin: 0 auto; border-radius: 30px 30px 0 0; position:relative; overflow:hidden;}
+        
+        /* 12. Footer */
+        .footer {
+            background: #fff;
+            padding: 40px 0;
+            border-top: 1px solid var(--border-light);
+        }
+        .f-logos { display: flex; gap: 20px; justify-content: center; margin-bottom: 30px; }
+        .f-logo { border: 1px solid #ddd; padding: 10px 20px; color: #555; font-size: 14px; font-weight: bold; border-radius: 4px; }
+        .f-info { text-align: center; font-size: 13px; color: #666; line-height: 1.8; margin-bottom: 20px; }
+        .f-links { text-align: center; margin-bottom: 20px; }
+        .f-links a { font-size: 14px; font-weight: 700; color: #333; margin: 0 10px; }
+        .f-copyright { text-align: center; font-size: 12px; color: #999; }
+    </style>
+</head>
+<body>
+
+    <!-- 1. Top Nav Bar -->
+    <div class="top-bar">
+        <div class="container">
+            <div class="top-bar-left">공실뉴스 부동산 중개망의 스마트한 변화</div>
+            <div class="top-bar-right">🔍</div>
+        </div>
+    </div>
+
+    <!-- 2. Main Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo-area">
+                <img src="logo.png" alt="공실뉴스 로고" onerror="this.src='https://via.placeholder.com/150x45?text=GONGSIL+NEWS'">
+                <nav class="gnb">
+                    <a href="#">공지사항</a>
+                    <a href="#">업데이트안내</a>
+                    <a href="#">부동산스터디</a>
+                    <a href="#">가이드북받기</a>
+                    <a href="#">공실열람(지도)</a>
+                </nav>
+            </div>
+            <div class="util-menu">
+                <a href="#">회원가입</a>
+                <a href="#">로그인</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container px-20 relative" style="position:relative;">
+        
+        <!-- Quick Menu Floating -->
+        <div class="quick-menu">
+            <div class="qm-item"><span>📌</span>관심매물</div>
+            <div class="qm-item"><span>🕒</span>최근조회</div>
+            <div class="qm-item"><span>📋</span>문의내역</div>
+            <div class="qm-item"><span>🔝</span>TOP</div>
+        </div>
+
+        <!-- 3. Hero Section -->
+        <div class="hero-section mt-50">
+            <!-- Left: App Mockup List (News/Properties) -->
+            <div class="hero-left">
+                <div class="app-mock">
+                    <div class="app-item">
+                        <div class="app-img"></div>
+                        <div class="app-txt">
+                            <h3>강남구 대치동 은마아파트 1단지</h3>
+                            <p>전세 8억 5,000</p>
+                            <span>서울시 강남구 삼성로 212 · 76㎡ (23평)</span>
+                        </div>
+                    </div>
+                    <div class="app-item">
+                        <div class="app-img"></div>
+                        <div class="app-txt">
+                            <h3>반포자이 103동 15층 로얄층</h3>
+                            <p>매매 35억 2,000</p>
+                            <span>서울시 서초구 신반포로 270 · 116㎡ (35평)</span>
+                        </div>
+                    </div>
+                    <div class="app-item" style="border:none;">
+                        <div class="app-img"></div>
+                        <div class="app-txt">
+                            <h3>송파구 잠실엘스 14층 한강뷰</h3>
+                            <p>월세 2억 / 250</p>
+                            <span>서울시 송파구 잠실동 19 · 84㎡ (25평)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right: Map -->
+            <div class="hero-right">
+                <iframe src="gongsil/" title="공실지도"></iframe>
+            </div>
+        </div>
+
+        <!-- 4. Ticker Section -->
+        <div class="ticker">
+            <div class="ticker-item"><span>매매가격지수 (서울)</span><span class="ticker-val">102.3 ▲ 0.12%</span></div>
+            <div class="ticker-item"><span>전세가격지수 (서울)</span><span class="ticker-val">105.1 ▲ 0.24%</span></div>
+            <div class="ticker-item"><span>코스피</span><span class="ticker-val">2,750.31 ▲ 1.45%</span></div>
+            <div class="ticker-item"><span>코스닥</span><span class="ticker-val down">890.11 ▼ 0.32%</span></div>
+        </div>
+
+        <!-- 5. Hot Issue -->
+        <div class="mt-50 mb-50">
+            <div class="sec-title-wrap">
+                <h2 class="sec-title">부동산 핫이슈</h2>
+            </div>
+            <div class="hot-issue-wrap">
+                <div class="hi-left">
+                    <div class="hi-list">
+                        <div class="hi-item">
+                            <div class="hi-img"><img src="https://via.placeholder.com/140x100" alt=""></div>
+                            <div class="hi-txt">
+                                <h3>강남구 청담동 아파트 평당 1억 시대 진입... 하반기 전망은?</h3>
+                                <p>최근 청담동 일대 재건축 아파트 단지들의 호가가 크게 오르며 평당 1억원을 돌파했다. 전문가들은 하반기... 최근 청담동 일대 재건축 아파트 단지들의 호가가 크게 오르며 평당 1억원을 돌파했다. 전문가들은 하반기...</p>
+                            </div>
+                        </div>
+                        <div class="hi-item">
+                            <div class="hi-img"><img src="https://via.placeholder.com/140x100" alt=""></div>
+                            <div class="hi-txt">
+                                <h3>전세사기 특별법 개정안 통과, 피해자 구제 속도 낸다</h3>
+                                <p>국회는 15일 본회의를 열고 전세사기 피해자 지원을 위한 특별법 개정안을 통과시켰다. 이번 개정안에는 피...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hi-right">
+                    <div class="box-placeholder">
+                        <span style="color:#999;">광고 또는 비디오 박스 영역</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. Video News -->
+        <div class="video-wrap mb-50">
+            <div class="sec-title-wrap">
+                <h2 class="sec-title">비디오뉴스</h2>
+            </div>
+            <div class="video-grid">
+                <div class="vid-item">
+                    <div class="vid-thumb"><div class="vid-play"></div></div>
+                    <div class="vid-title">[현장르포] 개포주공 1단지 재건축 현장 단독 포착</div>
+                </div>
+                <div class="vid-item">
+                    <div class="vid-thumb"><div class="vid-play"></div></div>
+                    <div class="vid-title">전문가 진단! 하반기 금리 인상 사이클 종료 분석</div>
+                </div>
+                <div class="vid-item">
+                    <div class="vid-thumb"><div class="vid-play"></div></div>
+                    <div class="vid-title">상가 투자 초보자 필수! 상권분석 확실한 방법론</div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 7. Premium Report -->
+    <div class="premium-bg">
+        <div class="container px-20">
+            <div class="sec-title-wrap">
+                <h2 class="sec-title" style="color:#fff;">프리미엄 리포트</h2>
+            </div>
+            <div class="prem-grid">
+                <div class="prem-card">
+                    <div class="prem-img"></div>
+                    <div class="prem-title">강남 주요 오피스 권역 임대차 동향</div>
+                    <div class="prem-desc">2026년 1분기 GBD 테헤란로 일대 프라임급 오피스 공실률 및 임대료 변화 추이 분석</div>
+                </div>
+                <div class="prem-card">
+                    <div class="prem-img"></div>
+                    <div class="prem-title">수도권 물류센터 투자 시장 전망</div>
+                    <div class="prem-desc">이커머스 시장 재편에 따른 수도권 핵심 권역 물류센터 매매 및 임대차 동향보고서</div>
+                </div>
+                <div class="prem-card">
+                    <div class="prem-img"></div>
+                    <div class="prem-title">신흥 상권 분석: 성수동 연무장길</div>
+                    <div class="prem-desc">MZ세대의 핫플레이스로 떠오른 성수동 팝업스토어 성지, 임대료 프리미엄 분석</div>
+                </div>
+                <div class="prem-card">
+                    <div class="prem-img"></div>
+                    <div class="prem-title">초고가 주택 VVIP 시장 트렌드</div>
+                    <div class="prem-desc">한남, 청담 지역 100억 이상 초고급 하이엔드 주거 상품 거래 사례 및 자산가 동향</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. Expert Column -->
+    <div class="container px-20 mt-50 mb-50">
+        <div class="sec-title-wrap">
+            <h2 class="sec-title">전문가 칼럼</h2>
+        </div>
+        <div class="expert-wrap">
+            <div class="expert-left">
+                <div class="ex-item">
+                    <div class="ex-img"></div>
+                    <div class="ex-txt">
+                        <h3>상가 임대차 보호법 개정에 따른 실무 대처법</h3>
+                        <p>바뀐 법령을 제대로 알지 못하면 중개 사고로 이어질 수 있다. 현직 세무사가 말하는 상가 중개 시 반드시 체크해야 할 특약사항 3가지...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="expert-right">
+                <div class="box-placeholder"><span style="color:#999;">배너 영역</span></div>
+            </div>
+        </div>
+
+        <!-- 9. Study -->
+        <div class="sec-title-wrap">
+            <h2 class="sec-title">공실 스터디</h2>
+        </div>
+        <div class="study-grid mb-50">
+            <div class="study-card">
+                <div class="st-img"><span class="st-badge orange">추천</span></div>
+                <div class="st-txt">
+                    <h3 class="st-title">AI 프롬프트 작성 실무 기본기</h3>
+                    <div class="st-info"><span>공실강사</span> <span class="st-price">무료</span></div>
+                </div>
+            </div>
+            <div class="study-card">
+                <div class="st-img"><span class="st-badge red">인기</span></div>
+                <div class="st-txt">
+                    <h3 class="st-title">부동산 빅데이터 입지분석 테크닉</h3>
+                    <div class="st-info"><span>데이터분석가</span> <span class="st-price">49,000원</span></div>
+                </div>
+            </div>
+            <div class="study-card">
+                <div class="st-img"><span class="st-badge black">NEW</span></div>
+                <div class="st-txt">
+                    <h3 class="st-title">상가 권리금 계약서 작성 마스터</h3>
+                    <div class="st-info"><span>최변호사</span> <span class="st-price">무료</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 10. Knowhow & Notice -->
+        <div class="bottom-wrap mb-50">
+            <div class="bm-left">
+                <div class="sec-title-wrap">
+                    <h2 class="sec-title">중개 실무 노하우</h2>
+                </div>
+                <div class="kh-list">
+                    <div class="kh-item">
+                        <img src="https://via.placeholder.com/120x80" alt="">
+                        <div class="kh-txt">
+                            <h3>"확인설명서" 안 쓰면 과태료 폭탄? 꼼꼼 작성 가이드</h3>
+                            <p>공인중개사법 개정에 따른 확인설명서 세부 작성 요령 및 주의사항 안내</p>
+                        </div>
+                    </div>
+                    <div class="kh-item">
+                        <img src="https://via.placeholder.com/120x80" alt="">
+                        <div class="kh-txt">
+                            <h3>다가구 주택 전세사기 예방 특약 총정리</h3>
+                            <p>세입자를 보호하고 중개인의 책임을 다하는 안전한 다가구 계약 특약</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bm-right">
+                <div class="sec-title-wrap">
+                    <h2 class="sec-title">최신 공지사항</h2>
+                </div>
+                <div class="box-placeholder"><span style="color:#999;">공지사항 박스영역</span></div>
+            </div>
+        </div>
+    </div> <!-- /main container -->
+
+    <!-- 11. Chatbot Banner -->
+    <div class="chat-banner">
+        <div class="chat-title">GONGSIL NET</div>
+        <div class="chat-sub">궁금한 내용은 뭐든지 챗봇서비스에게!</div>
+        <div class="chat-mockup">
+            <img src="phone_mockup.png" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://via.placeholder.com/300x450/ccc/999?text=Phone+Mockup'">
+        </div>
+    </div>
+
+    <!-- 12. Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="f-logos">
+                <div class="f-logo">공공데이터포털</div>
+                <div class="f-logo">서울특별시</div>
+                <div class="f-logo">국토교통부 실거래가</div>
+            </div>
+            <div class="f-links">
+                <a href="#">회사소개</a> | <a href="#">이용약관</a> | <a href="#" style="color:#000;">개인정보처리방침</a> | <a href="#">운영정책</a> | <a href="#">공지사항</a>
+            </div>
+            <div class="f-info">
+                상호명: (주)공실뉴스 | 대표자: 능산이 | 사업자등록번호: 123-45-67890<br>
+                통신판매업신고번호: 2026-서울강남-1234호 | 주소: 서울특별시 강남구 강남대로 123<br>
+                고객센터: 1588-1234 (평일 10:00 ~ 18:00) | Email: help@gongsil.net
+            </div>
+            <div class="f-copyright">
+                Copyright © GONGSIL NEWS. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
+'''
+
+with open(html_path, 'w', encoding='utf-8') as f:
+    f.write(html_content)
+
+print("Pixel-perfect clone applied.")

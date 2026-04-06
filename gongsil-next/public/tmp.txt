@@ -1,0 +1,10 @@
+718:                             <button style="background: none; border: none; cursor: pointer; color: #ff5a5f; display: flex; align-items: center; gap: 4px; padding: 0;" onclick="alert('허위매물 신고가 접수되었습니다. (기능 준비 중)')">
+1981:                 if (!ud.id) { alert('로그인 후 이용 가능합니다.'); return; }
+2698:                 alert('문의 내용을 입력해주세요.');
+2705:                     alert('로그인이 필요한 기능입니다.');
+2719:                     if (error.code === '42P01') alert("DB 테이블(property_inquiries)이 생성되지 않았습니다.");
+2725:                 alert('문의가 등록되었습니다.');
+2729:                 alert('문의 등록 중 오류가 발생했습니다.');
+2737:                 alert('답변을 입력해주세요.');
+2752:                 alert('답변이 등록되었습니다.');
+2756:                 alert('답변 등록 중 오류가 발생했습니다.');

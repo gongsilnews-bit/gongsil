@@ -1,0 +1,17 @@
+{
+  "name": "gongsilnews-scraper",
+  "version": "1.0.0",
+  "description": "RSS News scraper for Gongsil News Map",
+  "main": "ingest.js",
+  "scripts": {
+    "start": "node ingest.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.100.0",
+    "axios": "^1.14.0",
+    "cheerio": "^1.2.0",
+    "dotenv": "^16.3.1",
+    "rss-parser": "^3.13.0"
+  }
+}

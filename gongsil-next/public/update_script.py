@@ -1,0 +1,489 @@
+import os
+import re
+
+html_path = 'c:/Users/user/Desktop/test/index.html'
+
+with open(html_path, 'r', encoding='utf-8') as f:
+    html = f.read()
+
+new_style = '''<style>
+    :root {
+        --primary: #1a2b4c; /* Dark blue from Hankyung style */
+        --brand: #ff9f1c; /* Orange accent */
+        --border: #e8e8e8;
+        --bg-gray: #f9f9f9;
+        --text-main: #222;
+        --text-sub: #666;
+    }
+    html, body {
+        font-family: 'Pretendard', sans-serif;
+        margin: 0; padding: 0;
+        background-color: #fff;
+        color: var(--text-main);
+    }
+    a { text-decoration: none; color: inherit; }
+    ul, li { list-style: none; padding: 0; margin: 0; }
+    
+    /* Global Container */
+    .container {
+        width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        box-sizing: border-box;
+    }
+
+    /* Top Strip (Login/Links) */
+    .top-strip {
+        background: #f8f8f8;
+        border-bottom: 1px solid #eee;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        font-size: 13px;
+        color: #555;
+    }
+    .top-strip-inner {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 15px;
+    }
+
+    /* Main Header */
+    .main-header {
+        border-bottom: 2px solid var(--primary);
+        padding: 25px 0;
+    }
+    .header-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .logo-area { display: flex; align-items: center; gap: 40px; }
+    .logo-area img { height: 45px; }
+    
+    .main-nav {
+        display: flex;
+        gap: 30px;
+        font-size: 19px;
+        font-weight: 800;
+    }
+    .main-nav a:hover { color: var(--brand); }
+
+    .header-search {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .btn-search {
+        background: none; border: none; cursor: pointer; font-size: 24px; color: #333;
+    }
+    .btn-biz {
+        background: var(--primary);
+        color: #fff;
+        padding: 10px 18px;
+        font-size: 14px;
+        font-weight: bold;
+        border-radius: 4px;
+        transition: background 0.2s;
+    }
+    .btn-biz:hover { background: #111d33; }
+
+    /* Layout Grids */
+    .section-spacing { margin-top: 50px; margin-bottom: 50px; }
+    
+    /* Section 1: Top Headline & Map */
+    .top-section {
+        display: flex;
+        gap: 30px;
+        margin-top: 30px;
+        height: 450px;
+    }
+    .top-left {
+        flex: 2.5;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+        background: var(--bg-gray);
+    }
+    .map-frame { width: 100%; height: 100%; border: none; }
+    
+    .top-right {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 24px;
+        background: #fff;
+    }
+    .top-right-title {
+        font-size: 18px;
+        font-weight: 800;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #333;
+        padding-bottom: 12px;
+    }
+    .live-news-list { display: flex; flex-direction: column; gap: 16px; flex:1; overflow-y: auto; }
+    .live-news-item {
+        display: flex;
+        gap: 15px;
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+    }
+    .live-news-item:hover .lni-title { color: var(--brand); text-decoration: underline; }
+    .lni-img { width: 80px; height: 60px; flex-shrink: 0; background: #eee; border-radius: 4px; overflow: hidden; }
+    .lni-img img { width: 100%; height: 100%; object-fit: cover; }
+    .lni-content { display: flex; flex-direction: column; justify-content: center; }
+    .lni-title { font-size: 14px; font-weight: bold; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .lni-date { font-size: 12px; color: #999; margin-top: 4px; }
+
+    /* Section Area Headers */
+    .sec-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        border-bottom: 2px solid #111;
+        padding-bottom: 12px;
+        margin-bottom: 25px;
+    }
+    .sec-title { font-size: 24px; font-weight: 800; margin: 0; color: #111; }
+    .sec-more { font-size: 14px; color: #666; font-weight: bold; }
+    .sec-more:hover { color: var(--brand); }
+
+    /* Section 2: Hot Issues (Grid) */
+    .hot-news-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 25px;
+    }
+    .hn-card { display: flex; flex-direction: column; }
+    .hn-card:hover .hn-img img { transform: scale(1.05); }
+    .hn-card:hover .hn-title { color: var(--brand); text-decoration: underline; }
+    .hn-img { width: 100%; height: 180px; background: #eee; overflow: hidden; border-radius: 6px; margin-bottom: 16px; }
+    .hn-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+    .hn-title { font-size: 17px; font-weight: bold; line-height: 1.4; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .hn-date { font-size: 13px; color: #888; }
+
+    /* Section 3: Video News */
+    .video-section {
+        background: var(--bg-gray);
+        padding: 50px 0;
+        margin: 50px 0;
+    }
+    .video-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+    }
+    .vid-card { position: relative; cursor: pointer; }
+    .vid-thumb { width: 100%; height: 220px; background: #000; border-radius: 8px; overflow: hidden; position: relative; }
+    .vid-thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0.85; transition: opacity 0.3s; }
+    .vid-card:hover .vid-thumb img { opacity: 1; }
+    .play-icon { position: absolute; top:50%; left:50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .play-icon::after { content: ''; display: block; border-left: 15px solid #fff; border-top: 10px solid transparent; border-bottom: 10px solid transparent; margin-left: 5px; }
+    .vid-title { font-size: 18px; font-weight: bold; margin-top: 15px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+    /* Section 4: Recommended Properties (Dark Theme) */
+    .prop-section {
+        background: var(--primary);
+        color: #fff;
+        padding: 60px 0;
+        margin: 50px 0;
+    }
+    .prop-section .sec-title { color: #fff; border-bottom-color: rgba(255,255,255,0.3); }
+    .prop-section .sec-header { border-bottom-color: rgba(255,255,255,0.3); }
+    .prop-section .sec-more { color: #aaa; }
+    .prop-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .prop-card { background: #fff; color: #111; border-radius: 8px; overflow: hidden; transition: transform 0.2s; cursor: pointer; }
+    .prop-card:hover { transform: translateY(-5px); }
+    .pc-img { height: 200px; background: #eee; }
+    .pc-img img { width: 100%; height: 100%; object-fit: cover; }
+    .pc-content { padding: 18px; }
+    .pc-badge { display: inline-block; padding: 3px 8px; background: #e8f0fe; color: #1a73e8; font-size: 12px; font-weight: bold; border-radius: 4px; margin-bottom: 10px; }
+    .pc-price { font-size: 20px; font-weight: 900; color: #111; margin-bottom: 5px; }
+    .pc-title { font-size: 14px; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 15px; }
+    .pc-meta { display: flex; justify-content: space-between; font-size: 13px; color: #888; border-top: 1px solid #eee; padding-top: 12px; }
+
+    /* Section 5: Study & Notices Combined */
+    .bottom-split {
+        display: flex;
+        gap: 40px;
+        margin-bottom: 80px;
+    }
+    .bs-left { flex: 2; }
+    .bs-right { flex: 1; }
+    .study-list { display: flex; flex-direction: column; gap: 20px; }
+    .study-item { display: flex; gap: 20px; border: 1px solid var(--border); padding: 15px; border-radius: 8px; transition: box-shadow 0.2s; cursor: pointer; }
+    .study-item:hover { box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .si-img { width: 140px; height: 100px; background: #eee; border-radius: 6px; overflow: hidden; flex-shrink: 0; }
+    .si-img img { width: 100%; height: 100%; object-fit: cover; }
+    .si-content { display: flex; flex-direction: column; justify-content: center; }
+    .si-title { font-size: 18px; font-weight: bold; margin-bottom: 8px; line-height: 1.4; }
+    .si-author { font-size: 14px; color: #666; }
+
+    .notice-list { border-top: 2px solid #111; }
+    .notice-item { padding: 16px 0; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: #333; }
+    .notice-item:hover .ni-title { text-decoration: underline; color: var(--brand); }
+    .ni-title { font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ni-date { font-size: 13px; color: #999; }
+
+    /* Footer Banner */
+    .chat-banner { background: #f4f6f8; text-align: center; padding: 60px 0; border-top:1px solid #eee; }
+    .chat-banner img { height: 300px; object-fit: contain; }
+
+    /* Footer */
+    .g-footer { background: #fff; padding: 40px 0; font-size: 14px; color: #777; border-top: 1px solid #eee; line-height: 1.6; }
+    .f-links { margin-bottom: 20px; display: flex; gap: 20px; font-weight: bold; color: #444; }
+</style>'''
+
+html = re.sub(r'<style>.*?</style>', new_style, html, flags=re.DOTALL)
+
+new_body = '''<body>
+    <!-- Top Strip (Login) -->
+    <div class="top-strip">
+        <div class="container top-strip-inner">
+            <div id="userProfile" style="display: none; align-items: center; gap: 10px;">
+                <span id="userNameDisplay" style="font-weight: bold; color: #111;"></span>
+                <span id="userRoleBadge" style="font-size: 11px; padding: 3px 6px; border-radius: 4px; background: #eee; color: #555;">로딩중</span>
+                <a href="#" id="headerLogoutBtn" style="font-weight:bold;">로그아웃</a>
+            </div>
+            <a href="#" id="headerLoginBtn" style="font-weight:bold;">구글 로그인</a>
+            <a href="#">고객센터</a>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="main-header">
+        <div class="container header-inner">
+            <div class="logo-area">
+                <a href="./"><img src="logo.png" alt="공실뉴스" onerror="this.src='admin_logo_new.png'"></a>
+                <nav class="main-nav">
+                    <a href="gongsil/">공실열람 (지도)</a>
+                    <a href="news.html">부동산 뉴스</a>
+                    <a href="study.html">실무 스터디</a>
+                </nav>
+            </div>
+            <div class="header-search">
+                <button class="btn-search" onclick="window.toggleGlobalSearchPanel()">🔍</button>
+                <a href="https://smartstore.naver.com/mygongsil/products/10361563253" target="_blank" class="btn-biz">중개사무소 가입 이모저모</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Global Search Panel (Hidden) -->
+    <div id="globalSearchPanel" style="display: none; background-color: #f8f9fa; border-bottom:1px solid #ddd; width: 100%; padding: 30px 0; text-align: center; position: absolute; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+        <input type="text" id="globalKeywordInput" placeholder="관심 지역이나 부동산 키워드를 검색하세요" style="width: 500px; padding: 16px 20px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; outline: none;" onkeypress="if(event.key==='Enter') window.executeGlobalSearch()">
+        <button onclick="window.executeGlobalSearch()" style="background: #333; color: #fff; border: none; padding: 16px 24px; font-size:16px; border-radius:4px; margin-left:10px; cursor:pointer;">검색</button>
+        <button onclick="window.toggleGlobalSearchPanel()" style="background: none; border: none; padding: 16px; font-size:16px; color:#555; cursor:pointer;">닫기</button>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        
+        <!-- Section 1: Map / Top News Split -->
+        <section class="container top-section section-spacing">
+            <!-- Left: Map Widget (iframe to gongsil map) -->
+            <div class="top-left">
+                <iframe src="gongsil/" class="map-frame" title="공실지도"></iframe>
+            </div>
+            <!-- Right: Real-time top news lists -->
+            <div class="top-right">
+                <div class="top-right-title">🔥 핫클릭 부동산 뉴스</div>
+                <div class="live-news-list" id="topNewsList">
+                    <div style="padding:40px; text-align:center; color:#999;">뉴스를 불러오는 중입니다...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Policy & Market Issues -->
+        <section class="container section-spacing">
+            <div class="sec-header">
+                <h2 class="sec-title">부동산 정책 & 시장 동향</h2>
+                <a href="news.html" class="sec-more">전체기사 보기 &gt;</a>
+            </div>
+            <div class="hot-news-grid" id="hotNewsGrid">
+                <!-- Fallback static mockups, handled by JS -->
+                <a href="#" class="hn-card">
+                    <div class="hn-img"><img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="News Image"></div>
+                    <div class="hn-title">4월 전당대회 파격 세대교체론 솔솔... 한동훈 대안 부상할까?</div>
+                    <div class="hn-date">2026.04.15</div>
+                </a>
+                <a href="#" class="hn-card">
+                    <div class="hn-img"><img src="https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="News Image"></div>
+                    <div class="hn-title">2026년 4월 전국 1만 5,000세대 아파트 분양 물량 풀린다</div>
+                    <div class="hn-date">2026.04.14</div>
+                </a>
+                <a href="#" class="hn-card">
+                    <div class="hn-img"><img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="News Image"></div>
+                    <div class="hn-title">강남구 청담동 역대급 일반분양가 경신 전망</div>
+                    <div class="hn-date">2026.04.13</div>
+                </a>
+                <a href="#" class="hn-card">
+                    <div class="hn-img" style="display:flex; align-items:center; justify-content:center; background:#f0f0f0;">
+                        <span style="font-size:36px; color:#ccc;">📰</span>
+                    </div>
+                    <div class="hn-title">2026년 상반기 상가 시장 공실률 감소세 뚜렷</div>
+                    <div class="hn-date">2026.04.12</div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Section 3: Video News -->
+        <section class="video-section">
+            <div class="container">
+                <div class="sec-header" style="border-bottom-color: #ddd;">
+                    <h2 class="sec-title">생생비디오</h2>
+                    <a href="news.html" class="sec-more">더보기 &gt;</a>
+                </div>
+                <div class="video-grid">
+                    <div class="vid-card">
+                        <div class="vid-thumb">
+                            <img src="https://images.unsplash.com/photo-1460472178825-e5240623afd5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="video thumbnail">
+                            <div class="play-icon"></div>
+                        </div>
+                        <div class="vid-title">[임장TV] 개포주공 1단지 재건축 현장 생생한 모습 단독 포착</div>
+                    </div>
+                    <div class="vid-card">
+                        <div class="vid-thumb">
+                            <img src="https://images.unsplash.com/photo-1542314831-c6a4d14d83f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="video thumbnail">
+                            <div class="play-icon"></div>
+                        </div>
+                        <div class="vid-title">전문가 진단! 하반기 금리 인상 사이클 종료와 시장 파급효과</div>
+                    </div>
+                    <div class="vid-card">
+                        <div class="vid-thumb">
+                            <img src="https://images.unsplash.com/photo-1558036117-15d82a90b9b1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="video thumbnail">
+                            <div class="play-icon"></div>
+                        </div>
+                        <div class="vid-title">상가 투자 초보자 필수 시청! 권리금 분석하는 확실한 방법론</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Premium Property Listings -->
+        <section class="prop-section">
+            <div class="container">
+                <div class="sec-header">
+                    <h2 class="sec-title">이달의 프리미엄 매물</h2>
+                    <a href="gongsil/" class="sec-more">공실지도 바로가기 &gt;</a>
+                </div>
+                <div class="prop-grid">
+                    <!-- Static Demo Cards -->
+                    <div class="prop-card" onclick="location.href='gongsil/'">
+                        <div class="pc-img"><img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="prop"></div>
+                        <div class="pc-content">
+                            <span class="pc-badge">아파트</span>
+                            <div class="pc-price">매매 15억 5,000</div>
+                            <div class="pc-title">반포자이 103동 중층 남향 (전속)</div>
+                            <div class="pc-meta"><span>서울 서초구</span> <span>84㎡ / 112㎡</span></div>
+                        </div>
+                    </div>
+                    <div class="prop-card" onclick="location.href='gongsil/'">
+                        <div class="pc-img"><img src="https://images.unsplash.com/photo-1628611225249-6c24388651c6?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="prop"></div>
+                        <div class="pc-content">
+                            <span class="pc-badge" style="background:#fff3cd; color:#856404;">상가/사무실</span>
+                            <div class="pc-price">월세 5,000 / 350</div>
+                            <div class="pc-title">강남역 더블역세권 1층 무권리 상가</div>
+                            <div class="pc-meta"><span>서울 강남구</span> <span>45㎡ / 60㎡</span></div>
+                        </div>
+                    </div>
+                    <div class="prop-card" onclick="location.href='gongsil/'">
+                        <div class="pc-img"><img src="https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="prop"></div>
+                        <div class="pc-content">
+                            <span class="pc-badge" style="background:#e2e3e5; color:#383d41;">오피스텔</span>
+                            <div class="pc-price">전세 2억 8,000</div>
+                            <div class="pc-title">마곡지구 신축 풀옵션 오피스텔 첫입주</div>
+                            <div class="pc-meta"><span>서울 강서구</span> <span>29㎡ / 42㎡</span></div>
+                        </div>
+                    </div>
+                    <div class="prop-card" onclick="location.href='gongsil/'">
+                        <div class="pc-img"><img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="prop"></div>
+                        <div class="pc-content">
+                            <span class="pc-badge" style="background:#d4edda; color:#155724;">빌라/투룸</span>
+                            <div class="pc-price">매매 3억 2,000</div>
+                            <div class="pc-title">송파구 방이동 갭투자 추천 구옥 빌라</div>
+                            <div class="pc-meta"><span>서울 송파구</span> <span>41㎡ / 50㎡</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Study & Notices Combined -->
+        <section class="container bottom-split">
+            <div class="bs-left">
+                <div class="sec-header">
+                    <h2 class="sec-title">공실 스터디 (Live)</h2>
+                    <a href="study.html" class="sec-more">전체 강의 보기 &gt;</a>
+                </div>
+                <div class="study-list">
+                    <div class="study-item">
+                        <div class="si-img"><img src="https://images.unsplash.com/photo-1677442136019-21780ecad995?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" alt="study"></div>
+                        <div class="si-content">
+                            <div class="si-title">부동산 빅데이터 및 챗GPT 활용 중개 실무 자동화</div>
+                            <div class="si-author">공실강사 · 초급 · ★4.9</div>
+                        </div>
+                    </div>
+                    <div class="study-item">
+                        <div class="si-img"><img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" alt="study"></div>
+                        <div class="si-content">
+                            <div class="si-title">실무에서 바로 쓰는 상가 임대차 보호법 마스터 클래스</div>
+                            <div class="si-author">이변호사 · 중급 · ★4.8</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bs-right">
+                <div class="sec-header">
+                    <h2 class="sec-title">공지사항</h2>
+                    <a href="news.html" class="sec-more">더보기 &gt;</a>
+                </div>
+                <div class="notice-list" id="noticeListArea">
+                    <!-- JS injected -->
+                    <a href="news.html" class="notice-item"><span class="ni-title">불러오는 중...</span></a>
+                </div>
+            </div>
+        </section>
+        
+    </main>
+
+    <!-- Footer Banner -->
+    <div class="chat-banner">
+        <div class="container">
+            <h2 style="margin-top:0; font-size:28px; font-weight:800; margin-bottom:10px;">궁금한 내용은 바로바로 채팅서비스 OPEN</h2>
+            <p style="color:#666; font-size:16px; margin-bottom:30px;">고객과 중개사무소를 잇는 편안한 맞춤형 서비스</p>
+            <img src="phone_mockup.png" alt="챗봇 화면" onerror="this.src='https://via.placeholder.com/300x500/eeeeee/999999?text=Chatbot+Mockup'">
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="g-footer" style="padding-bottom:50px;">
+        <div class="container" style="display:flex; justify-content:space-between; align-items:flex-end;">
+            <div>
+                <div class="f-links">
+                    <a href="#">회사소개</a> <a href="#">이용약관</a> <a href="#" style="color:#111;">개인정보처리방침</a> <a href="#">위치기반서비스 이용약관</a> <a href="#">고객센터</a>
+                </div>
+                (주)공실뉴스 | 대표: 능산이 | 사업자등록번호: 123-45-67890<br>
+                통신판매업신고: 제2026-서울강남-1234호 | 주소: 서울특별시 강남구 강남대로 123<br>
+                고객센터: 1588-1234 (평일 10:00 ~ 18:00) | 이메일: help@gongsilnews.com
+            </div>
+            <div style="text-align:right;">
+                <div style="margin-bottom:15px; display:flex; gap:10px; justify-content:flex-end;">
+                    <a href="#" style="display:inline-block; border:1px solid #ddd; padding:8px 16px; border-radius:20px; font-weight:bold; color:#555;">App Store</a>
+                    <a href="#" style="display:inline-block; border:1px solid #ddd; padding:8px 16px; border-radius:20px; font-weight:bold; color:#555;">Google Play</a>
+                </div>
+                <div style="color:#aaa;">Copyright © GONGSIL NEWS. All Rights Reserved.</div>
+            </div>
+        </div>
+    </footer>
+'''
+
+html = re.sub(r'<body.*?>.*?<!-- Supabase & Auth Logic -->', new_body + '\n    <!-- Supabase & Auth Logic -->', html, flags=re.DOTALL|re.IGNORECASE)
+
+with open(html_path, 'w', encoding='utf-8') as f:
+    f.write(html)
