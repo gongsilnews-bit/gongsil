@@ -24,16 +24,16 @@ export default function Header() {
           </div>
           <div className="header-bottom">
             <nav className="gnb-new">
-              <a href="/news.html">전체뉴스</a>
-              <a href="/news.html">우리동네뉴스</a>
-              <a href="/news.html">부동산·주식·재테크</a>
-              <a href="/news.html">정치·경제·사회</a>
-              <a href="/news.html">세무·법률</a>
-              <a href="/news.html">여행·건강·생활</a>
+              <a href="/news/all">전체뉴스</a>
+              <a href="/news/local">우리동네뉴스</a>
+              <a href="/news/finance">부동산·주식·재테크</a>
+              <a href="/news/politics">정치·경제·사회</a>
+              <a href="/news/law">세무·법률</a>
+              <a href="/news/life">여행·건강·생활</a>
               <span className="divider"></span>
               <a href="/gongsil/index.html">공실열람</a>
               <a href="/board.html">자료실</a>
-              <a href="#special">부동산특강</a>
+              <a href="/#special">부동산특강</a>
               <a href="#">중개업소무료가입</a>
             </nav>
           </div>
