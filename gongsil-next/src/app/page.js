@@ -53,7 +53,7 @@ export default async function Home() {
             
             <div className="hn-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', borderBottom: '2px solid #1a4282', paddingBottom: '10px'}}>
               <h2 style={{fontSize: '18px', fontWeight: '800', color: '#1a4282'}}>HOT 공실뉴스</h2>
-              <a href="/news.html" style={{fontSize: '12px', color: '#666', fontWeight: '600', textDecoration:'none'}}>더보기 &gt;</a>
+              <a href="/news/all" style={{fontSize: '12px', color: '#666', fontWeight: '600', textDecoration:'none'}}>더보기 &gt;</a>
             </div>
             <div className="hn-list" style={{ marginBottom: '0', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {hotNews.map((news) => (
