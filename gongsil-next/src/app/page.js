@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import Header from '../components/Header';
+import KakaoMap from '../components/KakaoMap';
 
 export default async function Home() {
   // SSR: Fetch top 3 hot news from supabase server-side
@@ -21,11 +22,9 @@ export default async function Home() {
       <main className="container px-20 relative" style={{ position: 'relative' }}>
         <div className="hero-section" style={{ padding: '0 25px 0 0', border: '0.5px solid #dcdcdc', borderTop: 'none', marginBottom: '0', background: '#fff' }}>
           
-          {/* Left: Map Area placeholder for now, we will add a real Map component */}
+          {/* Left: Real React Kakao Map */}
           <div className="hero-left" style={{ display: 'flex', marginTop: '0', flex: '2.8', position: 'relative', minHeight: '480px', padding: '0' }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: '#eaeaea', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <h2 style={{color: '#888'}}>카카오 지도 SSR 로딩 대기중...</h2>
-            </div>
+            <KakaoMap />
           </div>
           
           {/* Right: AD & HOT NEWS SSR */}
